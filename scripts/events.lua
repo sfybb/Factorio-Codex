@@ -19,7 +19,9 @@ end)
 event.on_configuration_changed(function(e)
     if migration.on_config_changed(e, {}) then
         for _,player in pairs(game.players) do
-            codex.rebuild(player)
+            if player ~= nil then
+                codex.rebuild(player)
+            end
         end
     
         player_data.migrate()

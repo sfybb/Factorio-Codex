@@ -35,13 +35,25 @@ local function init_codex_helper_data()
     }
 end
 
-local function codex_select_category_index(dicts, codex, indx)
+local function codex_select_category_index(dicts, codex, type_name)
     init_codex_helper_data()
 
-    local cat = codex_helper_data.categories[indx]
+    local cat = nil
+    local indx = nil
+    for i,c in pairs(codex_helper_data.categories) do
+        if c.type == type_name then
+            cat = c
+            indx = i
+            break
+        end
+    end
     
-    if codex == nil or dicts == nil then
+    if codex == nil or dicts == nil or cat == nil then
         return
+    end
+    
+    if codex.refs.category_picker.selected_index ~= indx then
+        codex.refs.category_picker.selected_index = indx
     end
     
     codex.category = cat
@@ -160,7 +172,7 @@ local function build_codex(player)
     
     
     refs.category_picker.selected_index = 1
-    codex_select_category_index(player_table.dicts, player_table.codex, 1)
+    codex_select_category_index(player_table.dicts, player_table.codex, "item")
     
     player.opened = refs.window
     return player_table.codex
@@ -199,23 +211,21 @@ local function recipe_slot(amount, amount_range, probability, item_fluid)
     local tooltip = {"", "" .. amount_str .. " x ", proto.localised_name}
     
     if item_fluid.minimum_temperature ~= nil or item_fluid.maximum_temperature ~= nil then
-        table.insert(tooltip, " ")
-
-        if ""..item_fluid.minimum_temperature == ""..item_fluid.maximum_temperature then
-            table.insert(tooltip, ""..item_fluid.minimum_temperature.."°C")
-        else
-            if item_fluid.minimum_temperature ~= nil then
-                table.insert(tooltip, ""..item_fluid.minimum_temperature.."°C ")
+        local temp_str = " "
+        
+        if item_fluid.minimum_temperature ~= nil then
+            temp_str = temp_str..item_fluid.minimum_temperature.."°C"
+        end
+        
+        
+        if item_fluid.minimum_temperature ~= item_fluid.maximum_temperature and
+           item_fluid.maximum_temperature ~= nil then
+            local max_temp = item_fluid.maximum_temperature
+            if item_fluid.maximum_temperature > (2^970) then
+                max_temp = "∞"
             end
-            table.insert(tooltip, "-")
-            if item_fluid.maximum_temperature ~= nil then
-                local max_temp = item_fluid.maximum_temperature
-                if item_fluid.maximum_temperature > (2^970) then
-                    max_temp = "∞"
-                end
-            
-                table.insert(tooltip, " "..max_temp.."°C")
-            end
+        
+            temp_str = temp_str .. " - "..max_temp.."°C"
         end
     end
     
@@ -395,6 +405,30 @@ local function codex_show_info(player, id, id_type)
     end
     
     local entity_prototype = game[id_type .. "_prototypes"][id]
+    
+    codex.entity_view = {
+        type=id_type,
+        id=id
+    }
+    
+    codex_select_category_index(dicts, codex, id_type)
+    codex.refs.entity_usage.scroll_to_top()
+    
+    if codex.entity_list ~= nil then
+        local indx = nil
+        for i, e in pairs(codex.entity_list) do
+            if e ~= nil and e.id == id then
+                indx = i
+                break
+            end
+        end
+        
+        if indx ~= nil then
+            codex.refs.available_entities.scroll_to_item(indx)
+            codex.refs.available_entities.selected_index = indx
+        end
+    end
+    
     
     codex.refs.entity_sprite.sprite = id_type .. "/" .. id
     
@@ -584,11 +618,16 @@ local function codex_gui_rebuild(player)
     game.print("Rebuilding coedx gui")
     
     local codex = player_table.codex
-    if codex ~= nil then
+    if codex ~= nil and codex.refs ~= nil then
         codex.refs.window.destroy()
         codex.refs = nil
         
-        build_codex()
+        build_codex(player)
+        
+        if codex.entity_view ~= nil then
+            codex_show_info(player, codex.entity_view.id, codex.entity_view.type)
+        end
+        
     end
 end
 
