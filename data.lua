@@ -40,12 +40,14 @@ styles.fcodex_desc_image = {
 styles.fcodex_codex_main = {
     type = "frame_style",
     -- 24 is the padding size for the window
-    size = {1224, 650}
+    natural_width = 1224,
+    minimal_width = 1224,
+    height = 650
 }
 
 styles.fcodex_codex_frame_no_border = {
     type = "frame_style",
-    border = {border_width=0},
+    border = nil,
     padding = 0,
     margin = 0
 }
@@ -55,9 +57,26 @@ styles.fcodex_codex_vflow_no_border = {
     padding = 0
 }
 
+styles.fcodex_filler_widget = {
+    type="empty_widget_style",
+    horizontally_stretchable="stretch_and_expand"
+}
+
+styles.fcodex_codex_search_box = {
+    type="textbox_style",
+    horizontally_stretchable="stretch_and_expand",
+}
+
 styles.fcodex_codex_info_section = {
     type = "frame_style",
-    width = 590
+    natural_width = 590,
+    minimal_width = 590
+}
+
+styles.fcodex_codex_info_flow = {
+    type = "vertical_flow_style",
+    natural_width = 590,
+    minimal_width = 590,
 }
 
 
@@ -70,19 +89,28 @@ styles.fcodex_codex_recipe_header = {
 styles.fcodex_codex_desc = {
     type = "label_style",
     parent = "label",
+    width = 510,
     single_line = false
 }
 
 styles.fcodex_codex_type_section = {
     type = "list_box_style",
     parent = "list_box",
-    width = 198
+    natural_width = 198,
+    minimal_width = 198
+}
+
+styles.fcodex_codex_info_scroll = {
+    type="scroll_pane_style",
+    horizontally_stretchable="stretch_and_expand",
+    extra_padding_when_activated = 0
 }
 
 styles.fcodex_codex_entity_list = {
     type = "list_box_style",
     parent = "list_box",
-    width = 390
+    natural_width = 390,
+    minimal_width = 390
 }
 
 styles.fcodex_produces_sprite = {
@@ -90,6 +118,13 @@ styles.fcodex_produces_sprite = {
     stretch_image_to_widget_size = true,
     size = 50
 }
+
+styles.fcodex_produced_in_sprite = {
+    type = "image_style",
+    stretch_image_to_widget_size = true,
+    size = 20
+}
+
 
 styles.fcodex_recipe_label_top = {
     type = "label_style",
@@ -99,6 +134,13 @@ styles.fcodex_recipe_label_top = {
     vertical_align = "top",
     horizontal_align = "right",
     right_padding = 2
+}
+
+styles.fcodex_recipe_info_borderless_table = {
+    type = "table_style",
+    cell_padding = 4,
+    horizontally_stretchable="stretch_and_expand",
+    border = nil
 }
 
 styles.fcodex_codex_color_indicator = {

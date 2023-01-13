@@ -140,7 +140,7 @@ local function getNumber(str)
     if num == nil then
         return nil, str
     end
-    
+
     return tonumber(num), rem
 end
 
@@ -149,6 +149,10 @@ local function calculateResult(expression, expectEndParentheses)
         return nil
     end
     
+	if expectEndParentheses == nil then
+		expression = string.gsub((expression == nil) and "" or expression, "%s+", "")
+	end
+	
     --This is true if and only if we are expecting an expression next instead of an operator.
     local expectingExpression = true
     --This is true if and only if the last expression examined was surrounded by parentheses.
@@ -379,7 +383,9 @@ local function quick_search_update_input(player, prompt)
     
     
     if player_table.dicts == nil then
-        results_list.add_item("Waiting for translations...")
+        --results_list.add_item("Waiting for translations...")
+        results_list.add_item({"factorio-codex.waiting-for-translation"})
+        
         return
     end
     
@@ -449,9 +455,6 @@ local function quick_search_gui_action(action, event)
             function (player)
                 local player_table = util.get_player_data(player)
                 local quick_search_data = player_table.quick_search
-                if quick_search_data ~= nil and quick_search_data.result_list ~= nil then
-                    quick_search_data.refs.results.clear_items()
-                end
             
                 quick_search.toggle(player)
             end,
@@ -494,7 +497,7 @@ local function quick_search_gui_action(action, event)
                     return
                 end
                 
-                quick_search.refs.results.clear_items()
+                event.element.selected_index = 0
                 
                 --game.print("Index " .. event.element.selected_index .. " with content [" .. selected.type .. "=" .. selected.id .. "] \"" .. selected.name .. "\" was selected!")
                 codex.open(player, selected.id, selected.type)
@@ -515,5 +518,6 @@ quick_search.build = build_quick_search
 quick_search.toggle = toggle_quick_search
 quick_search.update_input = quick_search_update_input
 quick_search.gui_action = quick_search_gui_action
+quick_search.calculate_result = calculateResult
 
 return quick_search

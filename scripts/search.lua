@@ -176,7 +176,9 @@ local function find_in_dicts(prompt, dicts)
                 local match_count = 0
                 for _,qt in pairs(quoted_tokens) do
                     local _,count = string.gsub(name, qt, "")
-                    match_count = match_count + count
+					local _,start_of_word_count = string.gsub(name, "%s+"..qt, "")
+					local _,start_of_name_count = string.gsub(name, "^"..qt, "")
+                    match_count = match_count + count + start_of_word_count + start_of_name_count
                 end
             
                 table.insert(result, {

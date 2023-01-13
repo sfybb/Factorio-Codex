@@ -20,8 +20,10 @@ local function build_dicts()
         
         
         for name, prototype in pairs(global.prototypes[type]) do
-            names:add(name, prototype.localised_name)
-            desc:add(name, prototype.localised_description)
+			if prototype.valid then
+				names:add(name, prototype.localised_name)
+				desc:add(name, prototype.localised_description)
+			end
         end
         
         dicts_array[type.."_names"] = names

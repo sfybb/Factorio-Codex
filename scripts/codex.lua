@@ -35,27 +35,39 @@ local function init_codex_helper_data()
     }
 end
 
-local function codex_select_category_index(dicts, codex, type_name)
+local function codex_select_category(dicts, codex, type_name)
     init_codex_helper_data()
 
     local cat = nil
     local indx = nil
-    for i,c in pairs(codex_helper_data.categories) do
-        if c.type == type_name then
-            cat = c
-            indx = i
-            break
+    
+    if type(type_name) == "string" then
+        for i,c in pairs(codex_helper_data.categories) do
+            if c.type == type_name then
+                cat = c
+                indx = i
+                break
+            end
+        end
+    elseif type(type_name) == "number" then
+        for i,c in pairs(codex_helper_data.categories) do
+            if i == type_name then
+                cat = c
+                indx = i
+                break
+            end
         end
     end
     
-    if codex == nil or dicts == nil or cat == nil then
+    if codex == nil or dicts == nil or cat == nil or
+		codex.category == cat then
         return
     end
     
     if codex.refs.category_picker.selected_index ~= indx then
         codex.refs.category_picker.selected_index = indx
     end
-    
+	
     codex.category = cat
     codex.refs.available_entities.clear_items()
     
@@ -139,7 +151,7 @@ local function build_codex(player)
                     }
                 },
                 
-                {type = "frame", direction = "vertical", ref = { "entity_viewer" }, style="fcodex_codex_info_section",
+                {type = "flow", direction = "vertical", ref = { "entity_viewer" }, style="fcodex_codex_info_flow",
                     {type = "flow", direction = "horizontal",
                         {type = "sprite", style = "fcodex_desc_image", ref = {"entity_sprite"}},
                         {type = "flow", direction = "vertical", caption = "Entity", ref = {"entity_desc_frame"},
@@ -172,7 +184,7 @@ local function build_codex(player)
     
     
     refs.category_picker.selected_index = 1
-    codex_select_category_index(player_table.dicts, player_table.codex, "item")
+    codex_select_category(player_table.dicts, player_table.codex, "item")
     
     player.opened = refs.window
     return player_table.codex
@@ -221,13 +233,18 @@ local function recipe_slot(amount, amount_range, probability, item_fluid)
         if item_fluid.minimum_temperature ~= item_fluid.maximum_temperature and
            item_fluid.maximum_temperature ~= nil then
             local max_temp = item_fluid.maximum_temperature
-            if item_fluid.maximum_temperature > (2^970) then
+            if item_fluid.maximum_temperature > (2^100) then
                 max_temp = "∞"
             end
         
             temp_str = temp_str .. " - "..max_temp.."°C"
         end
+        
+        table.insert(tooltip, temp_str)
+    elseif item_fluid.temperature ~= nil then
+        table.insert(tooltip, " " .. item_fluid.temperature .. "°C")
     end
+    
     
     return {
         type="sprite-button",
@@ -246,15 +263,10 @@ end
 
 local function format_recipe_gui(recipe, highlight_id)
     local recipe_ui =  {
-        type="flow", direction="horizontal", enabled = not recipe.hidden,
+        type="flow", direction="horizontal", enabled = not recipe.hidden, style="player_input_horizontal_flow",
     }
         
     for _,ingr in pairs(recipe.ingredients) do
-        --[[if text ~= "" then
-            text = text .. " + "
-        end
-        text = text .. "" .. ingr.amount .. "[" .. ingr.type .. "=" .. ingr.name .. "]"]]
-        
         local ingr_proto = game[ingr.type.."_prototypes"][ingr.name]
         
         local slot = recipe_slot(ingr.amount, nil, nil, ingr)
@@ -266,8 +278,6 @@ local function format_recipe_gui(recipe, highlight_id)
     table.insert(recipe_ui, {type="sprite", sprite="fcodex_produces", style="fcodex_produces_sprite"})
     
     for _,pr in pairs(recipe.products) do
-        --text = text .. "" .. pr.amount .. "[" .. pr.type .. "=" .. pr.name .. "]"
-        
         local slot = recipe_slot(pr.amount, {min= pr.amount_min, max= pr.amount_max}, pr.probability, pr)
         slot.style = "flib_standalone_slot_button_" .. (highlight_id == pr.name and "grey" or "default")
         
@@ -294,19 +304,40 @@ local function format_recipe_gui(recipe, highlight_id)
      
      game.print(serpent.line(allowed_effects))
      --allowed_effects]]
-   
-    return recipe_ui
+     
+    local crafting_machines_for_recipe = game.get_filtered_entity_prototypes({
+        {filter= "crafting-category", crafting_category= recipe.category, mode= "and"},
+    })
+
+    local crafting_machines_slots = {
+        type="flow", direction="horizontal",
+        {type="label", caption={"factorio-codex.produced-in"}},
+    }
+    for id,m in pairs(crafting_machines_for_recipe) do
+        table.insert(crafting_machines_slots, {
+            type="sprite", sprite="entity."..id, style="fcodex_produced_in_sprite",
+            tooltip=m.localised_name
+        })
+    end
+
+
+    return {
+        type="flow", direction="vertical",
+        recipe_ui,
+        crafting_machines_slots,
+        {type="label", caption={"factorio-codex.production-time", recipe.energy, math.floor(recipe.energy)}},
+    }
 end
 
-local function build_recipe_gui(type, id)
+local function build_recipe_gui(codex, root_gui_elem, type, id)
     local prod_filter = {{filter = "has-product-"..type, elem_filters = {{filter = "name", name = id}}}}
     local ingr_filter = {{filter = "has-ingredient-"..type, elem_filters = {{filter = "name", name = id}}}}
     
     local prod_recipes = game.get_filtered_recipe_prototypes(prod_filter)
     local ingr_recipes = game.get_filtered_recipe_prototypes(ingr_filter)
     
-    local produced_by = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true}
-    local ingredient_in = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true}
+    local produced_by = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true, style="fcodex_recipe_info_borderless_table"}
+    local ingredient_in = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true, style="fcodex_recipe_info_borderless_table"}
     
     local tmp = 0
     
@@ -327,16 +358,64 @@ local function build_recipe_gui(type, id)
     end
     
     local recipe_gui = {
-        {type="label", caption="Recipes", style="fcodex_codex_recipe_header"},
-        produced_by
+        {type="frame", direction="vertical", style="subpanel_frame", {
+                type="flow", direction="horizontal", style="player_input_horizontal_flow",
+                {type="sprite-button", style="control_settings_section_button", sprite="utility/collapse", 
+                    name="produced_by_collapse",
+                    ref = {"collapse_produced_by"},
+                    mouse_button_filter = {"left"},
+                    actions = {
+                        on_click = "cx_collapse"
+                    }
+                },
+                {type="label", style="caption_label", caption={"factorio-codex.produced-by"}},
+                {type="empty-widget", style="fcodex_filler_widget"}
+            }, {
+                type="flow", direction="vertical", ref = {"produced_by_items"},
+                produced_by
+            }
+        }
     }
     
     if tmp ~= 0 then
-        table.insert(recipe_gui, {type="label", caption="Ingerdient", style="fcodex_codex_recipe_header"})
-        table.insert(recipe_gui, ingredient_in)
+        table.insert(recipe_gui, 
+        
+            {type="frame", direction="vertical", style="subpanel_frame", {
+                    type="flow", direction="horizontal", style="player_input_horizontal_flow",
+                    {type="sprite-button", style="control_settings_section_button", sprite="utility/collapse", 
+                        name="produced_by_collapse",
+                        ref = {"collapse_ingredient_in"},
+                        mouse_button_filter = {"left"},
+                        actions = {
+                            on_click = "cx_collapse"
+                        }
+                    },
+                    {type="label", style="caption_label", caption={"factorio-codex.ingredient-in"}},
+                    {type="empty-widget", style="fcodex_filler_widget"}
+                }, {
+                    type="flow", direction="vertical", ref = {"ingredient_in_items"},
+                    ingredient_in
+                }
+            })
     end
     
-    return recipe_gui
+    local new_refs = gui.build(root_gui_elem, recipe_gui)
+    
+    
+     
+    if new_refs.collapse_produced_by ~= nil and new_refs.produced_by_items ~= nil then
+        codex.refs.collapse_produced_by = new_refs.collapse_produced_by
+        codex.refs.produced_by_items = new_refs.produced_by_items
+
+        codex.produced_by_collapsed = false
+    end
+
+    if new_refs.collapse_ingredient_in ~= nil and new_refs.ingredient_in_items ~= nil then
+        codex.refs.collapse_ingredient_in = new_refs.collapse_ingredient_in
+        codex.refs.ingredient_in_items = new_refs.ingredient_in_items
+
+        codex.ingredient_in_collapsed = false
+    end
 end
 
 local function codex_item_info(codex, dicts, item)
@@ -374,8 +453,7 @@ local function codex_item_info(codex, dicts, item)
      -- Stack size
      local stack_size = item.stackable and ("Stack size: "..item.stack_size) or "Not stackable"
      
-     local recipe_gui = build_recipe_gui("item", item.name)
-     gui.build(codex.refs.entity_usage, recipe_gui)
+     build_recipe_gui(codex, codex.refs.entity_usage, "item", item.name)
 end
 
 local function codex_technology_info(codex, dicts, tech)
@@ -390,8 +468,7 @@ local function codex_fluid_info(codex, dicts, fluid)
     --[[codex.refs.entity_color.style.color = fluid.base_color
     codex.refs.entity_color.value = 1]]
     
-    local recipe_gui = build_recipe_gui("fluid", fluid.name)
-    gui.build(codex.refs.entity_usage, recipe_gui)
+   build_recipe_gui(codex, codex.refs.entity_usage, "fluid", fluid.name)
 end
 
 local function codex_show_info(player, id, id_type)
@@ -411,7 +488,7 @@ local function codex_show_info(player, id, id_type)
         id=id
     }
     
-    codex_select_category_index(dicts, codex, id_type)
+    codex_select_category(dicts, codex, id_type)
     codex.refs.entity_usage.scroll_to_top()
     
     if codex.entity_list ~= nil then
@@ -463,15 +540,6 @@ local function codex_show_info(player, id, id_type)
     if func ~= nil then
         func(codex, dicts, entity_prototype)
     end
-    
-    --[[gui.update(
-        codex.refs.entity_viewer,
-        {
-            children = {
-               
-            }
-        }
-    )]]
 end
 
 local function open_codex(player, id, id_type)
@@ -551,7 +619,7 @@ local function codex_gui_action(action, event)
                 local player_table = util.get_player_data(player)
                 local dicts = player_table.dicts
 
-                codex_select_category_index(dicts, player_table.codex, event.element.selected_index)
+                codex_select_category(dicts, player_table.codex, event.element.selected_index)
             end,
         cx_view_entity =
             function (player, event)
@@ -601,6 +669,28 @@ local function codex_gui_action(action, event)
             function (player, event)
                 -- do nothing for now
             end,
+        cx_collapse =
+            function (player, event)
+                 local open, codex = is_codex_open(player)
+                 
+                 if not open then
+                    return
+                 end
+                 
+                 
+                 if event.element == codex.refs.collapse_produced_by then
+                    codex.produced_by_collapsed = not codex.produced_by_collapsed
+                    
+                    codex.refs.collapse_produced_by.sprite= "utility/" .. (codex.produced_by_collapsed and "expand" or "collapse")
+                    codex.refs.produced_by_items.visible = not codex.produced_by_collapsed
+                    
+                 elseif event.element == codex.refs.collapse_ingredient_in then
+                    codex.ingredient_in_collapsed = not codex.ingredient_in_collapsed
+                    
+                    codex.refs.collapse_ingredient_in.sprite= "utility/" .. (codex.ingredient_in_collapsed and "expand" or "collapse")
+                    codex.refs.ingredient_in_items.visible = not codex.ingredient_in_collapsed
+                 end
+            end
     }
     
      local player = game.get_player(event.player_index)

@@ -20,6 +20,7 @@ event.on_configuration_changed(function(e)
     if migration.on_config_changed(e, {}) then
         for _,player in pairs(game.players) do
             if player ~= nil then
+                log(serpent.block(util.get_player_data(player)))
                 codex.rebuild(player)
             end
         end
