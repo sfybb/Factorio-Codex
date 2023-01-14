@@ -67,7 +67,6 @@ local function toggle_quick_search(player)
 
     if quick_search ~= nil and quick_search.refs.frame.visible then
         quick_search.refs.frame.visible = false
-        quick_search.refs.search_field.select_all()
         
         if player.opened then
             player.opened = nil
@@ -81,6 +80,7 @@ local function toggle_quick_search(player)
         player.opened = quick_search.refs.frame
         
         quick_search.refs.frame.bring_to_front()
+        quick_search.refs.search_field.select_all()
         quick_search.refs.search_field.focus()
     end
 end
