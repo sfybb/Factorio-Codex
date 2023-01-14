@@ -1,52 +1,53 @@
-        - Added Features
-            - Codex: Change category and show item/fluid when changing viewed item/fluid
-            - Codex: "Ingerdient in" and "Produced by" can be collapsed now
-            - Codex: Added recipe base time
-            - Codex: Added list of machines that produce a given recipe
-            - Codex: Style updates (this took way too long)
-            - Quick search: keeps last searched input and resutls when opend again
-            - Started with localistation
-
-        - Bug fixes
-            - Fixed migration bug
-    - 0.0.8
-        - Features:
-            - Reformatted tooltip for temperature when min and max temperature are the same
-            - Really big max temperatures are now considered infinite
-            - Bug fixes:
-            - Fixed crash when viewing a recipe with min/max product amounts
-            - Fixed temperature tooltip always showing the same min and max values
-        - Known Bugs:
-            - (fixed in a later versiom) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save) 
-            - When looking at some recipes it is possible for players with different languages to de-sync
-    - 0.0.7
-        - Features:
-            - Clicking on items/fluids in the recipe view within the codex now navigates you there
-            - Recipes shown in the codex can now also show min/max, probability and temperature
-            - Clicking on the math result in the quick search overwrites the search with that result
-            - Quick search now supports decimals for use in math
-        - Bugs:
-            - Added a bug that crashes the game when viewing some recipes with no "amount" data
-    - 0.0.6
-        - Features:
-            - Improved search (no longer searches for continuous match of input text, e.g. "miner ele" finds "electric miner")
-            - Sorts results by various criteria (hidden, matches, factorio order ...)
-            - preparation for codex search
-    - 0.0.5
+# Changelog
+  - Version: 0.0.9
+    - Features
+        - Codex: Change category and show item/fluid when changing viewed item/fluid
+        - Codex: "Ingerdient in" and "Produced by" can be collapsed now
+        - Codex: Added recipe base time
+        - Codex: Added list of machines that produce a given recipe
+        - Codex: Style updates (this took way too long)
+        - Quick search: keeps last searched input and resutls when opend again
+        - Started with localistation
+    - Bugfixes
+        - Fixed migration bug
+  - Version: 0.0.8
+    - Features:
+        - Reformatted tooltip for temperature when min and max temperature are the same
+        - Really big max temperatures are now considered infinite
         - Bug fixes:
-            - Fixed crash after closing and opening codex
-            - Fixed crash when clicking on the "X" to clsoe codex (damn you migration code!)
-            - Fixed desync for clients when selecting any entity in the codex
-    - 0.0.4
-        - Features:
-            - More readable recipe/ingredient section in codex
-            - Improved codex layout
-            - Added barebones migration support for deleting/rebuilding codex ui.
-    - 0.0.3 <=
-        - Features:
-            - Added barebones recipe/ingredient section to codex
-            - Quick search layout improvements
-            - Quick search sorting
-            - Quick search math
-        - Bug fixes:
-            - Fixed desync/crash when playing in multiplayer (flib thats your fault!)
+        - Fixed crash when viewing a recipe with min/max product amounts
+        - Fixed temperature tooltip always showing the same min and max values
+    - Bugs:
+        - fixed in a later versiom) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save) 
+        - unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync
+  - Version: 0.0.7
+    - Features:
+        - Clicking on items/fluids in the recipe view within the codex now navigates you there
+        - Recipes shown in the codex can now also show min/max, probability and temperature
+        - Clicking on the math result in the quick search overwrites the search with that result
+        - Quick search now supports decimals for use in math
+    - Bugs:
+        - Added a bug that crashes the game when viewing some recipes with no "amount" data
+  - Version: 0.0.6
+    - Features:
+        - Improved search (no longer searches for continuous match of input text, e.g. "miner ele" finds "electric miner")
+        - Sorts results by various criteria (hidden, matches, factorio order ...)
+        - preparation for codex search
+  - Version: 0.0.5
+    - Bugfixes:
+        - Fixed crash after closing and opening codex
+        - Fixed crash when clicking on the "X" to clsoe codex (damn you migration code!)
+        - Fixed desync for clients when selecting any entity in the codex
+  - Version: 0.0.4
+    - Features:
+        - More readable recipe/ingredient section in codex
+        - Improved codex layout
+        - Added barebones migration support for deleting/rebuilding codex ui.
+  - Version: 0.0.3
+    - Features:
+        - Added barebones recipe/ingredient section to codex
+        - Quick search layout improvements
+        - Quick search sorting
+        - Quick search math
+    - Bugfixes:
+        - Fixed desync/crash when playing in multiplayer (flib thats your fault!)
