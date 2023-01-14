@@ -202,6 +202,18 @@ local function is_codex_open(player)
     return visible, player_table.codex
 end
 
+local function round(num, decimals)
+    local num_shift = 10^decimals
+    local shifted_num = num * num_shift
+    local shifted_num_decimal = shifted_num - math.floor(shifted_num)
+    
+    if (shifted_num > 0) == (shifted_num_decimal >= 0.5) then
+        return math.ceil(shifted_num) / num_shift
+    else
+        return math.floor(shifted_num) / num_shift
+    end
+end
+
 local function recipe_slot(amount, amount_range, probability, item_fluid)
     local amount_str = amount
     if amount_str == nil then
@@ -325,7 +337,7 @@ local function format_recipe_gui(recipe, highlight_id)
         type="flow", direction="vertical",
         recipe_ui,
         crafting_machines_slots,
-        {type="label", caption={"factorio-codex.production-time", recipe.energy, math.floor(recipe.energy)}},
+        {type="label", caption={"factorio-codex.production-time", round(recipe.energy, 4), math.floor(recipe.energy)}},
     }
 end
 

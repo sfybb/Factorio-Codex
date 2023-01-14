@@ -173,11 +173,13 @@ local function find_in_dicts(prompt, dicts)
             local prototype_field_name = type_name .. "_prototypes"
             
             for id,name in pairs(tmp) do
+                local lower_name = string.lower(name)
                 local match_count = 0
                 for _,qt in pairs(quoted_tokens) do
-                    local _,count = string.gsub(name, qt, "")
-					local _,start_of_word_count = string.gsub(name, "%s+"..qt, "")
-					local _,start_of_name_count = string.gsub(name, "^"..qt, "")
+                    local _,count = string.gsub(lower_name, qt, "")
+					local _,start_of_word_count = string.gsub(lower_name, "%s+"..qt, "")
+					local _,start_of_name_count = string.gsub(lower_name, "^"..qt, "")
+					--log("\""..name.."\" "..count.." sw: "..start_of_word_count.." s: "..start_of_name_count)
                     match_count = match_count + count + start_of_word_count + start_of_name_count
                 end
             
