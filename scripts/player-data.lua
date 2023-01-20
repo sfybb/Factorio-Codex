@@ -5,6 +5,7 @@ local quick_search = require("scripts.quick_search")
 local util = require("scripts.util")
 local serpent = require("scripts.serpent")
 local table = require("__flib__.table")
+local Cache = require("scripts.cache")
 
 
 local player_data = {}
@@ -17,24 +18,26 @@ local function build_dicts()
         local names = dictionary.new(type.."_names", true)
         -- If a description doesn't exist, it won't exist in the resulting dictionary either
         local desc = dictionary.new(type.."_descriptions")
-        
-        
+
+
         for name, prototype in pairs(global.prototypes[type]) do
 			if prototype.valid then
 				names:add(name, prototype.localised_name)
 				desc:add(name, prototype.localised_description)
 			end
         end
-        
+
         dicts_array[type.."_names"] = names
         dicts_array[type.."_descriptions"] = desc
     end
 end
 
 local function global_init()
+    Cache:Init()
+    global.cache = Cache:build()
     global.players = {}
     global.prototypes = {}
-    
+
     for _, type in pairs(searchable_types) do
         global.prototypes[type] = table.shallow_copy(game[type .. "_prototypes"])
     end
@@ -55,7 +58,7 @@ local function migrate()
     -- Request translations for all connected players
     for _, player in pairs(game.players) do
         if player.connected then
-            --dictionary.translate(player)
+            dictionary.translate(player)
         end
     end
 end
@@ -76,9 +79,16 @@ local function check_should_build()
 end
 
 local function on_load()
+    Cache:Init()
+    --global.cache = Cache.load(global.cache)
     dictionary.load()
-    
+
     build_dicts()
+
+    util.set_missing_metatable()
+    --[[for indx, player_data in pairs(global.players) do
+        util.load_player_data(player)
+    end]]
 end
 
 local function player_create(player_index)
@@ -91,7 +101,7 @@ end
 
 local function player_update(player_index)
     local player = game.get_player(player_index)
-    
+
     -- Only translate if they're connected - if they're not, then it will not work!
     if player.connected then
         dictionary.translate(player)
@@ -110,14 +120,14 @@ local function string_translated(e)
         for _, player_index in pairs(language_data.players) do
             local player = game.get_player(player_index)
             local player_table = util.get_player_data(player)
-            
+
             player_table.dicts = language_data.dictionaries
-        
+
             util.set_player_data(player, player_table)
-            
-            
+
+
             game.print(player.name .." now has dictionaries for their language! ")
-            quick_search.update_input(player)
+            --quick_search.update_input(player)
         end
     end
 end

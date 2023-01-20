@@ -2,15 +2,87 @@ local flib_table = require("__flib__.table")
 local gui = require("__flib__.gui")
 
 local util = require("scripts.util")
-local codex = require("scripts.codex")
 local search_utils = require("scripts.search")
 
 
 local quick_search = {}
+local QuickSearch = {}
 
 local min_chars_for_search = 2
 local dicts_to_search = {"item", "fluid", "technology"}
 
+
+function QuickSearch:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+
+    self.player_index = player.index
+
+    self.visible = false
+    self.refs = {}
+    self.search_results = {}
+    self.search_has_math = false
+end
+
+function QuickSearch:load()
+    local res = setmetatable(self, {__index = QuickSearch})
+
+    return res
+end
+
+function QuickSearch:build_gui()
+    if self.rebuild_gui == true then
+        if self.refs.window ~= nil and self.refs.window.valid == true then
+            self.refs.window.destroy()
+            self.refs = {}
+        end
+    end
+
+    local player = game.players[self.player_index]
+
+    if self.refs.window == nil or self.refs.window.valid == false then
+
+    end
+end
+
+function QuickSearch:open()
+    if not self.visible then
+        self.visible = true
+
+        self:build_gui()
+        self.refs.window.visible = true
+
+        game.players[self.player_index].opened = self.refs.window
+
+        self.refs.frame.bring_to_front()
+        self.refs.search_field.select_all()
+        self.refs.search_field.focus()
+    end
+end
+
+function QuickSearch:close()
+    if self.visible then
+        self.visible = false
+
+        if self.refs.window ~= nil then
+            self.refs.window.visible = false
+        end
+
+        local player = game.players[self.player_index]
+        if player.opened then
+            player.opened = nil
+        end
+    end
+end
+
+function QuickSearch:toggle()
+    if self.visible then
+        self:close()
+    else
+        self:open()
+    end
+end
 
 local function build_quick_search(player)
     local refs = gui.build(player.gui.screen, {
@@ -33,12 +105,12 @@ local function build_quick_search(player)
             }}
         }
     })
-    
+
     local player_table = util.get_player_data(player)
     if player_table == nil then
         player_table = {}
     end
-    
+
     player_table.quick_search = {
         refs = refs
     }
@@ -51,8 +123,8 @@ local function build_quick_search(player)
     }
     refs.search_field.clear_and_focus_on_right_click = true
     refs.results.style.maximal_height = player.display_resolution.height/2 - 100
-    
-    
+
+
     player.opened = refs.frame
     return player_table.quick_search
 end
@@ -62,12 +134,12 @@ local function toggle_quick_search(player)
     if player_table == nil then
         player_table = {}
     end
-    
+
     local quick_search = player_table.quick_search
 
     if quick_search ~= nil and quick_search.refs.frame.visible then
         quick_search.refs.frame.visible = false
-        
+
         if player.opened then
             player.opened = nil
         end
@@ -75,10 +147,10 @@ local function toggle_quick_search(player)
         if quick_search == nil then
             quick_search = build_quick_search(player)
         end
-    
+
         quick_search.refs.frame.visible = true
         player.opened = quick_search.refs.frame
-        
+
         quick_search.refs.frame.bring_to_front()
         quick_search.refs.search_field.select_all()
         quick_search.refs.search_field.focus()
@@ -101,23 +173,23 @@ local function find_matching_prompt(lower_prompt, dicts)
             name= "Waiting for translation..."
         }}
     end
-    
-    
-    
+
+
+
    --[[ for id,name in paris(dicts.fluid_names) do
         game.print("[" .. id .. "] " .. name)
     end]]
 
     local result = {}
-    
+
     for _,dict_name in pairs(dicts_to_search) do
         local dict = dicts[dict_name .. "_names"]
         if dict ~= nil then
             local tmp = flib_table.filter(dict, function (str)  return string.find(string.lower(str), lower_prompt, nil, true) end)
 
-            
+
             local prototype_field_name = dict_name .. "_prototypes"
-            
+
             for id,name in pairs(tmp) do
                 table.insert(result, {
                     prototype = game[prototype_field_name][id],
@@ -148,26 +220,26 @@ local function calculateResult(expression, expectEndParentheses)
     if string.find(expression, "^[0-9%.%+%-%*%/%^%(%)%s]*$") == nil then
         return nil
     end
-    
+
 	if expectEndParentheses == nil then
 		expression = string.gsub((expression == nil) and "" or expression, "%s+", "")
 	end
-	
+
     --This is true if and only if we are expecting an expression next instead of an operator.
     local expectingExpression = true
     --This is true if and only if the last expression examined was surrounded by parentheses.
     local lastExpressionWasParenthetical = false
     --These are all the operators in our parser.
     local operators = "[%+%-%/%*%^]"
-    
+
     --This is a list of all of the parts in our expression.
     local parts = {}
     --This is true if and only if we have found an unmatched end parentheses.
     local foundEndParentheses = false
     --If expectEndParentheses is not specified, make it default to false.
     expectEndParentheses = expectEndParentheses or false
-    
-    
+
+
     --We want to parse the expression until we have broken it up into all of its parts and there is nothing left to parse:
     while expression ~= "" do
         --Check if there is a number at the beginning of expression.
@@ -203,7 +275,7 @@ local function calculateResult(expression, expectEndParentheses)
                 --Make lastExpressionWasParenthetical false.
                 lastExpressionWasParenthetical = false
             end
-        --The following cases deal with the case that we expect an operator instead of an expression.       
+        --The following cases deal with the case that we expect an operator instead of an expression.
         --If the next character is an operator:
         elseif string.find(nextCharacter, operators) ~= nil then
             --Insert the operator into parts.
@@ -228,22 +300,22 @@ local function calculateResult(expression, expectEndParentheses)
         --If we are expecting an expression, switch to expecting an operator and vice versa.
         expectingExpression = not expectingExpression
     end
-    
+
     --If, at the end, we are left expecting an expression or have not found an end parentheses despite being told we would, then the expression ended before it was supposed to, so return an error message.
-    
+
     --if there is a number missing at the end add the identity for the last operator
     if expectingExpression then
         local i = #parts
         local lastOperator = parts[i]
-        
+
         if lastOperator == '+' or lastOperator == '-' then
             table.insert(parts, 0)
         else
             table.insert(parts, 1)
         end
     end
-    
-    
+
+
     --Otherwise, the expression has been parsed successfully, so now we must evaulate it.
     --Loop through parts backwards and evaluate the exponentiation operations:
     --Notice that we loop through exponentiation since exponentiation is right-associative (2^3^4=2^81, not 8^4) and that we do not use a for loop since the value of #parts is going to change.
@@ -260,7 +332,7 @@ local function calculateResult(expression, expectEndParentheses)
         --To understand this better, examine the expression "2^3*4^5". How would this while loop deal with that expression by making sure that all of the exponentiation operations are evaluated?
         i = i-1
     end
-    
+
     --Loop through parts forwards and evaluate the multiplication and division operators.
     --Notice that we loop forward since division is left-associative (1/2/4=0.5/4, not 1/0.5).
     i = 1
@@ -335,7 +407,7 @@ local function format_data(data)
     }
 
     local switch_res = switch[type]
-    
+
     if switch_res == nil then
         return "[" .. id .. "] " .. name .. " (" .. type .. " )"
     else
@@ -345,16 +417,16 @@ end
 
 local function quick_search_update_input(player, prompt)
     local player_table = util.get_player_data(player)
-    
+
     local quick_search = player_table.quick_search
     -- if quick search not shown dont do anything
     if quick_search == nil then
         return
     end
-    
-    
+
+
     local results_list = quick_search.refs.results
-    
+
     if prompt == nil then
         prompt = quick_search.refs.search_field.text
     end
@@ -380,16 +452,16 @@ local function quick_search_update_input(player, prompt)
         quick_search.math_result = nil
         quick_search.has_math = true
     end
-    
-    
+
+
     if player_table.dicts == nil then
         --results_list.add_item("Waiting for translations...")
         results_list.add_item({"factorio-codex.waiting-for-translation"})
-        
+
         return
     end
-    
-    
+
+
     local dicts = {}
     for _,dict_name in pairs(dicts_to_search) do
         local dict = player_table.dicts[dict_name .. "_names"]
@@ -399,48 +471,15 @@ local function quick_search_update_input(player, prompt)
     end
 
     local matching_names = search_utils.find(prompt, dicts)
-    
-    --[[local separatorCharacters = " -"
-    table.sort(matching_names,
-    function(a, b)
-        local exact_match_a = string.find(a.name, prompt, nil, true)
-        local exact_match_b = string.find(b.name, prompt, nil, true)
-        local insensitive_match_a = string.find(string.lower(a.name), lower_prompt, nil, true)
-        local insensitive_match_b = string.find(string.lower(b.name), lower_prompt, nil, true)
-        
-        local word_begin_a = insensitive_match_a == 1 or string.find(string.sub(a.name, insensitive_match_a-1,insensitive_match_a-1), separatorCharacters) ~= nil
-        local word_being_b = insensitive_match_b == 1 or string.find(string.sub(b.name, insensitive_match_b-1,insensitive_match_b-1), separatorCharacters) ~= nil
-        if word_begin_a ~= word_being_b then
-            return word_begin_a
-        end
-        
-        
-        if exact_match_a ~= exact_match_b then
-            -- the match closest to the beginning of the string should come first
-            return exact_match_a ~= nil and (exact_match_b == nil or exact_match_a < exact_match_b)
-        elseif exact_match_a ~= nil then
-            -- both matches are at the same position and not nil
-            -- factorio order
-            return a.prototype.order < b.prototype.order
-        end
-        
-        if exact_match_a ~= exact_match_b then
-            return exact_match_a <= exact_match_b
-        else
-            -- both matches are at the same position and not nil
-            -- factorio order
-            return a.prototype.order < b.prototype.order
-        end
-    end)]]
-    
+
     search_utils.sort(matching_names, {
         search_utils.sort_orders.hidden_last,
-        search_utils.sort_orders.tech_last, 
+        search_utils.sort_orders.tech_last,
         search_utils.sort_orders.match_count,
         search_utils.sort_orders.factorio})
 
     quick_search.result_list = {}
-    for _,data in pairs(matching_names) do
+    for _,data in ipairs(matching_names) do
         local tmp = format_data(data)
         if tmp ~= nil then
             results_list.add_item(tmp)
@@ -451,27 +490,27 @@ end
 
 local function quick_search_gui_action(action, event)
     local action_list = {
-        qs_close = 
+        qs_close =
             function (player)
                 local player_table = util.get_player_data(player)
                 local quick_search_data = player_table.quick_search
-            
+
                 quick_search.toggle(player)
             end,
-        qs_update_search = 
+        qs_update_search =
             function (player, event)
                 quick_search.update_input(player, event.text)
             end,
-        qs_try_open_codex = 
+        qs_try_open_codex =
             function (player, event)
                 local player_table = util.get_player_data(player)
                 local quick_search = player_table.quick_search
                 if quick_search == nil then
                     return
                 end
-                
+
                 local selected_index = event.element.selected_index
-                
+
                 if quick_search.has_math then
                     if selected_index == 1 then
                         -- put math result into input if it is a valid formula
@@ -479,33 +518,33 @@ local function quick_search_gui_action(action, event)
                              quick_search.refs.search_field.text = "" .. quick_search.math_result
                              quick_search.refs.search_field.focus()
                         end
-                       
+
                         return
                     end
                     selected_index = selected_index - 1
                 end
-                
+
                 if  quick_search.result_list == nil then
                     return
                 end
-                
+
                 --log("Quick Search result array: " .. serpent.block(quick_search.result_list))
-                
+
                 local selected = quick_search.result_list[selected_index]
-                
+
                 if selected == nil or selected.type == "error" then
                     return
                 end
-                
+
                 event.element.selected_index = 0
-                
+
                 --game.print("Index " .. event.element.selected_index .. " with content [" .. selected.type .. "=" .. selected.id .. "] \"" .. selected.name .. "\" was selected!")
-                codex.open(player, selected.id, selected.type)
+                player_table.codex:show_info(selected.id, selected.type)
             end,
     }
-    
+
      local player = game.get_player(event.player_index)
-     
+
      local action_func = action_list[action]
      if action_func ~= nil then
         action_func(player, event)

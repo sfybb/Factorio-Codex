@@ -18,8 +18,8 @@
         - Fixed crash when viewing a recipe with min/max product amounts
         - Fixed temperature tooltip always showing the same min and max values
     - Bugs:
-        - fixed in a later versiom) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save) 
-        - unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync
+        - (fixed in a later version) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save) 
+        - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync
   - Version: 0.0.7
     - Features:
         - Clicking on items/fluids in the recipe view within the codex now navigates you there

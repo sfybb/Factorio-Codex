@@ -1,9 +1,7 @@
-local flib_table = require("__flib__.table")
-
 local serpent = require("scripts.serpent")
 
-local search = {}
-local int_sort_help = {}
+local sort = {}
+local sort_help = {}
 
 local function is_entity_hidden(proto)
     local hidden_switch = {
@@ -57,18 +55,6 @@ local sort_order_functions = {
     end,
 }
 
-
-function split(inputstr, sep)
-        if sep == nil then
-                sep = "%s"
-        end
-        local t={}
-        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-                table.insert(t, str)
-        end
-        return t
-end
-
 -- sorts an array with multiple orders
 -- order_func_list contains these orders from most significant (1) to least significant (end)
 -- source adapted from https://en.wikipedia.org/wiki/Merge_sort#Bottom-up_implementation
@@ -104,13 +90,13 @@ local function sort_array(A, order_func_list)
         for i = 0, n, 2 * width do
             --Merge two runs: A[i:i+width-1] and A[i+width:i+2*width-1] to B[]
             -- or copy A[i:n-1] to B[] ( if (i+width >= n) )
-            int_sort_help.bottom_up_merge(A, i, math.min(i+width, n), math.min(i+2*width, n), B, order_func_list)
+            sort_help.bottom_up_merge(A, i, math.min(i+width, n), math.min(i+2*width, n), B, order_func_list)
         end
         
         -- Now work array B is full of runs of length 2*width.
         -- Copy array B to array A for the next iteration.
         -- A more efficient implementation would swap the roles of A and B.
-        int_sort_help.copy_array(B, A, n)
+        sort_help.copy_array(B, A, n)
         -- Now array A is full of runs of length 2*width.
         
         width = 2 * width
@@ -126,7 +112,7 @@ local function bottom_up_merge(A, iLeft, iRight, iEnd, B, order_func_list)
     for k = iLeft, iEnd do
         -- If left run head exists and is <= existing right run head.
 		
-        if i < iRight and (j >= iEnd or int_sort_help.compare_multi_order(A[i+1], A[j+1], order_func_list)) then
+        if i < iRight and (j >= iEnd or sort_help.compare_multi_order(A[i+1], A[j+1], order_func_list)) then
             B[k+1] = A[i+1]
             i = i + 1
         else
@@ -156,76 +142,14 @@ local function copy_array(B, A, n)
     for i = 1, n do
         A[i] = B[i]
     end
-end
+end 
 
+sort_help.copy_array = copy_array
+sort_help.compare_multi_order = compare_multi_order
+sort_help.bottom_up_merge = bottom_up_merge
 
-local function quote_str(str)
-    local quotepattern = '(['..("%^$().[]*+-?"):gsub("(.)", "%%%1")..'])'
-    return string.gsub(str, quotepattern, "%%%1")
-end
+sort.order = sort_order_functions_codex
+sort.order_quick_search = sort_order_functions
+sort.array = sort_array
 
-local function find_in_dicts(prompt, dicts)
-    prompt = string.lower(prompt)
-    tokens = split(prompt)
-    quoted_tokens = flib_table.map(tokens, quote_str)
-    
-    local result = {}
-    
-    for type_name,dict in pairs(dicts) do
-        if dict ~= nil then
-            local tmp = flib_table.filter(dict,
-                function (str)
-                    local lower_str = string.lower(str)
-                    for _,t in pairs(tokens) do
-                        if not string.find(lower_str, t, nil, true) then
-                            return false
-                        end
-                    end
-                    return true
-                end)
-
-            local prototype_field_name = type_name .. "_prototypes"
-            
-            for id,name in pairs(tmp) do
-                local lower_name = string.lower(name)
-                local match_count = 0
-                for _,qt in pairs(quoted_tokens) do
-                    local _,count = string.gsub(lower_name, qt, "")
-					local _,start_of_word_count = string.gsub(lower_name, "%s+"..qt, "")
-					local _,start_of_name_count = string.gsub(lower_name, "^"..qt, "")
-					--log("\""..name.."\" "..count.." sw: "..start_of_word_count.." s: "..start_of_name_count)
-                    match_count = match_count + count + start_of_word_count + start_of_name_count
-                end
-            
-                table.insert(result, {
-                    prototype = game[prototype_field_name][id],
-                    type = type_name,
-                    id = id,
-                    name = name,
-                    match_count = match_count
-                })
-            end
-        end
-    end
-    
-    return result
-end
-
-
-
-
-
-
-int_sort_help.copy_array = copy_array
-int_sort_help.bottom_up_merge = bottom_up_merge
-int_sort_help.compare_multi_order = compare_multi_order
-
-
-
-
-
-search.sort_orders = sort_order_functions
-search.sort_orders_codex = sort_order_functions_codex
-search.sort = sort_array
-search.find = find_in_dicts
-return search
+return sort

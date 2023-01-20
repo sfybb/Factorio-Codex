@@ -53,6 +53,7 @@ files=(
     "settings-updates.lua"
     "settings-final-fixes.lua"
     "settings-final-fixes.lua"
+    "data.lua"
     "data-updates.lua"
     "data-final-fixes.lua"
     "data-final-fixes.lua"
