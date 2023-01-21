@@ -15,10 +15,11 @@ local function set_expansion_panel_state(button, content, collapsed)
     end
 end
 
-function RecipeInfo:new (o)
-    local o = o or {}   -- create object if user does not provide one
+function RecipeInfo:new (force)
+    local o = {}   -- create object if user does not provide one
     setmetatable(o, self)
     self.__index = self
+    self.force = force
     return o
 end
 
@@ -96,8 +97,9 @@ function RecipeInfo:build_recipe_slot(recipe_item_info)
 end
 
 function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
+    --(self.force.recipes[recipe.name] ~= nil
     local recipe_ui =  {
-        type="flow", direction="horizontal", enabled = not recipe.hidden, style="player_input_horizontal_flow",
+        type="flow", direction="horizontal", enabled = true, style="player_input_horizontal_flow",
     }
 
     for _,ingr in pairs(recipe.ingredients) do
@@ -182,8 +184,8 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     local produced_by = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true, style="fcodex_recipe_info_borderless_table"}
     local ingredient_in = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true, style="fcodex_recipe_info_borderless_table"}
 
-    local player_force = game.players[root_gui_elem.player_index].force
-    local resource_mining = global.cache:get_cache("recipe_cache"):get_additional_recipes(type, id, player_force)
+    local add_prod_recipes = global.cache:get_cache("recipe_cache"):get_additional_recipes_for_product(type, id, self.force)
+    local add_ingr_recipes = global.cache:get_cache("recipe_cache"):get_additional_recipes_for_ingredient(type, id, self.force)
 
     local prod_recipes = {}
     for _,p in pairs(prod_recipes_cust_table) do table.insert(prod_recipes,p) end
@@ -194,7 +196,7 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     sort.array(prod_recipes, {sort.factorio})
     sort.array(ingr_recipes, {sort.factorio})
 
-    for _, p in pairs(resource_mining) do
+    for _, p in pairs(add_prod_recipes) do
          table.insert(produced_by, self:get_single_recipe_gui(p, id))
     end
 
@@ -202,10 +204,14 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
         table.insert(produced_by, self:get_single_recipe_gui(p, id))
     end
 
-    if #prod_recipes == 0 then
+    if #prod_recipes == 0 and next(add_prod_recipes) == nil then
         table.insert(produced_by, {type="label", caption="There is no recipe that produces this"})
     end
 
+
+    for _, p in pairs(add_ingr_recipes) do
+        table.insert(ingredient_in, self:get_single_recipe_gui(p, id))
+    end
 
     for _, p in ipairs(ingr_recipes) do
         table.insert(ingredient_in, self:get_single_recipe_gui(p, id))
@@ -231,9 +237,8 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
         }
     }
 
-    if #ingr_recipes ~= 0 then
+    if #ingr_recipes ~= 0 or next(add_ingr_recipes) ~= nil then
         table.insert(recipe_gui,
-
             {type="frame", direction="vertical", style="subpanel_frame", {
                     type="flow", direction="horizontal", style="player_input_horizontal_flow",
                     {type="sprite-button", style="control_settings_section_button", sprite="utility/collapse",

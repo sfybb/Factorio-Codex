@@ -1,5 +1,6 @@
 local RecipeCache = { global=true, id="recipe_cache", name="Recipe Cache" }
 
+local flib_table = require("__flib__.table")
 local serpent = require("scripts.serpent")
 
 function RecipeCache:Init(cache_list)
@@ -26,10 +27,57 @@ function RecipeCache:build()
         recipes_for_product = {}, -- maps products to recipes
     }
 
+    self.rocket_launch = {
+        products = {},
+        ingredients = {}
+    }
+
     self:build_resource_mining_cache()
     self:build_offshore_pump_mining_cache()
+    self:build_rocket_launch_product_cache()
 
     return self
+end
+
+function RecipeCache:build_rocket_launch_product_cache()
+    local rocket_silo = game.entity_prototypes["rocket-silo"]
+    local rocket_launch_cat = {producing_machines={["rocket-silo"]=rocket_silo}}
+
+    local rocket_part = game.item_prototypes["rocket-part"]
+
+    local rocket_launch_items = game.get_filtered_item_prototypes{{filter="has-rocket-launch-products"}}
+
+    self.rocket_launch.ingredients["rocket-part"] = {}
+    for item_id, rl_item in pairs(rocket_launch_items) do
+        self.rocket_launch.ingredients[item_id] = self.rocket_launch.ingredients[item_id] or {}
+
+        -- todo multiple rocket silo types support
+        local rl_recipe = {
+            ingredients= {{
+                    type="item",
+                    name=rocket_part.name,
+                    localised_name=rocket_part.localised_name,
+                    amount=rocket_silo.rocket_parts_required
+                }, {
+                    type="item",
+                    name=item_id,
+                    localised_name=rl_item.localised_name,
+                    amount=1
+                }
+            },
+            products= rl_item.rocket_launch_products,
+            energy= rocket_silo.launch_wait_time or 0,
+            category=rocket_launch_cat
+        }
+        --log("Rocket launch recipe: " .. item_id .. " - "..serpent.line(rl_recipe))
+        table.insert(self.rocket_launch.ingredients[item_id], rl_recipe)
+        table.insert(self.rocket_launch.ingredients["rocket-part"], rl_recipe)
+
+        for _,pr in pairs(rl_item.rocket_launch_products) do
+            self.rocket_launch.products[pr.name] = self.rocket_launch.products[pr.name] or {}
+            table.insert(self.rocket_launch.products[pr.name], rl_recipe)
+        end
+    end
 end
 
 function RecipeCache:build_offshore_pump_mining_cache()
@@ -134,11 +182,43 @@ function RecipeCache:build_resource_mining_cache()
     end
 end
 
-function RecipeCache:get_additional_recipes(type, id)
+function RecipeCache:adapt_mining_to_force(res, id, force)
+    local recipes_to_adapt = self.resource_mining.recipes_for_product[id]
+    if recipes_to_adapt == nil then
+        return
+    end
+
+    local mining_productivity = force.mining_drill_productivity_bonus + 1
+
+    for _, r in pairs(recipes_to_adapt) do
+        local r_copy = flib_table.shallow_copy(r)
+        r_copy.products = flib_table.shallow_copy(r.products)
+
+        for _, pr in pairs(r_copy.products) do
+            pr.amount = pr.amount * mining_productivity
+        end
+
+        table.insert(res, r_copy)
+    end
+end
+
+function RecipeCache:get_additional_recipes_for_product(type, id, force)
     if type == "item" then
-        return self.resource_mining.recipes_for_product[id] or {}
+        local res = self.rocket_launch.products[id] or {}
+
+        self:adapt_mining_to_force(res, id, force)
+
+        return res
     elseif type == "fluid" then
         return self.offshore_pumps.recipes_for_product[id] or {}
+    else
+        return {}
+    end
+end
+
+function RecipeCache:get_additional_recipes_for_ingredient(type, id, force)
+    if type == "item" then
+        return self.rocket_launch.ingredients[id] or {}
     else
         return {}
     end
@@ -147,7 +227,7 @@ end
 function RecipeCache:get_crafting_machines(category)
     if type(category) == "table" then
         -- custom category only needed here for offshore pumps
-        log("Custom category: "..serpent.line(category.producing_machines))
+        --log("Custom category: "..serpent.line(category.producing_machines))
         return category.producing_machines or {}
     end
 

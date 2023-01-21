@@ -183,7 +183,7 @@ function Categories:build_gui(parent_gui)
         },
     }}
 
-    log("Build categories gui!")
+    --log("Build categories gui!")
     self.refs = flib_gui.build(parent_gui, gui)
 
     self.refs.category_picker.clear_items()
@@ -203,7 +203,7 @@ function Categories:update_gui()
 		return
 	end
 
-    log("Update categories gui!")
+    --log("Update categories gui!")
     --log("Update gui Categories: " .. serpent.line(self.refs))
 
 	self.entity_list = self:get_unfiltered_entities()
@@ -247,7 +247,7 @@ function Categories:scroll_to_item(e_id)
     local scrolled = false
     for i,e in pairs(self.entity_list) do
         if e ~= nil and e.name == e_id then
-            log("Scrolling to index "..i.." (\""..serpent.line(self.refs.available_entities.get_item(i)).."\")")
+            --log("Scrolling to index "..i.." (\""..serpent.line(self.refs.available_entities.get_item(i)).."\")")
             self.refs.available_entities.scroll_to_item(i)
             self.refs.available_entities.selected_index = i
 

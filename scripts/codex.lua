@@ -180,7 +180,7 @@ function Codex:show_info(id, id_type)
         id=id
     }
 
-    log("Viewing ["..id_type.."="..id.."]")
+    --log("Viewing ["..id_type.."="..id.."]")
     self.categories:select_by_name(id_type)
     self.categories:scroll_to_item(id)
 

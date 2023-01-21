@@ -117,7 +117,8 @@ local migrations = {
                     ingredient_in_items = cdx.refs.ingredient_in_items
                 },
                 produced_by_collapsed = cdx.produced_by_collapsed or false,
-                ingredient_in_collapsed = cdx.ingredient_in_collapsed or false
+                ingredient_in_collapsed = cdx.ingredient_in_collapsed or false,
+                force = game.players[player_index].force
             }
 
             cdx.refs.search_field = nil
@@ -135,14 +136,12 @@ local migrations = {
             cdx.ingredient_in_collapsed = nil
 
             if cdx.categories.refs.category_picker ~= nil then
-                log("Welcome message 1 planted!")
                 cdx.categories.refs.category_picker.clear_items()
                 cdx.categories.refs.category_picker.add_item("Migration failed!")
                 cdx.categories.refs.category_picker.add_item("Click here to crash!")
             end
 
             if cdx.categories.refs.available_entities ~= nil then
-                log("Welcome message 2 planted!")
                 cdx.categories.refs.available_entities.clear_items()
                 cdx.categories.refs.available_entities.add_item("Migration failed!")
                 cdx.categories.refs.available_entities.add_item("Click here to crash!")
@@ -198,11 +197,11 @@ migration.migrate = function (e)
         util.load_metatables()
         for i,actions in pairs(additional_actions) do
             -- actions is a table containing additional functions to run
-            log(serpent.line(global.players[i].codex, {nocode=true}))
+            --log(serpent.line(global.players[i].codex, {nocode=true}))
             for action_name, migration_action in pairs(actions) do
                 if type(migration_action) == "function" then
-                    log("Running additional migration action (\""..action_name
-                            .."\") for \""..game.players[i].name.."\" (index:"..i..")")
+                    --log("Running additional migration action (\""..action_name
+                    --        .."\") for \""..game.players[i].name.."\" (index:"..i..")")
                     migration_action()
                 end
             end

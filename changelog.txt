@@ -1,7 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.10
   Features:
-    - Codex: Added mine-able resources and offshore-pump products to "Produced In" tab
+    - Codex: Added rocket launch product support (only supports one rocket silo type for now - meaning this wont show the correct rocket silo for production in space exploration)
+    - Codex: Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount)
     - Codex: Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled
     - Migrations able to migrate properly now. This means if you had the codex open it should still be open at the same position (same item/fluid) after migration
   Bugs:
