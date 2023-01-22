@@ -20,6 +20,7 @@ function RecipeCache:build()
     self.resource_mining = {
         recipes={}, -- list of all miner recipes
         recipes_for_product={}, -- maps products to recipes
+        recipes_for_fluid_ingredient={},
 
         miners_for_category={} -- list of allowed miners for a category
     }
@@ -108,7 +109,7 @@ function RecipeCache:build_offshore_pump_mining_cache()
                 -- pumping speed units is per tick, we want per second
                 table.insert(recipes_for_product[v.fluid.name], {
                     ingredients = {},
-                    products = {{type="fluid", name=v.fluid.name, amount=v.pumping_speed*60}},
+                    products = {{type="fluid", name=v.fluid.name, amount=math.round(v.pumping_speed*60, 2)}},
                     energy = 1,
                     category= {producing_machines={[v.name]=v}}
                 })
@@ -136,6 +137,7 @@ function RecipeCache:build_resource_mining_cache()
                  name=v.name,
                  amount=1}
             }
+            -- todo fluid as ingerdient
 
             if minable_props.required_fluid ~= nil then
                 table.insert(ingr, {
@@ -145,12 +147,20 @@ function RecipeCache:build_resource_mining_cache()
                 })
             end
 
-            table.insert(self.resource_mining.recipes, {
+            local recipe = {
                 ingredients= ingr,
                 products= minable_props.products,
                 energy=minable_props.mining_time,
                 category=v.resource_category
-            })
+            }
+
+            table.insert(self.resource_mining.recipes, recipe)
+
+            if minable_props.required_fluid ~= nil then
+                self.resource_mining.recipes_for_fluid_ingredient[minable_props.required_fluid] =
+                self.resource_mining.recipes_for_fluid_ingredient[minable_props.required_fluid] or {}
+                table.insert(self.resource_mining.recipes_for_fluid_ingredient[minable_props.required_fluid], recipe)
+            end
         end
     end
 
@@ -182,17 +192,15 @@ function RecipeCache:build_resource_mining_cache()
     end
 end
 
-function RecipeCache:adapt_mining_to_force(res, id, force)
-    local recipes_to_adapt = self.resource_mining.recipes_for_product[id]
+function RecipeCache:adapt_mining_to_force(res, recipes_to_adapt, force)
     if recipes_to_adapt == nil then
         return
     end
 
-    local mining_productivity = force.mining_drill_productivity_bonus + 1
+    local mining_productivity = (force.mining_drill_productivity_bonus or 0) + 1
 
     for _, r in pairs(recipes_to_adapt) do
-        local r_copy = flib_table.shallow_copy(r)
-        r_copy.products = flib_table.shallow_copy(r.products)
+        local r_copy = flib_table.deep_copy(r)
 
         for _, pr in pairs(r_copy.products) do
             pr.amount = pr.amount * mining_productivity
@@ -206,7 +214,8 @@ function RecipeCache:get_additional_recipes_for_product(type, id, force)
     if type == "item" then
         local res = self.rocket_launch.products[id] or {}
 
-        self:adapt_mining_to_force(res, id, force)
+        local recipes_to_adapt = self.resource_mining.recipes_for_product[id]
+        self:adapt_mining_to_force(res, recipes_to_adapt, force)
 
         return res
     elseif type == "fluid" then
@@ -219,6 +228,12 @@ end
 function RecipeCache:get_additional_recipes_for_ingredient(type, id, force)
     if type == "item" then
         return self.rocket_launch.ingredients[id] or {}
+    elseif type == "fluid" then
+        local res = {}
+        local recipes_to_adapt = self.resource_mining.recipes_for_fluid_ingredient[id]
+        self:adapt_mining_to_force(res, recipes_to_adapt, force)
+
+        return res
     else
         return {}
     end

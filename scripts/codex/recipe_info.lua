@@ -15,31 +15,39 @@ local function set_expansion_panel_state(button, content, collapsed)
     end
 end
 
-function RecipeInfo:new (force)
+function RecipeInfo:new (force_index)
     local o = {}   -- create object if user does not provide one
     setmetatable(o, self)
     self.__index = self
-    self.force = force
+    self.force_index = force_index
     return o
 end
 
 function RecipeInfo:load()
     setmetatable(self, {__index = RecipeInfo})
+    log("Loading RecipeInfo: "..serpent.line(self, {nocode=true}))
     return self
 end
 
 function RecipeInfo:build_recipe_slot(recipe_item_info)
+	local rounded_amount_str
     local amount_str = recipe_item_info.amount
     if amount_str == nil and
        recipe_item_info.amount_min ~= nil and
        recipe_item_info.amount_max ~= nil then
         amount_str = "" ..  recipe_item_info.amount_min .. "-" .. recipe_item_info.amount_max
+
+		rounded_amount_str = "" ..  math.round(recipe_item_info.amount_min,2) ..
+							"-" ..  math.round(recipe_item_info.amount_max,2)
+	else
+		rounded_amount_str = math.round(recipe_item_info.amount, 2)
     end
 
     if amount_str == nil then
         log("Recipe has neither amount nor amount range for: \""..serpent.line(recipe_item_info).."\"")
         game.print("A recipe contains strange values please report this to the author of \"Factorio Codex\" to help improve it, thank you!")
         amount_str = "?"
+		rounded_amount_str= "?"
     end
 
     local tooltip = {"", "" .. amount_str .. " x "}
@@ -87,7 +95,7 @@ function RecipeInfo:build_recipe_slot(recipe_item_info)
         show_percent_for_small_numbers= true,
         number= recipe_item_info.probability ~= 1 and recipe_item_info.probability or nil,
         children= {
-                {type= "label", style= "fcodex_recipe_label_top", ignored_by_interaction= true, caption= amount_str},
+                {type= "label", style= "fcodex_recipe_label_top", ignored_by_interaction= true, caption= rounded_amount_str},
         },
         actions = {
             on_click = "cx_view_entity"
@@ -184,8 +192,8 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     local produced_by = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true, style="fcodex_recipe_info_borderless_table"}
     local ingredient_in = {type="table", column_count=1, draw_vertical_lines=false, draw_horizontal_lines = true, style="fcodex_recipe_info_borderless_table"}
 
-    local add_prod_recipes = global.cache:get_cache("recipe_cache"):get_additional_recipes_for_product(type, id, self.force)
-    local add_ingr_recipes = global.cache:get_cache("recipe_cache"):get_additional_recipes_for_ingredient(type, id, self.force)
+    local add_prod_recipes = global.cache:get_cache("recipe_cache"):get_additional_recipes_for_product(type, id, game.forces[self.force_index])
+    local add_ingr_recipes = global.cache:get_cache("recipe_cache"):get_additional_recipes_for_ingredient(type, id, game.forces[self.force_index])
 
     local prod_recipes = {}
     for _,p in pairs(prod_recipes_cust_table) do table.insert(prod_recipes,p) end

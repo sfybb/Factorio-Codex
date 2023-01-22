@@ -17,8 +17,8 @@ function Codex:new(player_index)
     setmetatable(o, self)
     self.__index = self
 
-    self.categories = Categories:new(self.categories)
-    self.recipe_info = RecipeInfo:new(self.recipe_info)
+    self.categories = Categories:new()
+    self.recipe_info = RecipeInfo:new(game.players[player_index].force.index)
 
     self.player_index = player_index
 
@@ -115,45 +115,16 @@ end
 function Codex:item_info(item)
      local desc = {""}
 
-     --[[if dicts["item_descriptions"][item.name] ~= nil then
-        table.insert(desc, dicts["item_descriptions"][item.name].."\n")
-     end
-
-
-     if item.durability_description_key ~= nil then
-        table.insert(desc, {item.durability_description_key})
-        table.insert(desc, ": ")
-        table.insert(desc, item.durability)
-        table.insert(desc, {item.durability_description_key})
-     end
-
-     if item.place_result ~= nil then
-
-
-        if item.place_result.localised_description ~= nil then
-            table.insert(desc, item.place_result.localised_description)
-        end
-     end]]
-
-
      if #desc == 1 then
         desc = {"", "Empty for now. WIP"}
      end
 
-     --game.print(serpent.line(desc))
-
      self.refs.entity_desc.caption = desc
-
-     -- Stack size
-     local stack_size = item.stackable and ("Stack size: "..item.stack_size) or "Not stackable"
-
      self.recipe_info:build_gui_for_item(self.refs.entity_usage, "item", item.name)
 end
 
 function Codex:technology_info(tech)
     self.refs.entity_desc.caption = tech.localised_description
-
-
 end
 
 function Codex:fluid_info(fluid)
@@ -236,7 +207,7 @@ end
 
 function Codex:close()
     if self.visible then
-        --log("Codex closed! ("..self.player_index..")")
+        --log("Codex closed! ("..self.player_index..") ")
         self.visible = false
 
         if self.refs.window ~= nil then
@@ -264,7 +235,7 @@ function Codex:gui_action(action, event)
         cx_close = function() codex:close() end,
         cx_change_category = function() codex.categories:select_by_index(event.element.selected_index) end,
         cx_view_entity =
-            function (player, event)
+            function (event)
                 local selected = {
                     id= nil,
                     type= nil
@@ -299,38 +270,16 @@ function Codex:gui_action(action, event)
                 codex:show_info(selected.id, selected.type)
             end,
         cx_update_search =
-            function (player, event)
+            function (event)
                 -- do nothing for now
             end,
-        cx_collapse =
-            function (player, event)
-                 local open, codex = is_codex_open(player)
-
-                 if not open then
-                    return
-                 end
-
-
-                 if event.element == codex.refs.collapse_produced_by then
-                    codex.produced_by_collapsed = not codex.produced_by_collapsed
-
-                    codex.refs.collapse_produced_by.sprite= "utility/" .. (codex.produced_by_collapsed and "expand" or "collapse")
-                    codex.refs.produced_by_items.visible = not codex.produced_by_collapsed
-
-                 elseif event.element == codex.refs.collapse_ingredient_in then
-                    codex.ingredient_in_collapsed = not codex.ingredient_in_collapsed
-
-                    codex.refs.collapse_ingredient_in.sprite= "utility/" .. (codex.ingredient_in_collapsed and "expand" or "collapse")
-                    codex.refs.ingredient_in_items.visible = not codex.ingredient_in_collapsed
-                 end
-            end
     }
 
-     local player = game.get_player(event.player_index)
+    local player = game.get_player(event.player_index)
 
-     local action_func = action_list[action]
-     if action_func ~= nil then
-        action_func(player, event)
+    local action_func = action_list[action]
+    if action_func ~= nil then
+        action_func(event)
     elseif self.recipe_info:handle_gui_action(action, event) then
     else
         game.print("Unknown action \"" .. action .. "\" for codex!")

@@ -15,13 +15,13 @@ local function is_entity_hidden(proto)
     if proto == nil then
         return true
     end
-    
+
     local func = hidden_switch[proto.object_name]
-    
+
     if  func == nil then
         return true
     end
-    
+
     return func(proto)
 end
 
@@ -80,22 +80,22 @@ local function sort_array(A, order_func_list)
     if A == nil then
         return
     end
-    
-    if order_func_list == nil or 
+
+    if order_func_list == nil or
         (type(order_func_list) ~= "function" and
          type(order_func_list) ~= "table") then
         return
     end
-    
+
     if type(order_func_list) == "function" then
         local tmp = {}
         table.insert(tmp, order_func_list)
         order_func_list = tmp
     end
-    
+
     local n = #A
     local B = {}
-    
+
     -- Each 1-element run in A is already "sorted".
     -- Make successively longer sorted runs of length 2, 4, 8, 16... until the whole array is sorted.
     local width = 1
@@ -106,13 +106,13 @@ local function sort_array(A, order_func_list)
             -- or copy A[i:n-1] to B[] ( if (i+width >= n) )
             int_sort_help.bottom_up_merge(A, i, math.min(i+width, n), math.min(i+2*width, n), B, order_func_list)
         end
-        
+
         -- Now work array B is full of runs of length 2*width.
         -- Copy array B to array A for the next iteration.
         -- A more efficient implementation would swap the roles of A and B.
         int_sort_help.copy_array(B, A, n)
         -- Now array A is full of runs of length 2*width.
-        
+
         width = 2 * width
     end
 end
@@ -125,7 +125,7 @@ local function bottom_up_merge(A, iLeft, iRight, iEnd, B, order_func_list)
     -- While there are elements in the left or right runs...
     for k = iLeft, iEnd do
         -- If left run head exists and is <= existing right run head.
-		
+
         if i < iRight and (j >= iEnd or int_sort_help.compare_multi_order(A[i+1], A[j+1], order_func_list)) then
             B[k+1] = A[i+1]
             i = i + 1
@@ -133,7 +133,7 @@ local function bottom_up_merge(A, iLeft, iRight, iEnd, B, order_func_list)
             B[k+1] = A[j+1]
             j = j + 1
         end
-    end 
+    end
 end
 
 local function compare_multi_order(a, b, order_func_list)
@@ -144,7 +144,7 @@ local function compare_multi_order(a, b, order_func_list)
             break
         end
     end
-    
+
     if type(order) ~= "boolean" then
         -- if neither a or b should come first preserve the original order
         order = true
@@ -168,9 +168,9 @@ local function find_in_dicts(prompt, dicts)
     prompt = string.lower(prompt)
     tokens = split(prompt)
     quoted_tokens = flib_table.map(tokens, quote_str)
-    
+
     local result = {}
-    
+
     for type_name,dict in pairs(dicts) do
         if dict ~= nil then
             local tmp = flib_table.filter(dict,
@@ -185,7 +185,7 @@ local function find_in_dicts(prompt, dicts)
                 end)
 
             local prototype_field_name = type_name .. "_prototypes"
-            
+
             for id,name in pairs(tmp) do
                 local lower_name = string.lower(name)
                 local match_count = 0
@@ -196,7 +196,7 @@ local function find_in_dicts(prompt, dicts)
 					--log("\""..name.."\" "..count.." sw: "..start_of_word_count.." s: "..start_of_name_count)
                     match_count = match_count + count + start_of_word_count + start_of_name_count
                 end
-            
+
                 table.insert(result, {
                     prototype = game[prototype_field_name][id],
                     type = type_name,
@@ -207,22 +207,13 @@ local function find_in_dicts(prompt, dicts)
             end
         end
     end
-    
+
     return result
 end
-
-
-
-
-
 
 int_sort_help.copy_array = copy_array
 int_sort_help.bottom_up_merge = bottom_up_merge
 int_sort_help.compare_multi_order = compare_multi_order
-
-
-
-
 
 search.sort_orders = sort_order_functions
 search.sort_orders_codex = sort_order_functions_codex

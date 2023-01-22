@@ -57,8 +57,8 @@ function Categories:Init()
 	}
 end
 
-function Categories:new(o)
-    local o = o or {}   -- create object
+function Categories:new()
+    local o = {}   -- create object
     setmetatable(o, self)
     self.__index = self
 
