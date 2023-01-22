@@ -29,8 +29,8 @@ while read line; do
         #[[ $line =~ [a-zA-Z]+.* ]] && echo "    - $BASH_REMATCH"
         [[ $line =~ [a-zA-Z]+.* ]] && changelog_md="$changelog_md\n    - $BASH_REMATCH"
     elif  [[ $line =~ [\ ]{4} ]]; then
-        #[[ $line =~ [a-zA-Z]+.* ]] && echo "        - $BASH_REMATCH"
-        [[ $line =~ [a-zA-Z]+.* ]] && changelog_md="$changelog_md\n        - $BASH_REMATCH"
+        #[[ $line =~- .* ]] && echo "        $BASH_REMATCH"
+        [[ $line =~ -.* ]] && changelog_md="$changelog_md\n        $BASH_REMATCH"
     fi
 done < "changelog.txt"
 printf "$changelog_md" > Changelog.md
@@ -66,7 +66,7 @@ folders=(
     "campaigns"
     "tutorials"
     "migrations"
-    
+
     "scripts"
     "graphics"
 )
@@ -87,7 +87,7 @@ done
 files_exp=()
 for E in "${files[@]}"; do
     file="./$mod_dir/${E}"
-    
+
     if [ -f "${E}" ]; then
         files_exp+=("'$file'")
     fi

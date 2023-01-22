@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.10
   Features:
+    - Codex: Removed Item description beside the item. Hovering the big icon still displays the item description
     - Codex: Added rocket launch product support (only supports one rocket silo type for now - meaning this wont show the correct rocket silo for production in space exploration)
     - Codex: Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount)
     - Codex: Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled
@@ -8,7 +9,7 @@ Version: 0.0.10
   Bugs:
     - If the codex was open before migration the item/fluid list will not scroll to it (this does not affect the scrolling that happens when an ingredient/product gets clicked or the codex gets opened by quick search)
   Other:
-    - Removed most of unknown old bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code)
+    - Removed most of the old unknown bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code)
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.9
   Features
