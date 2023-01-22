@@ -1,4 +1,15 @@
 # Changelog
+  - Version: 0.0.10
+    - Features:
+        - Codex: Removed Item description beside the item. Hovering the big icon still displays the item description
+        - Codex: Added rocket launch product support (only supports one rocket silo type for now - meaning this wont show the correct rocket silo for production in space exploration)
+        - Codex: Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount)
+        - Codex: Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled
+        - Migrations able to migrate properly now. This means if you had the codex open it should still be open at the same position (same item/fluid) after migration
+    - Bugs:
+        - If the codex was open before migration the item/fluid list will not scroll to it (this does not affect the scrolling that happens when an ingredient/product gets clicked or the codex gets opened by quick search)
+    - Other:
+        - Removed most of the old unknown bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code)
   - Version: 0.0.9
     - Features
         - Codex: Change category and show item/fluid when changing viewed item/fluid
@@ -18,8 +29,8 @@
         - Fixed crash when viewing a recipe with min/max product amounts
         - Fixed temperature tooltip always showing the same min and max values
     - Bugs:
-        - (fixed in a later version) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save) 
-        - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync
+        - fixed in a later versiom) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save)
+        - unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync
   - Version: 0.0.7
     - Features:
         - Clicking on items/fluids in the recipe view within the codex now navigates you there
