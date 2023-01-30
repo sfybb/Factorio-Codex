@@ -1,3 +1,7 @@
+debug = {enabled = true}
+
+local debug_prefs = {}
+
 function round(num, decimals)
     local num_shift = 10^decimals
     local shifted_num = num * num_shift
@@ -10,8 +14,41 @@ function round(num, decimals)
     end
 end
 
+function debug:get_profiler(name)
+    if debug_prefs[name] == nil then
+        debug_prefs[name] = game.create_profiler(true)
+    end
+
+    return debug_prefs[name]
+end
+
 function string:endswith(ending)
     return ending == "" or self:sub(-#ending) == ending
+end
+
+function debug:player_print(players, msg)
+    if type(players) == "number" then
+        players = {players}
+    end
+    if type(players) ~= "table" then
+        log("[factorio-codex] Unable to send following message to player(s) \""..serpent.line(players).."\": \""..msg.."\"")
+        return
+    end
+
+    log("Players: "..serpent.line(players).. " - [factorio-codex] " .. msg)
+
+    for _,p in pairs(players) do
+        local player = game.players[p]
+        if player ~= nil  and player.connected then
+            player.print("[factorio-codex] " .. msg)
+        end
+    end
+end
+
+function debug:print(msg)
+    if debug.enabled then
+        log("codex-debug: " .. msg)
+    end
 end
 
 math.round = round

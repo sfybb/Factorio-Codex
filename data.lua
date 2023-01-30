@@ -150,20 +150,23 @@ styles.fcodex_codex_color_indicator = {
     width = 40,
     color = {g=1},
     bar = {
-        filename = "__core__/graphics/gui.png",
+        --filename = "__core__/graphics/gui.png",
         --filename = "__core__/graphics/gui-new.png",
+        position = {195, 72},
         --position = {223, 0},
         --position = {111, 0},
-        position = {148, 0},
+        --position = {148, 0},
+        size = { 17, 17},
         --size = {1, 11},
-        size = {36, 36},
+        --size = {36, 36},
         --size = {28, 28},
+        corner_size = 8,
         scale = 1,
         border = 4,
     },
     bar_background = {
         filename = "__core__/graphics/gui.png",
-        position = {224, 0},
+        position = {225, 0},
         size = {1, 13},
         scale = 1
     }

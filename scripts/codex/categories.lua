@@ -62,18 +62,12 @@ function Categories:new()
     setmetatable(o, self)
     self.__index = self
 
-    if self.selected_index == nil then
-        self.selected_index = 0 -- 0 when nothing is selected
-        self.selected_cat = {}
-    end
 
-    if self.refs == nil then
-        self.refs = {}
-    end
+    self.selected_index = 0 -- 0 when nothing is selected
+    self.selected_cat = {}
 
-    if self.entity_list == nil then
-        self.entity_list = {}
-    end
+    self.refs = {}
+    self.entity_list = {}
 
     return o
 end
@@ -81,6 +75,12 @@ end
 function Categories:load()
     setmetatable(self, {__index = Categories})
     return self
+end
+
+function Categories:destroy()
+    if self.refs ~= nil and self.refs.cat_gui ~= nil and type(self.refs.cat_gui.destroy) == "function" then
+        self.refs.cat_gui.destroy()
+    end
 end
 
 function Categories:select_by_name(cat_name)
@@ -142,6 +142,10 @@ function Categories:get_unfiltered_entities()
 end
 
 function Categories:build_gui(parent_gui)
+    if self.refs == nil then
+        self.refs = {}
+    end
+
     local gui_valid = self.refs.cat_gui ~= nil and self.refs.cat_gui.valid == true
 
     if self.rebuild_gui == true then
@@ -263,5 +267,30 @@ function Categories:scroll_to_item(e_id)
     end
 end
 
+function Categories:validate()
+    log("   Categories Validate: Checking categories...")
+    local valid = true
+    local fixed = true
+
+    local not_nil_values = {
+        "refs", "entity_list", "selected_cat", "selected_index"
+    }
+    local nil_detected = false
+
+    for _,v in pairs(not_nil_values) do
+        if self[v] == nil then
+            log("   Categories Validate: Detected nil value \""..v.."\"")
+            nil_detected = true
+        end
+    end
+
+    if nil_detected then
+        log("   Categories Validate: Contents: " .. serpent.line(self, {nocode=true}))
+        valid = false
+        fixed = false
+    end
+
+    return valid, fixed
+end
 
 return Categories

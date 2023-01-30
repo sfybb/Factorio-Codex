@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.11
+  Features:
+    - Codex: added color indicator for fluids
+    - Validating saved mod data on migration to resolve some bugs. In some cases quick search and/or the codex reset, you will get notified if this happens
+---------------------------------------------------------------------------------------------------
 Version: 0.0.10
   Features:
     - Codex: Removed Item description beside the item. Hovering the big icon still displays the item description

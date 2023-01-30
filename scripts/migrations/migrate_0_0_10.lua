@@ -1,18 +1,5 @@
-return function(additional_actions)
-    log("Applying migrations for 0.0.10")
-
-    -- init and build cache
-    PlayerData.Cache:Init()
-    global.cache = PlayerData.Cache:build()
-    global.dicts = nil
-	PlayerData.Dicitonary:Init()
-
-    -- init codex
-    PlayerData.Codex:Init()
-
-    -- convert old codex + quick search structure to new one
-    local convert_codex = function(cdx, player_index)
-        --[[input structure: codex = {
+local function convert_codex(cdx, player_index)
+    --[[input structure: codex = {
             -- optional if codex hasnt been build
             refs = {
                 window, -- keep
@@ -39,149 +26,164 @@ return function(additional_actions)
             produced_by_collapsed, -> move to RecipeInfo
             ingredient_in_collapsed -> move to RecipeInfo
         }]]
-        --[[output structure: codex ={
-            categories = {
-                refs = {
-                    cat_gui, -- unavailable
-                    category_picker,
-                    available_entities,
-                },
-                entity_list,
-                selected_index,
-                selected_cat,
-                rebuild_gui = true
-            },
-            recipe_info = {
-                refs = {
-                    collapse_produced_by,
-                    produced_by_items,
-                    collapse_ingredient_in,
-                    ingredient_in_items
-                },
-                produced_by_collapsed,
-                ingredient_in_collapsed,
-                force_index,
-            },
+    --[[output structure: codex ={
+        categories = {
             refs = {
-                window,
-                titlebar_flow,
-                codex_categories,
-                search_field,
-                entity_viewer,
-                entity_sprite,
-                entity_desc_frame,
-                entity_desc,
-                entity_color,
-                entity_usage
+                cat_gui, -- unavailable
+                category_picker,
+                available_entities,
             },
-            visible, -- unavailable: compute from refs.window.visible
-            entity_view,
-            player_index,
+            entity_list,
+            selected_index,
+            selected_cat,
             rebuild_gui = true
-        }]]
-        cdx.refs = cdx.refs or {}
-        cdx.entity_view = cdx.entity_view or {}
-
-        cdx.player_index = player_index
-
-        if cdx.refs.window ~= nil then
-            cdx.visible = cdx.refs.window.visible
-        else
-            cdx.visible = false
-        end
-        cdx.rebuild_gui = true
-
-        cdx.categories = {
+        },
+        recipe_info = {
             refs = {
-                cat_gui = nil, -- unavailable
-                category_picker = cdx.refs.category_picker,
-                available_entities = cdx.refs.available_entities,
+                collapse_produced_by,
+                produced_by_items,
+                collapse_ingredient_in,
+                ingredient_in_items
             },
-            entity_list = {},
-            selected_index = 0,
-            selected_cat = nil,
-            rebuild_gui = true
-        }
+            produced_by_collapsed,
+            ingredient_in_collapsed,
+            force_index,
+        },
+        refs = {
+            window,
+            titlebar_flow,
+            codex_categories,
+            search_field,
+            entity_viewer,
+            entity_sprite,
+            entity_desc_frame,
+            entity_desc,
+            entity_color,
+            entity_usage
+        },
+        visible, -- unavailable: compute from refs.window.visible
+        entity_view,
+        player_index,
+        rebuild_gui = true
+    }]]
+    cdx.refs = cdx.refs or {}
+    cdx.entity_view = cdx.entity_view or {}
 
-        cdx.recipe_info = {
-            refs = {
-                collapse_produced_by = cdx.refs.collapse_produced_by,
-                produced_by_items = cdx.refs.produced_by_items,
-                collapse_ingredient_in = cdx.refs.collapse_ingredient_in,
-                ingredient_in_items = cdx.refs.ingredient_in_items
-            },
-            produced_by_collapsed = cdx.produced_by_collapsed or false,
-            ingredient_in_collapsed = cdx.ingredient_in_collapsed or false,
-            force_index = game.players[player_index].force.index
-        }
+    cdx.player_index = player_index
 
-        cdx.refs.search_field = nil
-        cdx.refs.category_picker = nil
-        cdx.refs.available_entities = nil
-
-        cdx.refs.collapse_produced_by = nil
-        cdx.refs.produced_by_items = nil
-        cdx.refs.collapse_ingredient_in = nil
-        cdx.refs.ingredient_in_items = nil
-
-        cdx.entity_list = nil
-        cdx.category = nil
-        cdx.produced_by_collapsed = nil
-        cdx.ingredient_in_collapsed = nil
-
-        if cdx.categories.refs.category_picker ~= nil then
-            cdx.categories.refs.category_picker.clear_items()
-            cdx.categories.refs.category_picker.add_item("Migration failed!")
-            cdx.categories.refs.category_picker.add_item("Click here to crash!")
-        end
-
-        if cdx.categories.refs.available_entities ~= nil then
-            cdx.categories.refs.available_entities.clear_items()
-            cdx.categories.refs.available_entities.add_item("Migration failed!")
-            cdx.categories.refs.available_entities.add_item("Click here to crash!")
-        end
+    if cdx.refs.window ~= nil then
+        cdx.visible = cdx.refs.window.visible
+    else
+        cdx.visible = false
     end
-    local convert_quick_search = function(qs, player_index)
-        --[[input structure: quick_search = {
-            refs = { -- keep all
-                frame,
-                caption,
-                search_field,
-                results
-            },
-            result_list, -- rename to search_results
-            has_math, -- rename to search_has_math
-        }]]
-        --[[output structure: quick_search = {
-            refs = {
-                frame,
-                caption,
-                search_field,
-                results
-            },
-            search_results,
-            search_has_math,
-            visible, -- compute
-            player_index, -- create
-            rebuild_gui
-        }]]
+    cdx.rebuild_gui = true
 
-        if qs.refs.window ~= nil then
-            qs.visible = qs.refs.window.visible
-        else
-            qs.visible = false
-        end
-        qs.rebuild_gui = true
+    cdx.categories = {
+        refs = {
+            cat_gui = nil, -- unavailable
+            category_picker = cdx.refs.category_picker,
+            available_entities = cdx.refs.available_entities,
+        },
+        entity_list = {},
+        selected_index = 0,
+        selected_cat = {},
+        rebuild_gui = true
+    }
 
-        qs.player_index = player_index
+    cdx.recipe_info = {
+        refs = {
+            collapse_produced_by = cdx.refs.collapse_produced_by,
+            produced_by_items = cdx.refs.produced_by_items,
+            collapse_ingredient_in = cdx.refs.collapse_ingredient_in,
+            ingredient_in_items = cdx.refs.ingredient_in_items
+        },
+        produced_by_collapsed = cdx.produced_by_collapsed or false,
+        ingredient_in_collapsed = cdx.ingredient_in_collapsed or false,
+        force_index = game.players[player_index].force.index
+    }
 
-        qs.search_results = qs.result_list
-        qs.search_has_math = qs.has_math
+    cdx.refs.search_field = nil
+    cdx.refs.category_picker = nil
+    cdx.refs.available_entities = nil
 
-        qs.result_list = nil
-        qs.has_math = nil
+    cdx.refs.collapse_produced_by = nil
+    cdx.refs.produced_by_items = nil
+    cdx.refs.collapse_ingredient_in = nil
+    cdx.refs.ingredient_in_items = nil
+
+    cdx.entity_list = nil
+    cdx.category = nil
+    cdx.produced_by_collapsed = nil
+    cdx.ingredient_in_collapsed = nil
+
+    if cdx.categories.refs.category_picker ~= nil then
+        cdx.categories.refs.category_picker.clear_items()
+        cdx.categories.refs.category_picker.add_item("Migration failed!")
+        cdx.categories.refs.category_picker.add_item("Click here to crash!")
     end
 
+    if cdx.categories.refs.available_entities ~= nil then
+        cdx.categories.refs.available_entities.clear_items()
+        cdx.categories.refs.available_entities.add_item("Migration failed!")
+        cdx.categories.refs.available_entities.add_item("Click here to crash!")
+    end
+end
+
+local function  convert_quick_search(qs, player_index)
+    --[[input structure: quick_search = {
+        refs = { -- keep all
+            frame,
+            caption,
+            search_field,
+            results
+        },
+        result_list, -- rename to search_results
+        has_math, -- rename to search_has_math
+    }]]
+    --[[output structure: quick_search = {
+        refs = {
+            frame,
+            caption,
+            search_field,
+            results
+        },
+        search_results,
+        search_has_math,
+        visible, -- compute
+        player_index, -- create
+        rebuild_gui
+    }]]
+
+    if qs.refs.window ~= nil then
+        qs.visible = qs.refs.window.visible
+    else
+        qs.visible = false
+    end
+    qs.rebuild_gui = true
+
+    qs.player_index = player_index
+
+    qs.search_results = qs.result_list
+    qs.search_has_math = qs.has_math
+
+    qs.result_list = nil
+    qs.has_math = nil
+end
+
+return function(additional_actions)
+    log("Applying migrations for 0.0.10")
+
+    -- init and build cache
+    PlayerData.Cache:Init()
+    global.cache = PlayerData.Cache:build()
+
+    global.dicts = nil
+	PlayerData.Dicitonary:Init()
+
+    -- init codex
+    PlayerData.Codex:Init()
+
+    -- convert old codex + quick search structure to new one
     if global.players ~= nil then
         for indx, plyr in pairs(global.players) do
             log("Converting data for player \""..game.players[indx].name.."\" (index:"..indx..")")

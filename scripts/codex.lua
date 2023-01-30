@@ -41,6 +41,20 @@ function Codex:load()
     return self
 end
 
+function Codex:destroy()
+    if self.categories ~= nil then
+        self.categories:destroy()
+    end
+
+    if self.recipe_info ~= nil then
+        self.recipe_info:destroy()
+    end
+
+    if self.refs ~= nil and self.refs.window ~= nil and type(self.refs.window.destroy) == "function" then
+        self.refs.window.destroy()
+    end
+end
+
 function Codex:build_gui()
     if self.rebuild_gui == true then
         if self.refs.window ~= nil and self.refs.window.valid == true then
@@ -94,7 +108,7 @@ function Codex:build_gui()
                             {type = "sprite", style = "fcodex_desc_image", ref = {"entity_sprite"}},
                             {type = "flow", direction = "vertical", caption = "Entity", ref = {"entity_desc_frame"},
                                 {type = "label", ref = {"entity_desc"}, style="fcodex_codex_desc"},
-                                {type = "progressbar", ref = {"entity_color"}, style = "fcodex_codex_color_indicator", visible=false}
+                                {type = "progressbar", ref = {"entity_color"}, style = "fcodex_codex_color_indicator", value=1}
                             }
                         },
                         {type = "scroll-pane", direction = "vertical", ref = { "entity_usage" }}
@@ -128,10 +142,28 @@ function Codex:technology_info(tech)
 end
 
 function Codex:fluid_info(fluid)
-    --codex.refs.entity_desc.caption = "TODO"
+    --self.refs.entity_desc.caption = "TODO"
     --  "[color=green]■[/color]"
-    --[[codex.refs.entity_color.style.color = fluid.base_color
-    codex.refs.entity_color.value = 1]]
+    
+    local color = fluid.base_color
+    
+    if color.r == 0 and color.g == 0 and color.b == 0 then
+        -- do nothing
+        self.refs.entity_color.visible = false
+    else
+        color_int = {
+            a = math.round(color.a*255, 0),
+            r = math.round(color.r*255, 0),
+            g = math.round(color.g*255, 0),
+            b = math.round(color.b*255, 0)
+        }
+    
+        self.refs.entity_color.style.color = color
+        self.refs.entity_color.visible = true
+        self.refs.entity_color.tooltip = "Red:   " .. color_int.r .. "\n" ..
+                                         "Green: " .. color_int.g .. "\n" ..
+                                         "Blue:  " .. color_int.b
+    end
 
 	self.recipe_info:build_gui_for_item(self.refs.entity_usage, "fluid", fluid.name)
 end
@@ -177,7 +209,7 @@ function Codex:show_info(id, id_type)
     --self.refs.entity_sprite.resize_to_sprite = false
     self.refs.entity_desc_frame.caption = entity_prototype.localised_name
     self.refs.entity_desc.caption = entity_prototype.localised_description
-
+    self.refs.entity_color.visible = false
 
     self.refs.entity_usage.clear()
 
@@ -230,6 +262,17 @@ function Codex:toggle()
 end
 
 function Codex:gui_action(action, event)
+    if event.player_index ~= self.player_index then
+        log("Error: Event received for codex but player indexes mismatch! (QS: "..self.player_index..", E: "..event.player_index..")")
+        local rec = game.players[self.player_index]
+        local ex_rec = game.players[event.player_index]
+        debug:player_print(self.player_index, "[factorio-codex] Error: You received an event that was for "..ex_rec.name..
+                "! (Maybe invalid player data?)")
+
+        debug:player_print(event.player_index, "[factorio-codex] Error: Your event got mistakenly sent to "..rec.name..
+                "! (Maybe invalid player data?)")
+    end
+
     local codex = self
     local action_list = {
         cx_close = function() codex:close() end,
@@ -288,6 +331,66 @@ end
 
 function Codex:set_rebuild_gui()
     self.rebuild_gui = true
+end
+
+function Codex:validate(expected_player_indx)
+    log("Codex Validate: Checking codex...")
+    local valid = true
+    local fixed = true
+
+    if self.player_index ~= expected_player_indx then
+        log("Codex Validate: player index is wrong! E: "..expected_player_indx.." A: " .. serpent.line(self.player_index))
+        valid = false
+        fixed = fixed and true
+    end
+
+    local not_nil_values = {
+        "refs", "entity_view", "visible", "rebuild_gui", "player_index", "recipe_info", "categories"
+    }
+    local nil_detected = false
+
+    for _,v in pairs(not_nil_values) do
+        if self[v] == nil then
+            log("Codex Validate: Detected nil value \""..v.."\" for player "..expected_player_indx)
+            nil_detected = true
+        end
+    end
+
+    if nil_detected then
+        log("Codex Validate: Contents: " .. serpent.line(self, {nocode=true}))
+        valid = false
+        fixed = false
+    end
+
+    if next(self.entity_view) ~= nil then
+        local invalid = false
+        for k,v in pairs(self.entity_view) do
+            if k == "type" then
+                -- todo check if type value is valid
+            elseif k == "id" then
+                -- todo check if id value is valid
+            else
+                log("Codex Validate: Found invalid key \""..k.."\" in entity_view! "..serpent.line(self.entity_view))
+                invalid = true
+                break
+            end
+        end
+
+        if invalid then
+            valid = false
+            fixed = false
+        end
+    end
+
+    local tmp_v, tmp_f = self.categories:validate()
+    valid = valid and tmp_v
+    fixed = fixed and tmp_f
+
+    tmp_v, tmp_f = self.recipe_info:validate(game.players[self.player_index].force.index)
+    valid = valid and tmp_v
+    fixed = fixed and tmp_f
+
+    return valid, fixed
 end
 
 return Codex

@@ -1,4 +1,4 @@
-local Cache = {prototypes={per_player={}},init_done=false}
+Cache = {prototypes={per_player={}},init_done=false}
 
 local serpent = require("scripts.serpent")
 local ModuleCache = require("scripts.cache.module_cache")

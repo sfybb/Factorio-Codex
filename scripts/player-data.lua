@@ -27,6 +27,10 @@ local function get_index_arg(player)
     return 0
 end
 
+function PlayerData:PreInit()
+    global.cache = {mt={}}
+    script.register_metatable("Cache", global.cache.mt)
+end
 
 function PlayerData:Init()
     global.players = {}
@@ -34,7 +38,7 @@ function PlayerData:Init()
     Cache:Init()
     global.cache = Cache:build()
 
-	Dicitonary:Init()
+    Dicitonary:Init()
 
     Codex:Init()
     log("Player data init complete")
@@ -67,6 +71,61 @@ end
 
 function PlayerData:check_skipped()
     Dicitonary:check_skipped()
+end
+
+function PlayerData:validate()
+    PlayerData:check_metatables()
+
+    log("Validating mod data...")
+    --global.cache:validate()
+
+    --Dicitonary:validate()
+
+    log("Player Data:")
+    for i,data in pairs(global.players) do
+        log("========== [ ".. game.players[i].name .. " (" .. i ..") ] ==========")
+        local qs_valid, qs_fixed = data.quick_search:validate(i)
+
+        if qs_valid then
+            log("Quick Search passed validation")
+        elseif qs_fixed then
+            log("Quick Search invalid but could be fixed!")
+        else
+            log("Quick Search validation failed! Deleting!")
+            data.quick_search:destroy()
+            data.quick_search = QuickSearch:new(i)
+        end
+
+        local cx_valid, cx_fixed = data.codex:validate(i)
+
+        if cx_valid then
+            log("Codex passed validation")
+        elseif cx_fixed then
+            log("Codex invalid but could be fixed!")
+        else
+            log("Codex validation failed! Deleting!")
+            data.codex:destroy()
+            data.codex = Codex:new(i)
+        end
+
+        if (not qs_valid and not qs_fixed) or (not cx_valid and not cx_fixed) then
+            local affected_parts = nil
+
+            if not qs_valid and not qs_fixed then
+                affected_parts = "Quick Search"
+            end
+
+            if not cx_valid and not cx_fixed then
+                if affected_parts ~= nil then
+                    affected_parts = " and "
+                end
+                affected_parts = "Codex"
+            end
+
+            debug:player_print(i, "Validation failed! Deleted data for "..affected_parts)
+        end
+    end
+    log("Validation concluded")
 end
 
 function PlayerData:get(player)
@@ -122,6 +181,9 @@ function PlayerData:load_metatables(indx)
     end
 
     metatables_missing = false
+
+    PlayerData:validate()
+
     return data
 end
 

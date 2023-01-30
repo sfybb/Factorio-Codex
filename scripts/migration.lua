@@ -37,6 +37,9 @@ migration.migrate = function (e)
         --log(debug.traceback())
 
         migration.refresh_guis()
+
+        log("Running validation")
+        PlayerData:validate()
         -- reload prototypes in util
 
 

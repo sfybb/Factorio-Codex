@@ -29,6 +29,10 @@ function RecipeInfo:load()
     return self
 end
 
+function RecipeInfo:destroy()
+    -- nothing to do
+end
+
 function RecipeInfo:build_recipe_slot(recipe_item_info)
 	local rounded_amount_str
     local amount_str = recipe_item_info.amount
@@ -299,6 +303,37 @@ function RecipeInfo:handle_gui_action(action, event)
         return false
     end
     return action_func(event)
+end
+
+function RecipeInfo:validate(expected_force_index)
+    log("   Recipe Info Validate: Checking recipe info...")
+    local valid = true
+    local fixed = true
+
+    local not_nil_values = {
+        "force_index"
+    }
+    local nil_detected = false
+
+    for _,v in pairs(not_nil_values) do
+        if self[v] == nil then
+            log("   Recipe Info Validate: Detected nil value \""..v.."\"")
+            nil_detected = true
+        end
+    end
+
+    if nil_detected then
+        log("   Recipe Info Validate: Contents: " .. serpent.line(self, {nocode=true}))
+        valid = false
+        fixed = false
+    end
+
+    if self.force_index ~= expected_force_index then
+        log("   Recipe Info Validate: Force mismatch (updating)! E: "..expected_force_index.." A: " .. serpent.line(self.force_index))
+        self.force_index = expected_force_index
+    end
+
+    return valid, fixed
 end
 
 return RecipeInfo

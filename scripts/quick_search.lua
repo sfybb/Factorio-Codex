@@ -23,12 +23,20 @@ function QuickSearch:new(player_index)
     self.search_results = {}
     self.search_has_math = false
 
+    self.rebuild_gui = false
+
     return self
 end
 
 function QuickSearch:load()
     setmetatable(self, {__index = QuickSearch})
     return self
+end
+
+function QuickSearch:destroy()
+    if self.refs ~= nil and self.refs.frame ~= nil and type(self.refs.frame.destroy) == "function" then
+        self.refs.frame.destroy()
+    end
 end
 
 function QuickSearch:build_gui()
@@ -211,6 +219,17 @@ function QuickSearch:update_input(prompt)
 end
 
 function QuickSearch:gui_action(action, event)
+    if event.player_index ~= self.player_index then
+        log("Error: Event received for quick search but player indexes mismatch! (QS: "..self.player_index..", E: "..event.player_index..")")
+        local rec = game.players[self.player_index]
+        local ex_rec = game.players[event.player_index]
+        debug:player_print(self.player_index, "[factorio-codex] Error: You received an event that was for "..ex_rec.name..
+                "! (Maybe invalid player data?)")
+
+        debug:player_print(event.player_index, "[factorio-codex] Error: Your event got mistakenly sent to "..rec.name..
+                "! (Maybe invalid player data?)")
+    end
+
     local action_list = {
         qs_close = function() self:close() end,
         qs_update_search = function (event) self:update_input(event.text) end,
@@ -247,7 +266,7 @@ function QuickSearch:gui_action(action, event)
                 event.element.selected_index = 0
 
                 --game.print("Index " .. event.element.selected_index .. " with content [" .. selected.type .. "=" .. selected.id .. "] \"" .. selected.name .. "\" was selected!")
-                PlayerData:get_codex(self.player_index):show_info(selected.id, selected.type)
+                PlayerData:get_codex(event.player_index):show_info(selected.id, selected.type)
             end,
     }
 
@@ -257,6 +276,54 @@ function QuickSearch:gui_action(action, event)
     else
         log("Unknown action \"" .. action .. "\" for quick search!")
     end
+end
+
+function QuickSearch:validate(expected_player_indx)
+    log("Quick Search Validate: Checking quick search...")
+    local valid = true
+    local fixed = true
+    if self.player_index ~= expected_player_indx then
+        log("Quick Search Validate: player index is wrong! E: "..expected_player_indx.." A: " .. serpent.line(self.player_index))
+        self.player_index = expected_player_indx
+        valid = false
+        fixed = fixed and true
+    end
+
+    local not_nil_values = {
+        "refs", "search_results", "visible", "search_has_math", "player_index"
+    }
+    local nil_detected = false
+
+    for _,v in pairs(not_nil_values) do
+        if self[v] == nil then
+            log("Quick Search Validate: Detected nil value \""..v.."\" for player "..expected_player_indx)
+            nil_detected = true
+        end
+    end
+
+    if nil_detected then
+        log("Quick Search Validate: Contents: " .. serpent.line(self, {nocode=true}))
+        valid = false
+        fixed = false
+    end
+
+    if self.refs.search_results ~= nil and self.refs.search_results.valid then
+        local res_gui_length = #self.refs.search_results.items
+        local res_length = #self.search_results
+
+        local mismatch = res_gui_length ~= res_length
+
+        if mismatch == true then
+            log("Quick Search Validate: Mismatch between search_results gui element [1](len: "..serpent.line(res_gui_length)..
+                    ") and search_results list [2](len: "..serpent.line(res_length).."):\n[1] "..
+                    serpent.line(self.refs.search_results.items, {nocode=true}).."\n[2] "..
+                    serpent.line(self.search_results, {nocode=true}))
+            valid = false
+            fixed = false
+        end
+    end
+
+    return valid,fixed
 end
 
 return QuickSearch
