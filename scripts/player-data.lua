@@ -83,7 +83,7 @@ function PlayerData:validate()
 
     log("Player Data:")
     for i,data in pairs(global.players) do
-        log("========== [ ".. game.players[i].name .. " (" .. i ..") ] ==========")
+        log("========== [ ".. game.get_player(i).name .. " (" .. i ..") ] ==========")
         local qs_valid, qs_fixed = data.quick_search:validate(i)
 
         if qs_valid then

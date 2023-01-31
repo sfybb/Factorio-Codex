@@ -99,7 +99,7 @@ local function convert_codex(cdx, player_index)
         },
         produced_by_collapsed = cdx.produced_by_collapsed or false,
         ingredient_in_collapsed = cdx.ingredient_in_collapsed or false,
-        force_index = game.players[player_index].force.index
+        force_index = game.get_player(player_index).force.index
     }
 
     cdx.refs.search_field = nil
@@ -186,7 +186,7 @@ return function(additional_actions)
     -- convert old codex + quick search structure to new one
     if global.players ~= nil then
         for indx, plyr in pairs(global.players) do
-            log("Converting data for player \""..game.players[indx].name.."\" (index:"..indx..")")
+            log("Converting data for player \""..game.get_player(indx).name.."\" (index:"..indx..")")
             if plyr.codex ~= nil then
                 --log("Codex Before: "..serpent.block(plyr.codex))
                 convert_codex(plyr.codex, indx)

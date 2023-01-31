@@ -24,7 +24,7 @@ migration.migrate = function (e)
             for action_name, migration_action in pairs(actions) do
                 if type(migration_action) == "function" then
                     --log("Running additional migration action (\""..action_name
-                    --        .."\") for \""..game.players[i].name.."\" (index:"..i..")")
+                    --        .."\") for \""..game.get_player(i).name.."\" (index:"..i..")")
                     migration_action()
                 end
             end

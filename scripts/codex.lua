@@ -18,7 +18,7 @@ function Codex:new(player_index)
     self.__index = self
 
     self.categories = Categories:new()
-    self.recipe_info = RecipeInfo:new(game.players[player_index].force.index)
+    self.recipe_info = RecipeInfo:new(game.get_player(player_index).force.index)
 
     self.player_index = player_index
 
@@ -63,7 +63,7 @@ function Codex:build_gui()
         end
     end
 
-    local player = game.players[self.player_index]
+    local player = game.get_player(self.player_index)
 
     if self.refs.window == nil or self.refs.window.valid == false then
         self.rebuild_gui = false
@@ -144,9 +144,9 @@ end
 function Codex:fluid_info(fluid)
     --self.refs.entity_desc.caption = "TODO"
     --  "[color=green]■[/color]"
-    
+
     local color = fluid.base_color
-    
+
     if color.r == 0 and color.g == 0 and color.b == 0 then
         -- do nothing
         self.refs.entity_color.visible = false
@@ -157,7 +157,7 @@ function Codex:fluid_info(fluid)
             g = math.round(color.g*255, 0),
             b = math.round(color.b*255, 0)
         }
-    
+
         self.refs.entity_color.style.color = color
         self.refs.entity_color.visible = true
         self.refs.entity_color.tooltip = "Red:   " .. color_int.r .. "\n" ..
@@ -233,7 +233,7 @@ function Codex:open()
         self:build_gui()
         self.refs.window.visible = true
 
-        game.players[self.player_index].opened = self.refs.window
+        game.get_player(self.player_index).opened = self.refs.window
     end
 end
 
@@ -246,7 +246,7 @@ function Codex:close()
             self.refs.window.visible = false
         end
 
-        local player = game.players[self.player_index]
+        local player = game.get_player(self.player_index)
         if player.opened then
             player.opened = nil
         end
@@ -264,8 +264,8 @@ end
 function Codex:gui_action(action, event)
     if event.player_index ~= self.player_index then
         log("Error: Event received for codex but player indexes mismatch! (QS: "..self.player_index..", E: "..event.player_index..")")
-        local rec = game.players[self.player_index]
-        local ex_rec = game.players[event.player_index]
+        local rec = game.get_player(self.player_index)
+        local ex_rec = game.get_player(event.player_index)
         debug:player_print(self.player_index, "[factorio-codex] Error: You received an event that was for "..ex_rec.name..
                 "! (Maybe invalid player data?)")
 
@@ -306,7 +306,7 @@ function Codex:gui_action(action, event)
                 end
 
                 if codex.visible == false then
-                    game.players[codex.player_index].print("Can't view entity ["..selected.type.."="..selected.id.."]: No open codex")
+                    game.get_player(codex.player_index).print("Can't view entity ["..selected.type.."="..selected.id.."]: No open codex")
                     return
                 end
 
@@ -386,7 +386,7 @@ function Codex:validate(expected_player_indx)
     valid = valid and tmp_v
     fixed = fixed and tmp_f
 
-    tmp_v, tmp_f = self.recipe_info:validate(game.players[self.player_index].force.index)
+    tmp_v, tmp_f = self.recipe_info:validate(game.get_player(self.player_index).force.index)
     valid = valid and tmp_v
     fixed = fixed and tmp_f
 

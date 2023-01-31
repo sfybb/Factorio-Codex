@@ -38,7 +38,7 @@ function debug:player_print(players, msg)
     log("Players: "..serpent.line(players).. " - [factorio-codex] " .. msg)
 
     for _,p in pairs(players) do
-        local player = game.players[p]
+        local player = game.get_player(p)
         if player ~= nil  and player.connected then
             player.print("[factorio-codex] " .. msg)
         end

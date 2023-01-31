@@ -81,7 +81,7 @@ function Cache:initPlayer(player_index)
     local player_c = {}
     self.per_player[player_index] = player_c
 
-    log("Initializing caches for player \""..game.players[player_index].name.."\"...")
+    log("Initializing caches for player \""..game.get_player(player_index).name.."\"...")
     for _,pc in pairs(Cache.prototypes.per_player) do
         log("   "..pc.name)
         player_c[pc.id] = pc:build(player_index)

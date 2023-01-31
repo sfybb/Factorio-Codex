@@ -47,7 +47,7 @@ function QuickSearch:build_gui()
         end
     end
 
-    local player = game.players[self.player_index]
+    local player = game.get_player(self.player_index)
 
     if self.refs.frame == nil or self.refs.frame.valid == false then
         self.rebuild_gui = false
@@ -90,7 +90,7 @@ function QuickSearch:open()
         self:build_gui()
         self.refs.frame.visible = true
 
-        game.players[self.player_index].opened = self.refs.frame
+        game.get_player(self.player_index).opened = self.refs.frame
 
         self.refs.frame.bring_to_front()
         self.refs.search_field.select_all()
@@ -106,7 +106,7 @@ function QuickSearch:close()
             self.refs.frame.visible = false
         end
 
-        local player = game.players[self.player_index]
+        local player = game.get_player(self.player_index)
         if player.opened then
             player.opened = nil
         end
@@ -221,8 +221,8 @@ end
 function QuickSearch:gui_action(action, event)
     if event.player_index ~= self.player_index then
         log("Error: Event received for quick search but player indexes mismatch! (QS: "..self.player_index..", E: "..event.player_index..")")
-        local rec = game.players[self.player_index]
-        local ex_rec = game.players[event.player_index]
+        local rec = game.get_player(self.player_index)
+        local ex_rec = game.get_player(event.player_index)
         debug:player_print(self.player_index, "[factorio-codex] Error: You received an event that was for "..ex_rec.name..
                 "! (Maybe invalid player data?)")
 

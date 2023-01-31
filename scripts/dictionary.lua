@@ -74,7 +74,7 @@ function Dict:string_translated(e)
             dict_cache:load_language_data(language_data)
 
 			if was_translated == false then
-				game.players[player_index].print("Factorio Codex: Quick search is now ready to be used!")
+				game.get_player(player_index).print("Factorio Codex: Quick search is now ready to be used!")
 			end
 
 			PlayerData:get_quick_search(player_index):update_input()
