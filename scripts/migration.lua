@@ -1,5 +1,6 @@
 local flib_migration = require("__flib__.migration")
 local serpent = require("scripts.serpent")
+local on_tick_n = require("__flib__.on-tick-n")
 
 local migration_0_0_10 = require("scripts.migrations.migrate_0_0_10")
 
@@ -13,12 +14,18 @@ migration.migrate = function (e)
     log("Checking for migration")
     if flib_migration.on_config_changed(e, migrations, nil,  additional_actions) then
         -- todo Reset dictionary stuff
+        on_tick_n.init()
         log("Migration scripts done")
 
-        log("Running final migration actions")
-        PlayerData:load_metatables()
 
-        for i,actions in pairs(additional_actions) do
+        log("Running validation")
+        PlayerData:load_metatables()
+        PlayerData:validate()
+
+        log("Running final migration actions")
+
+
+        --[[for i,actions in pairs(additional_actions) do
             -- actions is a table containing additional functions to run
             --log(serpent.line(global.players[i].codex, {nocode=true}))
             for action_name, migration_action in pairs(actions) do
@@ -28,7 +35,7 @@ migration.migrate = function (e)
                     migration_action()
                 end
             end
-        end
+        end]]
 
 
 
@@ -36,32 +43,45 @@ migration.migrate = function (e)
         --log(serpent.line(global, {nocode=true}))
         --log(debug.traceback())
 
-        migration.refresh_guis()
 
-        log("Running validation")
-        PlayerData:validate()
+
+
+        migration.refresh_guis()
         -- reload prototypes in util
 
-
-        --[[
-        for _,player in pairs(game.players) do
-            if player ~= nil then
-                local player_data = util.get_player_data(player)
-
-                log("Loading possibly old data for player \""..player.name.."\"")
-                log(serpent.block(player_data))
-                player_data.codex:set_rebuild_gui()
-            end
-        end
-
-        player_data.migrate()
-        ]]
         log("Migration done")
     end
 end
 
 migration.refresh_guis = function ()
     -- todo
+    for indx,_ in pairs(global.players) do
+        local qs = PlayerData:get_quick_search(indx)
+        qs:set_rebuild_gui()
+
+        local qs_open = qs:is_open()
+
+        local cdx = PlayerData:get_codex(indx)
+        cdx:set_rebuild_gui()
+
+        local cdx_open = cdx:is_open()
+
+        qs:close()
+        qs:open()
+        qs:close()
+
+        cdx:close()
+        cdx:open()
+        cdx:close()
+
+        if qs_open then
+            qs:open()
+        end
+
+        if cdx_open and cdx.entity_view ~= nil then
+            cdx:show_info(cdx.entity_view.id, cdx.entity_view.type)
+        end
+    end
 end
 
 return migration

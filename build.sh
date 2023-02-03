@@ -58,6 +58,7 @@ files=(
     "data-final-fixes.lua"
     "data-final-fixes.lua"
     "control.lua"
+    "serpent.lua"
 )
 
 folders=(

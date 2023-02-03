@@ -1,5 +1,6 @@
 local flib_table = require("__flib__.table")
 local gui = require("__flib__.gui")
+local on_tick_n = require("__flib__.on-tick-n")
 
 local search_utils = require("scripts.search")
 local qs_math = require("scripts.quick_search.qs_math")
@@ -63,7 +64,8 @@ function QuickSearch:build_gui()
                 {type = "label", caption="QUICK SEARCH", style= "fcodex_quick_search_label", ref = {"caption"}},
                 {type ="textfield", style= "fcodex_quick_search_input", ref = {"search_field"},
                  actions = {
-                     on_text_changed = "qs_update_search"
+                     on_text_changed = "qs_update_search",
+                     on_confirmed = "qs_test_debug"
                  }},
                 {type = "list-box", style= "fcodex_quick_search_results", ref = {"results"},
                  actions = {
@@ -121,6 +123,14 @@ function QuickSearch:toggle()
     end
 end
 
+function QuickSearch:is_open()
+    return self.visible
+end
+
+function QuickSearch:set_rebuild_gui()
+    self.rebuild_gui = true
+end
+
 function QuickSearch:display_result_list(unfiltered_list)
     if #unfiltered_list == 0 then
         return
@@ -153,7 +163,6 @@ function QuickSearch:display_result_list(unfiltered_list)
 end
 
 function QuickSearch:update_input(prompt)
-    --log("Update input: \"".. (prompt or "") .. "\"")
     if self.visible == false then
         --log("Quick search not visible for player "..self.player_index)
         return
@@ -161,11 +170,17 @@ function QuickSearch:update_input(prompt)
     if prompt == nil then
         prompt = self.refs.search_field.text
     else
+        log("Setting quick search text: "..prompt)
         self.refs.search_field.text = prompt
     end
 
+
+    --[[]]
+
+    --log("Update input: \"".. (prompt or "") .. "\"")
+
     self.refs.results.clear_items()
-	self.search_results = {}
+    self.search_results = {}
     if prompt == "" then
         --log("Quick search has empty prompt for player "..self.player_index)
         return
@@ -187,11 +202,19 @@ function QuickSearch:update_input(prompt)
         self.has_math = false
     end
 
-    local dicts_cache = global.cache:get_player_cache(self.player_index, "dicts_cache")
+    if self.last_search_task ~= nil then
+        on_tick_n.remove(self.last_search_task)
+    end
+    self.last_search_task = on_tick_n.add(game.tick + 1, {
+        player_index = self.player_index,
+        gui = "qs",
+        name = "update_search",
+        prompt = prompt
+    })
+
+    --[[local dicts_cache = global.cache:get_player_cache(self.player_index, "dicts_cache")
+
     if dicts_cache:is_translated() == false then
-        --results_list.add_item("Waiting for translations...")
-        self.refs.results.add_item({"factorio-codex.waiting-for-translation"})
-        --log("Waiting for translation... "..self.player_index)
         return
     end
 
@@ -215,7 +238,63 @@ function QuickSearch:update_input(prompt)
 
     --log(serpent.block(self.refs.results.valid, {maxnum=15}))
 
-    self:display_result_list(matching_names)
+    self:display_result_list(matching_names)]]
+end
+
+function QuickSearch:execute_task(task)
+    if task.name == "update_search" then
+        --[[self.refs.results.clear_items()
+        self.search_results = {}
+        if task.prompt == "" then
+            --log("Quick search has empty prompt for player "..self.player_index)
+            return
+        end
+
+        local math_prompt = string.gsub((task.prompt == nil) and "" or task.prompt, "%s+", "")
+
+        local math_result, math_err = qs_math.calculate_result(math_prompt)
+        if math_result ~= nil then
+            self.refs.results.add_item("=" .. math_result)
+            self.math_result = math_result
+            self.has_math = true
+        elseif math_err ~= nil and math_err ~= ""  then
+            self.refs.results.add_item("=?")
+            self.math_result = nil
+            self.has_math = true
+        else
+            self.math_result = nil
+            self.has_math = false
+        end]]
+
+        local dicts_cache = global.cache:get_player_cache(self.player_index, "dicts_cache")
+
+        if dicts_cache:is_translated() == false then
+            return
+        end
+
+        local dicts = {}
+        for _,dict_name in pairs(dicts_to_search) do
+            local dict = dicts_cache:get_names_dict(dict_name)
+            if dict ~= nil then
+                dicts[dict_name] = dict
+            else
+                log("Dict "..dict_name.." missing")
+            end
+        end
+
+        local matching_names = search_utils.find(task.prompt, dicts)
+
+        search_utils.sort(matching_names, {
+            search_utils.sort_orders.hidden_last,
+            search_utils.sort_orders.tech_last,
+            search_utils.sort_orders.match_count,
+            search_utils.sort_orders.factorio})
+
+        --log(serpent.block(self.refs.results.valid, {maxnum=15}))
+
+        self:display_result_list(matching_names)
+        return
+    end
 end
 
 function QuickSearch:gui_action(action, event)
@@ -232,7 +311,7 @@ function QuickSearch:gui_action(action, event)
 
     local action_list = {
         qs_close = function() self:close() end,
-        qs_update_search = function (event) self:update_input(event.text) end,
+        qs_update_search = function (event) self:update_input() end,
         qs_try_open_codex =
             function (event)
                 local selected_index = event.element.selected_index
@@ -268,6 +347,12 @@ function QuickSearch:gui_action(action, event)
                 --game.print("Index " .. event.element.selected_index .. " with content [" .. selected.type .. "=" .. selected.id .. "] \"" .. selected.name .. "\" was selected!")
                 PlayerData:get_codex(event.player_index):show_info(selected.id, selected.type)
             end,
+        qs_test_debug =
+            function (event)
+                if event.element.text == "debug!" then
+                    debug:toggle(event.player_index)
+                end
+            end
     }
 
     local action_func = action_list[action]

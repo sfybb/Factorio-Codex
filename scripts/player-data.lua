@@ -135,6 +135,8 @@ function PlayerData:get(player)
         return {}
     end
 
+    log("Retrieving Player data for player with id "..indx)
+
     local data = nil
     if metatables_missing then
         data = PlayerData:load_metatables(indx)
@@ -182,7 +184,7 @@ function PlayerData:load_metatables(indx)
 
     metatables_missing = false
 
-    PlayerData:validate()
+    --PlayerData:validate()
 
     return data
 end

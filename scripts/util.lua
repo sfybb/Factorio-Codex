@@ -45,6 +45,12 @@ function debug:player_print(players, msg)
     end
 end
 
+function debug:toggle(player_index)
+    debug.enabled = not debug.enabled
+
+    game.get_player(player_index).print("[factorio-codex] debug " .. (debug.enabled and "enabled" or "disabled"))
+end
+
 function debug:print(msg)
     if debug.enabled then
         log("codex-debug: " .. msg)

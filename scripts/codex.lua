@@ -329,6 +329,10 @@ function Codex:gui_action(action, event)
     end
 end
 
+function Codex:is_open()
+    return self.visible
+end
+
 function Codex:set_rebuild_gui()
     self.rebuild_gui = true
 end
