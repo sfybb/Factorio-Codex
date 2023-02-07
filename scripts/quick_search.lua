@@ -140,26 +140,28 @@ function QuickSearch:display_result_list(unfiltered_list)
     end
 
     for _,data in ipairs(unfiltered_list) do
-        local icon = "["..data.type.."="..data.id.."]"
-        local text = data.name
+        if data.prototype ~= nil then
+            local icon = "["..data.type.."="..data.id.."]"
+            local text = data.name
 
-        local debug_tooltip = nil
+            local debug_tooltip = nil
 
-        --[[if util.is_debug(self.player_index) then
-            debug_tooltip = "Type: "..data.type.." Id: "..data.id.."\nMatches: " .. data.match_count
+            --[[if util.is_debug(self.player_index) then
+                debug_tooltip = "Type: "..data.type.." Id: "..data.id.."\nMatches: " .. data.match_count
 
-            text =
-        end]]
+                text =
+            end]]
 
-        if data.type == "item" and data.prototype.has_flag("hidden") then
-            text = nil
-        elseif data.type == "technology" then
-            text = "[color=#add8e6] " .. text .. "[/color]"
-        end
+            if data.type == "item" and data.prototype.has_flag("hidden") then
+                text = nil
+            elseif data.type == "technology" then
+                text = "[color=#add8e6] " .. text .. "[/color]"
+            end
 
-        if text ~= nil then
-            table.insert(self.search_results, data)
-            self.refs.results.add_item(icon .. text)
+            if text ~= nil and data.prototype.valid then
+                table.insert(self.search_results, data)
+                self.refs.results.add_item(icon .. text)
+            end
         end
     end
 end

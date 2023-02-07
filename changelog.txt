@@ -1,5 +1,27 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.14
+Date: 07.02.2023
+  Features:
+    - Quick Search: Text input doesn't fight you in multiplayer anymore (this adds a very small delay to the search results).
+    - Codex: Recipes don't show any items/fluids that require/produce 0 units unless this is the only ingredient/product (the other ingredients/products are still shown. This manly affects the Arcosphere recipes in SE).
+    - Re-translation after changes to the mods.
+  Changes:
+    - Under the hood changes to hopefully fix de-syncs once and for all (queue the next de-sync bug).
+  Debug:
+    - Added more log messages.
+---------------------------------------------------------------------------------------------------
+Version: 0.0.13
+Date: 31.01.2023
+  Features:
+    - Deactivated validate outside of migration.
+---------------------------------------------------------------------------------------------------
+Version: 0.0.12
+Date: 31.01.2023
+  Features:
+    - Added missing file to zip.
+---------------------------------------------------------------------------------------------------
 Version: 0.0.11
+Date: 30.01.2023
   Features:
     - Codex: added color indicator for fluids.
     - Validating saved mod data on migration to resolve some bugs. In some cases quick search and/or the codex reset, you will get notified if this happens.
@@ -7,6 +29,7 @@ Version: 0.0.11
     - Fixed in-game changelog.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.10
+Date: 22.01.2023
   Features:
     - Codex: Removed Item description beside the item. Hovering the big icon still displays the item description.
     - Codex: Added rocket launch product support (only supports one rocket silo type for now - meaning this won't show the correct rocket silo for production in space exploration).
@@ -19,6 +42,7 @@ Version: 0.0.10
     - Removed most of the old unknown bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code).
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.9
+Date: 14.01.2023
   Features:
     - Codex: Change category and show item/fluid when changing viewed item/fluid.
     - Codex: "Ingerdient in" and "Produced by" can be collapsed now.
@@ -31,6 +55,7 @@ Version: 0.0.9
     - Fixed migration bug.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.8
+Date: 07.01.2023
   Features:
     - Reformatted tooltip for temperature when min and max temperature are the same.
     - Huge max temperatures are now considered infinite.
@@ -42,6 +67,7 @@ Version: 0.0.8
     - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.7
+Date: 07.01.2023
   Features:
     - Clicking on items/fluids in the recipe view within the codex now navigates you there.
     - Recipes shown in the codex can now also show min/max, probability and temperature.
@@ -51,24 +77,28 @@ Version: 0.0.7
     - Added a bug that crashes the game when viewing some recipes with no "amount" data.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.6
+Date: 04.01.2023
   Features:
     - Improved search (no longer searches for continuous match of input text, e.g. "miner ele" finds "electric miner").
     - Sorts results by various criteria (hidden, matches, factorio order ...).
     - preparation for codex search.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.5
+Date: 03.01.2023
   Bugfixes:
     - Fixed crash after closing and opening codex.
     - Fixed crash when clicking on the "X" to clsoe codex (damn you migration code!).
     - Fixed desync for clients when selecting any entity in the codex.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.4
+Date: 02.01.2023
   Features:
     - More readable recipe/ingredient section in codex.
     - Improved codex layout.
     - Added barebones migration support for deleting/rebuilding codex ui.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.3
+Date: 28.12.2022
   Features:
     - Added barebones recipe/ingredient section to codex.
     - Quick search layout improvements.
