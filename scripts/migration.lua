@@ -1,11 +1,11 @@
 local flib_migration = require("__flib__.migration")
 local serpent = require("scripts.serpent")
 local on_tick_n = require("__flib__.on-tick-n")
-
-local migration_0_0_10 = require("scripts.migrations.migrate_0_0_10")
+local Dict = require("scripts.dictionary")
 
 local migrations = {
-    ["0.0.10"] = migration_0_0_10,
+    ["0.0.10"] = require("scripts.migrations.migrate_0_0_10"),
+	["0.0.12"] = require("scripts.migrations.migrate_0_0_13"),
 }
 
 local migration = {}
@@ -21,6 +21,10 @@ migration.migrate = function (e)
         log("Running validation")
         PlayerData:load_metatables()
         PlayerData:validate()
+
+        log("Invalidating and rebuilding caches")
+        global.cache:rebuild_all()
+        Dict:rebuild()
 
         log("Running final migration actions")
 
@@ -50,6 +54,7 @@ migration.migrate = function (e)
         -- reload prototypes in util
 
         log("Migration done")
+        PlayerData:print_global_data()
     end
 end
 

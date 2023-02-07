@@ -1,4 +1,5 @@
 local RecipeCache = { global=true, id="recipe_cache", name="Recipe Cache" }
+local RecipeCache_mt = {__index = RecipeCache}
 
 local flib_table = require("__flib__.table")
 local serpent = require("scripts.serpent")
@@ -8,27 +9,30 @@ function RecipeCache:Init(cache_list)
 end
 
 function RecipeCache:load()
-    setmetatable(self, {__index = RecipeCache})
+    setmetatable(self, RecipeCache_mt)
     return self
 end
 
 function RecipeCache:build()
     local r_cache = {}
-    setmetatable(r_cache, self)
-    self.__index = self
+    setmetatable(r_cache, RecipeCache_mt)
 
-    self.resource_mining = {
-        recipes={}, -- list of all miner recipes
-        recipes_for_product={}, -- maps products to recipes
-        recipes_for_fluid_ingredient={},
+    r_cache:rebuild()
 
-        miners_for_category={} -- list of allowed miners for a category
+    return r_cache
+end
+
+function RecipeCache:rebuild()
+    self.resource_recipes = {
+        miners_for_category = {},
+        products = {},
+        ingredients = {}
     }
-    self.offshore_pumps = {
-        recipes_for_product = {}, -- maps products to recipes
+    self.item_recipes = {
+        products = {},
+        ingredients = {}
     }
-
-    self.rocket_launch = {
+    self.fluid_recipes = {
         products = {},
         ingredients = {}
     }
@@ -36,8 +40,44 @@ function RecipeCache:build()
     self:build_resource_mining_cache()
     self:build_offshore_pump_mining_cache()
     self:build_rocket_launch_product_cache()
+end
 
-    return self
+function RecipeCache:add_recipe(recipe)
+    local add_recipe_to_list = function (list, id)
+        list[id] = list[id] or {}
+        table.insert(list[id], recipe)
+    end
+
+
+    for _, ingr in ipairs(recipe.ingredients) do
+        local list_to_add = nil
+        if ingr.type == "item" then
+            list_to_add = self.item_recipes.ingredients
+        elseif ingr.type == "fluid" then
+            list_to_add = self.fluid_recipes.ingredients
+        elseif ingr.type == "basic-fluid" or ingr.type == "basic-item" then
+            list_to_add = self.resource_recipes.ingredients
+        end
+
+        if list_to_add ~= nil then
+            add_recipe_to_list(list_to_add, ingr.name)
+        end
+    end
+
+    for _, ingr in ipairs(recipe.products) do
+        local list_to_add = nil
+        if ingr.type == "item" then
+            list_to_add = self.item_recipes.products
+        elseif ingr.type == "fluid" then
+            list_to_add = self.fluid_recipes.products
+        elseif ingr.type == "basic-fluid" or ingr.type == "basic-item" then
+            list_to_add = self.resource_recipes.products
+        end
+
+        if list_to_add ~= nil then
+            add_recipe_to_list(list_to_add, ingr.name)
+        end
+    end
 end
 
 function RecipeCache:build_rocket_launch_product_cache()
@@ -48,10 +88,10 @@ function RecipeCache:build_rocket_launch_product_cache()
 
     local rocket_launch_items = game.get_filtered_item_prototypes{{filter="has-rocket-launch-products"}}
 
-    self.rocket_launch.ingredients["rocket-part"] = {}
-    for item_id, rl_item in pairs(rocket_launch_items) do
-        self.rocket_launch.ingredients[item_id] = self.rocket_launch.ingredients[item_id] or {}
 
+    local num_rocket_launch_recipes = 0
+
+    for item_id, rl_item in pairs(rocket_launch_items) do
         -- todo multiple rocket silo types support
         local rl_recipe = {
             ingredients= {{
@@ -71,14 +111,13 @@ function RecipeCache:build_rocket_launch_product_cache()
             category=rocket_launch_cat
         }
         --log("Rocket launch recipe: " .. item_id .. " - "..serpent.line(rl_recipe))
-        table.insert(self.rocket_launch.ingredients[item_id], rl_recipe)
-        table.insert(self.rocket_launch.ingredients["rocket-part"], rl_recipe)
-
-        for _,pr in pairs(rl_item.rocket_launch_products) do
-            self.rocket_launch.products[pr.name] = self.rocket_launch.products[pr.name] or {}
-            table.insert(self.rocket_launch.products[pr.name], rl_recipe)
-        end
+        --table.insert(self.rocket_launch.ingredients[item_id], rl_recipe)
+        --table.insert(self.rocket_launch.ingredients["rocket-part"], rl_recipe)
+        self:add_recipe(rl_recipe)
+        num_rocket_launch_recipes = num_rocket_launch_recipes + 1
     end
+
+    log("Added " .. num_rocket_launch_recipes .. " rocket launch recipes")
 end
 
 function RecipeCache:build_offshore_pump_mining_cache()
@@ -87,45 +126,34 @@ function RecipeCache:build_offshore_pump_mining_cache()
         {filter = "type", type = "offshore-pump", mode = "and"},
     })
 
-    local recipes_for_product = self.offshore_pumps.recipes_for_product
+    local num_offshore_pump_recipes = 0
+
     for _,v in pairs(offshore_pumps) do
         if v.fluid ~= nil then
-            local added = false
-
-            if recipes_for_product[v.fluid.name] == nil then
-                recipes_for_product[v.fluid.name] = {}
-            else
-                -- compare with existing found recipe
-                for _, ex_r in pairs(recipes_for_product[v.fluid.name]) do
-                    if ex_r.products.name == v.fluid.name and ex_r.products.amount == v.pumping_speed then
-                        ex_r.category.producing_machines[v.name] = v
-                        added = true
-                        break
-                    end
-                end
-            end
-
-            if added == false then
-                -- pumping speed units is per tick, we want per second
-                table.insert(recipes_for_product[v.fluid.name], {
-                    ingredients = {},
-                    products = {{type="fluid", name=v.fluid.name, amount=math.round(v.pumping_speed*60, 2)}},
-                    energy = 1,
-                    category= {producing_machines={[v.name]=v}}
-                })
-            end
+            self:add_recipe({
+                ingredients = {},
+                products = {{type="fluid", name=v.fluid.name, amount=math.round(v.pumping_speed*60, 2)}},
+                energy = 1,
+                category= {producing_machines={[v.name]=v}}
+            })
+            num_offshore_pump_recipes = num_offshore_pump_recipes + 1
         end
     end
+
+    log("Added " .. num_offshore_pump_recipes .. " offshore pump recipes")
 end
 
 function RecipeCache:build_resource_mining_cache()
-    local resource_mining = self.resource_mining
+    local resource_recipes = self.resource_recipes
 
 
     -- populate self.resource_mining.recipes
     local resource_mining_raw = game.get_filtered_entity_prototypes({
         {filter = "type", type = "resource", mode = "and"},
     })
+
+    local num_mining_recipes = 0
+
     for _,v in pairs(resource_mining_raw) do
         local minable_props = v.mineable_properties
 
@@ -154,26 +182,8 @@ function RecipeCache:build_resource_mining_cache()
                 category=v.resource_category
             }
 
-            table.insert(self.resource_mining.recipes, recipe)
-
-            if minable_props.required_fluid ~= nil then
-                self.resource_mining.recipes_for_fluid_ingredient[minable_props.required_fluid] =
-                self.resource_mining.recipes_for_fluid_ingredient[minable_props.required_fluid] or {}
-                table.insert(self.resource_mining.recipes_for_fluid_ingredient[minable_props.required_fluid], recipe)
-            end
-        end
-    end
-
-    -- populate self.resource_mining.recipes_for_product
-    for _,r in pairs(self.resource_mining.recipes) do
-        for _,prod in pairs(r.products) do
-            -- TODO possible clash of prod.name with another product of different type
-
-            if resource_mining.recipes_for_product[prod.name] ~= nil then
-                table.insert(resource_mining.recipes_for_product[prod.name], r)
-            else
-                resource_mining.recipes_for_product[prod.name] = {r}
-            end
+            self:add_recipe(recipe)
+            num_mining_recipes = num_mining_recipes + 1
         end
     end
 
@@ -182,14 +192,16 @@ function RecipeCache:build_resource_mining_cache()
     for _,e in pairs(resource_miners) do
         for re_cat,mineable in pairs(e.resource_categories) do
             if mineable == true then
-                if resource_mining.miners_for_category[re_cat] == nil then
-                    resource_mining.miners_for_category[re_cat] = {}
+                if resource_recipes.miners_for_category[re_cat] == nil then
+                    resource_recipes.miners_for_category[re_cat] = {}
                 end
 
-                resource_mining.miners_for_category[re_cat][e.name] = e
+                resource_recipes.miners_for_category[re_cat][e.name] = e
             end
         end
     end
+
+    log("Added " .. num_mining_recipes .. " mining recipes")
 end
 
 function RecipeCache:adapt_mining_to_force(res, recipes_to_adapt, force)
@@ -212,14 +224,14 @@ end
 
 function RecipeCache:get_additional_recipes_for_product(type, id, force)
     if type == "item" then
-        local res = self.rocket_launch.products[id] or {}
+        local res = self.item_recipes.products[id] or {}
 
-        local recipes_to_adapt = self.resource_mining.recipes_for_product[id]
+        local recipes_to_adapt = self.resource_recipes.products[id]
         self:adapt_mining_to_force(res, recipes_to_adapt, force)
 
         return res
     elseif type == "fluid" then
-        return self.offshore_pumps.recipes_for_product[id] or {}
+        return self.fluid_recipes.products[id] or {}
     else
         return {}
     end
@@ -227,10 +239,10 @@ end
 
 function RecipeCache:get_additional_recipes_for_ingredient(type, id, force)
     if type == "item" then
-        return self.rocket_launch.ingredients[id] or {}
+        return self.item_recipes.ingredients[id] or {}
     elseif type == "fluid" then
         local res = {}
-        local recipes_to_adapt = self.resource_mining.recipes_for_fluid_ingredient[id]
+        local recipes_to_adapt = self.resource_recipes.ingredients[id]
         self:adapt_mining_to_force(res, recipes_to_adapt, force)
 
         return res
@@ -247,7 +259,7 @@ function RecipeCache:get_crafting_machines(category)
     end
 
     if game.resource_category_prototypes[category] ~= nil then
-        return self.resource_mining.miners_for_category[category] or {}
+        return self.resource_recipes.miners_for_category[category] or {}
     elseif game.recipe_category_prototypes[category] ~= nil then
         return game.get_filtered_entity_prototypes({
             {filter= "crafting-category", crafting_category= category, mode= "and"},

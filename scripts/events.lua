@@ -29,7 +29,7 @@ event.on_tick(function(e)
     for _, task in pairs(on_tick_n.retrieve(e.tick) or {}) do
         if type(task) == "table" then
             if task.player_index == nil or task.gui == nil then
-                log("Incomplete task: "..serpent.line(task))
+                debug:log_warn("Incomplete task: "..serpent.line(task))
             else
                 local elem = nil
                 if task.gui == "qs" then
@@ -43,7 +43,7 @@ event.on_tick(function(e)
                 end
             end
         else
-            log("Unknown task type: "..type(task)..", data: "..serpent.line(task))
+            debug:log_warn("Unknown task type: "..type(task)..", data: "..serpent.line(task))
         end
     end
 end)
@@ -53,9 +53,9 @@ event.on_string_translated(function(e) PlayerData:string_translated(e) end)
 event.on_load(function(e) PlayerData:load(e) end)
 
 script.on_event("fcodex_toggle_quick_search", function(e)
-    log("Player used shortcut key to open quick search: "..serpent.line(e))
+    debug:log_debug("Player used shortcut key to open quick search: "..serpent.line(e))
     local qs = PlayerData:get_quick_search(e)
-    log("Player data: "..serpent.line(qs,{nocode=true}))
+    debug:log_debug("Player data: "..serpent.line(qs,{nocode=true}))
     qs:toggle()
 end)
 
@@ -69,7 +69,8 @@ gui.hook_events(function(e)
         elseif action:sub(1, #"cx_") == "cx_" then
             PlayerData:get_codex(e):gui_action(action, e)
         else
-            game.print("Unknown action \"" .. action .. "\" cannot assing action to gui!")
+            debug:log_warn("Unknown action \"" .. action .. "\" cannot assing action to gui!")
+            --game.print("Unknown action \"" .. action .. "\" cannot assing action to gui!")
         end
     end
 end)

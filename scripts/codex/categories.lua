@@ -5,6 +5,7 @@ local search = require("scripts.search")
 local serpent = require("scripts.serpent")
 
 local Categories = {}
+local Categories_mt = {__index = Categories}
 
 function Categories:Init()
 	local cat_item = {}
@@ -59,21 +60,19 @@ end
 
 function Categories:new()
     local o = {}   -- create object
-    setmetatable(o, self)
-    self.__index = self
+    setmetatable(o, Categories_mt)
 
+    o.selected_index = 0 -- 0 when nothing is selected
+    o.selected_cat = {}
 
-    self.selected_index = 0 -- 0 when nothing is selected
-    self.selected_cat = {}
-
-    self.refs = {}
-    self.entity_list = {}
+    o.refs = {}
+    o.entity_list = {}
 
     return o
 end
 
 function Categories:load()
-    setmetatable(self, {__index = Categories})
+    setmetatable(self, Categories_mt)
     return self
 end
 
@@ -271,6 +270,13 @@ function Categories:validate()
     log("   Categories Validate: Checking categories...")
     local valid = true
     local fixed = true
+
+    if getmetatable(self) ~= Categories_mt then
+        log("   Categories Validate: Metatable is not the Categories metatable!")
+        setmetatable(self, Categories_mt)
+        valid = false
+        fixed = fixed and true
+    end
 
     local not_nil_values = {
         "refs", "entity_list", "selected_cat", "selected_index"

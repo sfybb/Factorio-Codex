@@ -4,7 +4,8 @@ local flib_table = require("__flib__.table")
 local sort = require("scripts.sort")
 local serpent = require("scripts.serpent")
 
-RecipeInfo= { }
+local RecipeInfo = { }
+local RecipeInfo_mt = {__index = RecipeInfo}
 
 local function set_expansion_panel_state(button, content, collapsed)
     content.visible = not collapsed
@@ -17,14 +18,14 @@ end
 
 function RecipeInfo:new (force_index)
     local o = {}   -- create object if user does not provide one
-    setmetatable(o, self)
-    self.__index = self
-    self.force_index = force_index
+    setmetatable(o, RecipeInfo_mt)
+
+    o.force_index = force_index
     return o
 end
 
 function RecipeInfo:load()
-    setmetatable(self, {__index = RecipeInfo})
+    setmetatable(self, RecipeInfo_mt)
     log("Loading RecipeInfo: "..serpent.line(self, {nocode=true}))
     return self
 end
@@ -33,7 +34,7 @@ function RecipeInfo:destroy()
     -- nothing to do
 end
 
-function RecipeInfo:build_recipe_slot(recipe_item_info)
+function RecipeInfo:build_recipe_slot(recipe_item_info, keep_empty)
 	local rounded_amount_str
     local amount_str = recipe_item_info.amount
     if amount_str == nil and
@@ -52,6 +53,10 @@ function RecipeInfo:build_recipe_slot(recipe_item_info)
         game.print("A recipe contains strange values please report this to the author of \"Factorio Codex\" to help improve it, thank you!")
         amount_str = "?"
 		rounded_amount_str= "?"
+    end
+
+    if keep_empty == false and (recipe_item_info.amount == 0 or (recipe_item_info.amount_min == 0 and recipe_item_info.amount_max == 0)) then
+        return nil
     end
 
     local tooltip = {"", "" .. amount_str .. " x "}
@@ -114,28 +119,49 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
         type="flow", direction="horizontal", enabled = true, style="player_input_horizontal_flow",
     }
 
+    local highlight_id_occured = false
+
+    local has_one_ingr = #recipe.ingredients == 1
     for _,ingr in pairs(recipe.ingredients) do
-        local slot = self:build_recipe_slot(ingr)
-        slot.style = "flib_standalone_slot_button_" .. (highlight_id == ingr.name and "grey" or "default")
+        local should_highlight = highlight_id == ingr.name
 
-        if highlight_id == ingr.name then
-            slot.enabled = false
+        local slot = self:build_recipe_slot(ingr, has_one_ingr)
+
+        if slot ~= nil then
+            slot.style = "flib_standalone_slot_button_" .. (should_highlight and "grey" or "default")
+
+            if should_highlight then
+                highlight_id_occured = true
+                slot.enabled = false
+            end
+
+            table.insert(recipe_ui, slot)
         end
-
-        table.insert(recipe_ui, slot)
     end
 
     table.insert(recipe_ui, {type="sprite", sprite="fcodex_produces", style="fcodex_produces_sprite"})
 
+    local has_one_pr = #recipe.products == 1
     for _,pr in pairs(recipe.products) do
-        local slot = self:build_recipe_slot(pr)
-        slot.style = "flib_standalone_slot_button_" .. (highlight_id == pr.name and "grey" or "default")
+        local should_highlight = highlight_id == pr.name
 
-        if highlight_id == pr.name then
-            slot.enabled = false
+
+        local slot = self:build_recipe_slot(pr, has_one_pr)
+
+        if slot ~= nil then
+            slot.style = "flib_standalone_slot_button_" .. (should_highlight and "grey" or "default")
+
+            if should_highlight then
+                highlight_id_occured = true
+                slot.enabled = false
+            end
+
+            table.insert(recipe_ui, slot)
         end
+    end
 
-        table.insert(recipe_ui, slot)
+    if not highlight_id_occured then
+        return nil
     end
 
     --{type="sprite-button", sprite="", style="flib_standalone_slot_button_default"}
@@ -209,11 +235,17 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     sort.array(ingr_recipes, {sort.factorio})
 
     for _, p in pairs(add_prod_recipes) do
-         table.insert(produced_by, self:get_single_recipe_gui(p, id))
+        local recipe_gui = self:get_single_recipe_gui(p, id)
+        if recipe_gui ~= nil then
+            table.insert(produced_by, recipe_gui)
+        end
     end
 
     for _, p in ipairs(prod_recipes) do
-        table.insert(produced_by, self:get_single_recipe_gui(p, id))
+        local recipe_gui = self:get_single_recipe_gui(p, id)
+        if recipe_gui ~= nil then
+            table.insert(produced_by, recipe_gui)
+        end
     end
 
     if #prod_recipes == 0 and next(add_prod_recipes) == nil then
@@ -222,11 +254,17 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
 
 
     for _, p in pairs(add_ingr_recipes) do
-        table.insert(ingredient_in, self:get_single_recipe_gui(p, id))
+        local recipe_gui = self:get_single_recipe_gui(p, id)
+        if recipe_gui ~= nil then
+            table.insert(ingredient_in, recipe_gui)
+        end
     end
 
     for _, p in ipairs(ingr_recipes) do
-        table.insert(ingredient_in, self:get_single_recipe_gui(p, id))
+        local recipe_gui = self:get_single_recipe_gui(p, id)
+        if recipe_gui ~= nil then
+            table.insert(ingredient_in, recipe_gui)
+        end
     end
 
     local recipe_gui = {
@@ -309,6 +347,13 @@ function RecipeInfo:validate(expected_force_index)
     log("   Recipe Info Validate: Checking recipe info...")
     local valid = true
     local fixed = true
+
+    if getmetatable(self) ~= RecipeInfo_mt then
+        log("   Recipe Info Validate: Metatable is not the Categories metatable!")
+        setmetatable(self, RecipeInfo_mt)
+        valid = false
+        fixed = fixed and true
+    end
 
     local not_nil_values = {
         "force_index"

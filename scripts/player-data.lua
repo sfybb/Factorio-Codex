@@ -7,9 +7,7 @@ local Codex = require("scripts.codex")
 local QuickSearch = require("scripts.quick_search")
 local Dicitonary = require("scripts.dictionary")
 
-
--- needed in order to add back meta tables after a save / join
-local metatables_missing = false
+local access_loggers_added = true
 
 PlayerData = {}
 PlayerData.Cache = Cache
@@ -45,19 +43,31 @@ function PlayerData:Init()
 end
 
 function PlayerData:load()
-    Cache:Init()
-	Dicitonary:load()
+    PlayerData:print_global_data()
 
-    metatables_missing = true
+    Cache:Init()
+
+    if global.cache ~= nil then
+        Cache.load(global.cache)
+    else
+        log("Cannot load cache: Cache is a nil value!")
+    end
+
+	Dicitonary:load()
+    Dicitonary:build()
+
+    PlayerData:load_metatables()
     log("Player data loaded")
 end
 
 function PlayerData:create_player(e)
 	Dicitonary:translate(e.player_index)
+    PlayerData:get(e)
 end
 
 function PlayerData:player_update(e)
     Dicitonary:translate(e.player_index)
+    PlayerData:print_global_data()
 end
 
 function PlayerData:cancel_player_update(e)
@@ -65,7 +75,6 @@ function PlayerData:cancel_player_update(e)
 end
 
 function PlayerData:string_translated(e)
-	PlayerData:check_metatables()
     Dicitonary:string_translated(e)
 end
 
@@ -74,8 +83,6 @@ function PlayerData:check_skipped()
 end
 
 function PlayerData:validate()
-    PlayerData:check_metatables()
-
     log("Validating mod data...")
     --global.cache:validate()
 
@@ -84,26 +91,26 @@ function PlayerData:validate()
     log("Player Data:")
     for i,data in pairs(global.players) do
         log("========== [ ".. game.get_player(i).name .. " (" .. i ..") ] ==========")
-        local qs_valid, qs_fixed = data.quick_search:validate(i)
+        local qs_valid, qs_fixed = QuickSearch.validate(data.quick_search, i)
 
         if qs_valid then
             log("Quick Search passed validation")
         elseif qs_fixed then
             log("Quick Search invalid but could be fixed!")
         else
-            log("Quick Search validation failed! Deleting!")
+            log("Quick Search validation failed! Deleting! ("..i..")")
             data.quick_search:destroy()
             data.quick_search = QuickSearch:new(i)
         end
 
-        local cx_valid, cx_fixed = data.codex:validate(i)
+        local cx_valid, cx_fixed = Codex.validate(data.codex, i)
 
         if cx_valid then
             log("Codex passed validation")
         elseif cx_fixed then
             log("Codex invalid but could be fixed!")
         else
-            log("Codex validation failed! Deleting!")
+            log("Codex validation failed! Deleting! ("..i..")")
             data.codex:destroy()
             data.codex = Codex:new(i)
         end
@@ -126,23 +133,21 @@ function PlayerData:validate()
         end
     end
     log("Validation concluded")
+    PlayerData:install_access_logger()
 end
 
 function PlayerData:get(player)
+    PlayerData:install_access_logger()
+
     local indx = get_index_arg(player)
 
     if indx == 0 then
         return {}
     end
 
-    log("Retrieving Player data for player with id "..indx)
+    debug:log_debug("Retrieving Player data for player with id "..indx)
 
-    local data = nil
-    if metatables_missing then
-        data = PlayerData:load_metatables(indx)
-    else
-        data = global.players[indx]
-    end
+    local data =  global.players[indx]
 
     if data == nil then
         data = PlayerData:init_player(indx)
@@ -152,64 +157,50 @@ function PlayerData:get(player)
 end
 
 function PlayerData:init_player(indx)
-    log("Initializing player data for player " .. indx)
+    debug:log_info("Initializing player data for player " .. indx)
     global.players[indx] = {
         codex = Codex:new(indx),
         quick_search = QuickSearch:new(indx)
     }
+
+    --PlayerData:add_access_logger_to_player(indx, global.players[indx])
+
     return global.players[indx]
 end
 
-function PlayerData:check_metatables()
-    if metatables_missing then
-        PlayerData:load_metatables()
-    end
-end
+function PlayerData:load_metatables()
+    for i,data in pairs(global.players) do
+        if data == nil then
+            debug:log_warn("Loading player "..i.." - NO DATA!")
+            return
+        end
 
-function PlayerData:load_metatables(indx)
-    local data = nil
-    -- initialize all missing metatables
-    Cache:Init()
-    global.cache = Cache.load(global.cache)
-	Dicitonary:build()
+        debug:log_debug("Loading player "..i)
 
-
-    for i,_ in pairs(global.players) do
-        if indx == i then
-            data = PlayerData:load_player(i)
+        if data.codex == nil or next(data.codex) == nil then
+            debug:log_warn("Warning: Codex is nil for player " .. i .. "!")
+            --data.codex = Codex:new(i)
         else
-            PlayerData:load_player(i)
+            Codex.load(data.codex)
+        end
+
+        if data.quick_search == nil or next(data.quick_search) == nil then
+            debug:log_warn("Warning: QuickSearch is nil for player " .. i .. "!")
+            --data.quick_search = QuickSearch:new(i)
+        else
+            QuickSearch.load(data.quick_search)
         end
     end
 
-    metatables_missing = false
-
     --PlayerData:validate()
-
-    return data
 end
 
-function PlayerData:load_player(indx)
-    local data = global.players[indx]
-    if data == nil then
-        return
+function PlayerData:print_global_data()
+    debug:log_debug("Global player table: ")
+
+    for ind, pl in pairs(global.players) do
+        debug:log_debug("Player "..ind..": " .. serpent.block(pl, {nocode = true, sortkeys = true, maxlevel = 3, keyignore = {dicts=true}}))
     end
-
-	if data.codex == nil or next(data.codex) == nil then
-        log("Warning: Codex is nil for player " .. indx .. "! creating a new instance.")
-		data.codex = Codex:new(indx)
-	else
-		data.codex = Codex.load(data.codex)
-	end
-
-	if data.quick_search == nil or next(data.quick_search) == nil then
-        log("Warning: QuickSearch is nil for player " .. indx .. " creating a new instance.")
-		data.quick_search = QuickSearch:new(indx)
-	else
-		data.quick_search = QuickSearch.load(data.quick_search)
-	end
-
-    return data
 end
 
 function PlayerData:get_codex(player)
@@ -227,13 +218,70 @@ function PlayerData:get_quick_search(player)
     local indx = get_index_arg(player)
 
     if indx == 0 then
-		log("Invalid index: "..serpent.line(player))
         return {}
     end
 
     local data = PlayerData:get(indx)
-	--log("Reriving data ... " .. serpent.block(data, {nocode=true, maxnum=3}))
+    --log("Reriving data ... " .. serpent.block(data, {nocode=true, maxnum=3}))
     return data.quick_search
+end
+
+
+
+function PlayerData:install_access_logger()
+    if access_loggers_added == true then
+        return
+    end
+    access_loggers_added = true
+
+    log("Adding access loggers to tables...")
+    for ind, pl in pairs(global.players) do
+        PlayerData:add_access_logger_to_player(ind, pl)
+    end
+
+    global.players = add_access_logger(global.players, "Players Table")
+end
+
+function PlayerData:add_access_logger_to_player(ind, pl)
+    local player_str = "Player "..ind
+    if pl.quick_search ~= nil then
+        pl.quick_search = add_access_logger(pl.quick_search, player_str .. " QS")
+    end
+
+    if pl.codex ~= nil then
+        if pl.codex.categories ~= nil then
+            pl.codex.categories = add_access_logger(pl.codex.categories, player_str .. " CAT")
+        end
+
+        if pl.codex.recipe_info ~= nil then
+            pl.codex.recipe_info = add_access_logger(pl.codex.recipe_info, player_str .. " RI")
+        end
+
+        pl.codex = add_access_logger(pl.codex, player_str .. " CODEX")
+    end
+
+    global.players[ind] = add_access_logger(pl, player_str)
+end
+
+function add_access_logger(orig_table, table_id)
+    -- create proxy
+    local proxy_table = {}
+
+    -- create metatable
+    local mt = {
+        __index = function (t,k)
+            print("["..table_id.."] access to element " .. tostring(k))
+            return orig_table[k]   -- access the original table
+        end,
+
+        __newindex = function (t,k,v)
+            print("["..table_id.."] update of element " .. tostring(k) ..
+                    " to " .. tostring(v))
+            orig_table[k] = v   -- update original table
+        end
+    }
+    setmetatable(proxy_table, mt)
+    return proxy_table
 end
 
 return PlayerData

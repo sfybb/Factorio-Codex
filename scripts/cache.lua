@@ -1,4 +1,5 @@
-Cache = {prototypes={per_player={}},init_done=false}
+local Cache = {prototypes={per_player={}},init_done=false}
+local Cache_mt = {__index = Cache}
 
 local serpent = require("scripts.serpent")
 local ModuleCache = require("scripts.cache.module_cache")
@@ -7,13 +8,13 @@ local PrototypeCache = require("scripts.cache.prototype_cache")
 local DictsCache = require("scripts.cache.dicts_cache")
 
 function Cache:load()
-    setmetatable(self, {__index = Cache})
+    setmetatable(self, Cache_mt)
 
     log("Loading saved caches...")
     for id,gc in pairs(self.global) do
         local cache_proto = Cache.prototypes[id]
         if cache_proto ~= nil then
-            self.global[id] = Cache.prototypes[id].load(gc)
+            --[[self.global[id] =]] Cache.prototypes[id].load(gc)
             log("   "..cache_proto.name.."   Done")
         else
             log("   Error: cant load cache. Unknown cache id \""..id.."\". Did Cache:Init() get called?")
@@ -25,7 +26,7 @@ function Cache:load()
         for id,pc in pairs(p_caches) do
             local cache_proto = Cache.prototypes[id]
             if cache_proto ~= nil then
-                p_caches[id] = cache_proto.load(pc)
+                --[[p_caches[id] =]] cache_proto.load(pc)
                 log("   "..cache_proto.name.."   Done")
             else
                 log("   Error: cant load cache. Unknown cache id \""..id.."\". Did Cache:Init() get called?")
@@ -58,23 +59,22 @@ end
 
 function Cache:build()
     local c = {}
-    setmetatable(c, self)
-    self.__index = self
+    setmetatable(c, Cache_mt)
 
-    self.valid = true
+    c.valid = true
 
-    self.global = {}
-    self.per_player = {}
+    c.global = {}
+    c.per_player = {}
 
     log("Initializing global caches...")
     for _,gc in pairs(Cache.prototypes) do
         if type(gc) == "table" and gc.global == true then
-            self.global[gc.id] = gc:build()
+            c.global[gc.id] = gc:build()
             log("   "..gc.name.."   Done")
         end
     end
 
-    return self
+    return c
 end
 
 function Cache:initPlayer(player_index)
@@ -88,22 +88,27 @@ function Cache:initPlayer(player_index)
     end
 end
 
-function Cache:invalidate_all()
+function Cache:rebuild_all()
+    log("Rebuilding global caches...")
     for _, c in pairs(self.global) do
-        c:invalidate()
+        log("   "..c.name)
+        c:rebuild()
     end
 
     for _, p_c in pairs(self.per_player) do
+        log("Rebuilding caches for player \""..game.get_player(p_c).name.."\"...")
         for _, c in pairs(p_c) do
-            c:invalidate()
+            log("   "..c.name)
+            c:rebuild()
         end
     end
 end
 
-function Cache:invalidate_cache_id(cache_id)
+function Cache:rebuild_cache_id(cache_id)
+    log("Rebuilding caches with id "..cache_id)
     for c_id, c in pairs(self.global) do
         if c_id == cache_id then
-            c:invalidate()
+            c:rebuild()
             return
         end
     end
@@ -112,7 +117,7 @@ function Cache:invalidate_cache_id(cache_id)
     for _, p_c in pairs(self.per_player) do
         for c_id, c in pairs(p_c) do
             if c_id == cache_id then
-                c:invalidate()
+                c:rebuild()
                 return
             end
         end
@@ -137,8 +142,8 @@ function Cache:get_player_cache(player, cache_id)
     end
 
     if player_id == nil or type(player) ~= "number"  then
-        log("cannot retive cahce for non player: Invalid type: " .. type(player) .. " - Type contents: " .. serpent.block(player))
-        error("Cannot retrive cache for player!")
+        log("cannot retrieve cache for non player: Invalid type: " .. type(player) .. " - Type contents: " .. serpent.block(player))
+        error("Cannot retrieve cache for player!")
     end
 
     --log("Retrieving cache \""..cache_id.."\" for player "..player_id)

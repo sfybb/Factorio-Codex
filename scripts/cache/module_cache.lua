@@ -1,4 +1,5 @@
 local ModuleCache = { global=true, id="module_cache", name="Module Cache" }
+local ModuleCache_mt = { __index = ModuleCache }
 
 local crafting_machine_types = {"assembling-machine", "rocket-silo", "furnace"}
 
@@ -13,13 +14,12 @@ end
 
 function ModuleCache:build()
     local m_cache = {}
-    setmetatable(m_cache, self)
-    self.__index = self
+    setmetatable(m_cache, ModuleCache_mt)
 
-    self.modules = {}
+    m_cache.modules = {}
 
     for cat_name,_ in pairs(game.module_category_prototypes) do
-        self.modules[cat_name] = {
+        m_cache.modules[cat_name] = {
             tiers= {}, -- table of module tiers with their prototype
 
             limitations_equivalent = nil, -- Are the limitations of every module in this category equivalent?
@@ -33,7 +33,7 @@ function ModuleCache:build()
     local module_protos = game.get_filtered_entity_prototypes({{filter= "type", type="module"}})
 
     for _, m_proto in pairs(module_protos) do
-        local cat = self.modules[m_proto.category]
+        local cat = m_cache.modules[m_proto.category]
         cat.tiers[m_proto.tier] = m_proto
 
 
@@ -75,13 +75,17 @@ function ModuleCache:build()
     end
 
     -- remove cat.limitations table if cat.limitations_equivalent is false
-    for cat_name, cat in pairs(self.modules) do
+    for cat_name, cat in pairs(m_cache.modules) do
         if cat.limitations_equivalent ~= true then
             cat.limitations = {}
         end
     end
 
-    return self
+    return m_cache
+end
+
+function ModuleCache:rebuild()
+
 end
 
 function ModuleCache:get_allowed_modules_for_recipe(recipe_id)

@@ -1,6 +1,20 @@
 debug = {enabled = true}
+debug_prefs = {}
 
-local debug_prefs = {}
+local debug_log_funcs = {
+    dummy = function () end,
+    log_debug = function (_,m) log("[debug] " .. m) end,
+    log_info  = function (_,m) log("[info]  " .. m) end,
+    log_warn  = function (_,m) log("[warn]  " .. m) end,
+    log_err   = function (_,m) log("[error] " .. m) end
+}
+
+local level_order = {
+    "log_debug",
+    "log_info",
+    "log_warn",
+    "log_err"
+}
 
 function round(num, decimals)
     local num_shift = 10^decimals
@@ -56,5 +70,17 @@ function debug:print(msg)
         log("codex-debug: " .. msg)
     end
 end
+
+function debug:set_log_level(level)
+    log("Setting log level to " .. level .. " (\"".. (level_order[level] or "unknown") .."\")")
+    for i,n in ipairs(level_order) do
+        if i < level then
+            debug[n] = debug_log_funcs.dummy
+        else
+            debug[n] = debug_log_funcs[n]
+        end
+    end
+end
+
 
 math.round = round

@@ -64,6 +64,29 @@ function Dict:build()
 	dicts_table.build_done = true
 end
 
+function Dict:rebuild()
+	log("Rebuilding dictionaries...")
+	dicts_table.build_done = false
+	Dict:Init()
+
+	local players_to_translate = {}
+	for _, player in pairs(game.players) do
+		if player.connected then
+			Dict:translate(player.index)
+			table.insert(players_to_translate, player)
+		end
+	end
+
+	local spacer = ""
+	local text = "Kicking off translation for "
+	for _, p in ipairs(players_to_translate) do
+		text = text .. spacer .. p.name
+		spacer = ", "
+	end
+
+	log(text)
+end
+
 function Dict:string_translated(e)
     local language_data = flib_dictionary.process_translation(e)
     if language_data then

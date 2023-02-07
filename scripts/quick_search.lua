@@ -7,6 +7,7 @@ local qs_math = require("scripts.quick_search.qs_math")
 
 
 local QuickSearch = {}
+local QuickSearch_mt = {__index = QuickSearch}
 
 local min_chars_for_search = 2
 local dicts_to_search = {"item", "fluid", "technology"}
@@ -14,23 +15,22 @@ local dicts_to_search = {"item", "fluid", "technology"}
 
 function QuickSearch:new(player_index)
     local o = {}
-    setmetatable(o, self)
-    self.__index = self
+    setmetatable(o, QuickSearch_mt)
 
-    self.player_index = player_index
+    o.player_index = player_index
 
-    self.visible = false
-    self.refs = {}
-    self.search_results = {}
-    self.search_has_math = false
+    o.visible = false
+    o.refs = {}
+    o.search_results = {}
+    o.search_has_math = false
 
-    self.rebuild_gui = false
+    o.rebuild_gui = false
 
-    return self
+    return o
 end
 
 function QuickSearch:load()
-    setmetatable(self, {__index = QuickSearch})
+    setmetatable(self, QuickSearch_mt)
     return self
 end
 
@@ -132,11 +132,13 @@ function QuickSearch:set_rebuild_gui()
 end
 
 function QuickSearch:display_result_list(unfiltered_list)
+    self:remove_search_results()
+    self.search_results = {}
+
     if #unfiltered_list == 0 then
         return
     end
 
-    self.search_results = {}
     for _,data in ipairs(unfiltered_list) do
         local icon = "["..data.type.."="..data.id.."]"
         local text = data.name
@@ -162,6 +164,41 @@ function QuickSearch:display_result_list(unfiltered_list)
     end
 end
 
+function QuickSearch:remove_search_results()
+    local math_text = nil
+    if self.has_math == true then
+        math_text = self.refs.results.get_item(1)
+    end
+
+    self.refs.results.clear_items()
+
+    if self.has_math == true then
+         self.refs.results.add_item(math_text)
+    end
+end
+
+function QuickSearch:set_math_result(result, error)
+    if result ~= nil or (error ~= nil and error ~= "") then
+        local math_text = result ~= nil and ("=" .. result) or "=?"
+
+        if self.has_math == true then
+            self.refs.results.set_item(1, math_text)
+        else
+            self.refs.results.add_item(math_text, 1)
+        end
+
+        self.math_result = result
+        self.has_math = true
+    else
+        if self.has_math == true then
+            self.refs.results.remove_item(1)
+        end
+
+        self.math_result = nil
+        self.has_math = false
+    end
+end
+
 function QuickSearch:update_input(prompt)
     if self.visible == false then
         --log("Quick search not visible for player "..self.player_index)
@@ -174,14 +211,13 @@ function QuickSearch:update_input(prompt)
         self.refs.search_field.text = prompt
     end
 
-
-    --[[]]
-
     --log("Update input: \"".. (prompt or "") .. "\"")
 
-    self.refs.results.clear_items()
-    self.search_results = {}
     if prompt == "" then
+        self.refs.results.clear_items()
+        self.math_result = nil
+        self.has_math = false
+
         --log("Quick search has empty prompt for player "..self.player_index)
         return
     end
@@ -189,17 +225,13 @@ function QuickSearch:update_input(prompt)
     local math_prompt = string.gsub((prompt == nil) and "" or prompt, "%s+", "")
 
     local math_result, math_err = qs_math.calculate_result(math_prompt)
-    if math_result ~= nil then
-        self.refs.results.add_item("=" .. math_result)
-        self.math_result = math_result
-        self.has_math = true
-    elseif math_err ~= nil and math_err ~= ""  then
-        self.refs.results.add_item("=?")
-        self.math_result = nil
-        self.has_math = true
-    else
-        self.math_result = nil
-        self.has_math = false
+    self:set_math_result(math_result, math_err)
+
+    local dicts_cache = global.cache:get_player_cache(self.player_index, "dicts_cache")
+    if dicts_cache:is_translated() == false then
+        self:remove_search_results()
+        self.refs.results.add_item({ "factorio-codex.waiting-for-translation" })
+        return
     end
 
     if self.last_search_task ~= nil then
@@ -211,61 +243,10 @@ function QuickSearch:update_input(prompt)
         name = "update_search",
         prompt = prompt
     })
-
-    --[[local dicts_cache = global.cache:get_player_cache(self.player_index, "dicts_cache")
-
-    if dicts_cache:is_translated() == false then
-        return
-    end
-
-    local dicts = {}
-    for _,dict_name in pairs(dicts_to_search) do
-        local dict = dicts_cache:get_names_dict(dict_name)
-        if dict ~= nil then
-            dicts[dict_name] = dict
-        else
-            log("Dict "..dict_name.." missing")
-        end
-    end
-
-    local matching_names = search_utils.find(prompt, dicts)
-
-    search_utils.sort(matching_names, {
-        search_utils.sort_orders.hidden_last,
-        search_utils.sort_orders.tech_last,
-        search_utils.sort_orders.match_count,
-        search_utils.sort_orders.factorio})
-
-    --log(serpent.block(self.refs.results.valid, {maxnum=15}))
-
-    self:display_result_list(matching_names)]]
 end
 
 function QuickSearch:execute_task(task)
     if task.name == "update_search" then
-        --[[self.refs.results.clear_items()
-        self.search_results = {}
-        if task.prompt == "" then
-            --log("Quick search has empty prompt for player "..self.player_index)
-            return
-        end
-
-        local math_prompt = string.gsub((task.prompt == nil) and "" or task.prompt, "%s+", "")
-
-        local math_result, math_err = qs_math.calculate_result(math_prompt)
-        if math_result ~= nil then
-            self.refs.results.add_item("=" .. math_result)
-            self.math_result = math_result
-            self.has_math = true
-        elseif math_err ~= nil and math_err ~= ""  then
-            self.refs.results.add_item("=?")
-            self.math_result = nil
-            self.has_math = true
-        else
-            self.math_result = nil
-            self.has_math = false
-        end]]
-
         local dicts_cache = global.cache:get_player_cache(self.player_index, "dicts_cache")
 
         if dicts_cache:is_translated() == false then
@@ -367,6 +348,14 @@ function QuickSearch:validate(expected_player_indx)
     log("Quick Search Validate: Checking quick search...")
     local valid = true
     local fixed = true
+
+    if getmetatable(self) ~= QuickSearch_mt then
+        log("Quick Search Validate: Metatable is not the Quick Search metatable!")
+        setmetatable(self, QuickSearch_mt)
+        valid = false
+        fixed = fixed and true
+    end
+
     if self.player_index ~= expected_player_indx then
         log("Quick Search Validate: player index is wrong! E: "..expected_player_indx.." A: " .. serpent.line(self.player_index))
         self.player_index = expected_player_indx

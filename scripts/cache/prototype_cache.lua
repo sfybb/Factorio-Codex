@@ -1,4 +1,5 @@
 local PrototypeCache = { global=true, id="prototype_cache", name="Prototype Cache" }
+local PrototypeCache_mt = { __index = PrototypeCache }
 
 local searchable_types = {fluid = true, item = true, technology = true, tile = true}
 
@@ -15,14 +16,13 @@ end
 
 function PrototypeCache:build()
     local p_cache = {}
-    setmetatable(p_cache, self)
-    self.__index = self
+    setmetatable(p_cache, PrototypeCache_mt)
 
-    self.protos = {}
+    p_cache.protos = {}
 
-    self:rebuild()
+    p_cache:rebuild()
 
-    return self
+    return p_cache
 end
 
 function PrototypeCache:rebuild()

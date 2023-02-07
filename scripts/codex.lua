@@ -7,35 +7,45 @@ local serpent = require("scripts.serpent")
 
 
 local Codex = {}
+local Codex_mt = {__index = Codex}
 
 function Codex:Init()
     Categories:Init()
 end
 
 function Codex:new(player_index)
+    debug:log_debug("New Codex: "..player_index)
     local o = {}   -- create object if user does not provide one
-    setmetatable(o, self)
-    self.__index = self
+    setmetatable(o, Codex_mt)
 
-    self.categories = Categories:new()
-    self.recipe_info = RecipeInfo:new(game.get_player(player_index).force.index)
+    o.categories = Categories:new()
+    o.recipe_info = RecipeInfo:new(game.get_player(player_index).force.index)
 
-    self.player_index = player_index
+    o.player_index = player_index
 
-    self.visible = false
-    self.refs = {}
-    self.entity_view = {}
+    o.visible = false
+    o.refs = {}
+    o.entity_view = {}
 
-    self.rebuild_gui = false
+    o.rebuild_gui = false
 
-    return self
+    return o
 end
 
 function Codex:load()
-    setmetatable(self, {__index = Codex})
+    setmetatable(self, Codex_mt)
 
-    self.categories = Categories.load(self.categories)
-    self.recipe_info = RecipeInfo.load(self.recipe_info)
+    if self.categories ~= nil then
+        Categories.load(self.categories)
+    else
+        log("Cannot load categories: Categories is a nil value")
+    end
+
+    if self.recipe_info ~= nil then
+        RecipeInfo.load(self.recipe_info)
+    else
+        log("Cannot load recipe_info: Recipe info is a nil value")
+    end
 
     --log("Codex load ("..self.player_index..") " .. serpent.line(self, {nocode=true}))
     return self
@@ -342,8 +352,16 @@ function Codex:validate(expected_player_indx)
     local valid = true
     local fixed = true
 
+    if getmetatable(self) ~= Codex_mt then
+        log("Codex Validate: Metatable is not the Codex metatable!")
+        setmetatable(self, Codex_mt)
+        valid = false
+        fixed = fixed and true
+    end
+
     if self.player_index ~= expected_player_indx then
         log("Codex Validate: player index is wrong! E: "..expected_player_indx.." A: " .. serpent.line(self.player_index))
+        self.player_index = expected_player_indx
         valid = false
         fixed = fixed and true
     end

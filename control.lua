@@ -2,6 +2,8 @@ serpent = require("serpent")
 
 local events = require("scripts.events")
 
+debug:set_log_level(1)
+
 --[[PlayerData:PreInit()
 
 if global.players ~= nil then
