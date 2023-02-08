@@ -1,10 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.14
-Date: 07.02.2023
+Date: 08.02.2023
   Features:
     - Quick Search: Text input doesn't fight you in multiplayer anymore (this adds a very small delay to the search results).
     - Codex: Recipes don't show any items/fluids that require/produce 0 units unless this is the only ingredient/product (the other ingredients/products are still shown. This manly affects the Arcosphere recipes in SE).
-    - Re-translation after changes to the mods.
+    - Re-translation after changes to the mods (Anything that was translated before remains searchable while the re-translation is ongoing).
   Changes:
     - Under the hood changes to hopefully fix de-syncs once and for all (queue the next de-sync bug).
   Debug:

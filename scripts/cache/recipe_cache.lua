@@ -64,18 +64,42 @@ function RecipeCache:add_recipe(recipe)
         end
     end
 
-    for _, ingr in ipairs(recipe.products) do
+    for _, prod in ipairs(recipe.products) do
         local list_to_add = nil
-        if ingr.type == "item" then
+        if prod.type == "item" then
             list_to_add = self.item_recipes.products
-        elseif ingr.type == "fluid" then
+        elseif prod.type == "fluid" then
             list_to_add = self.fluid_recipes.products
-        elseif ingr.type == "basic-fluid" or ingr.type == "basic-item" then
+        elseif prod.type == "basic-fluid" or prod.type == "basic-item" then
             list_to_add = self.resource_recipes.products
         end
 
         if list_to_add ~= nil then
+            add_recipe_to_list(list_to_add, prod.name)
+        end
+    end
+end
+
+function RecipeCache:add_resource_recipe(recipe)
+    local add_recipe_to_list = function (list, id)
+        list[id] = list[id] or {}
+        table.insert(list[id], recipe)
+    end
+
+
+    for _, ingr in ipairs(recipe.ingredients) do
+        local list_to_add = self.resource_recipes.ingredients
+
+        if list_to_add ~= nil then
             add_recipe_to_list(list_to_add, ingr.name)
+        end
+    end
+
+    for _, prod in ipairs(recipe.products) do
+        local list_to_add = self.resource_recipes.products
+
+        if list_to_add ~= nil then
+            add_recipe_to_list(list_to_add, prod.name)
         end
     end
 end
@@ -182,7 +206,7 @@ function RecipeCache:build_resource_mining_cache()
                 category=v.resource_category
             }
 
-            self:add_recipe(recipe)
+            self:add_resource_recipe(recipe)
             num_mining_recipes = num_mining_recipes + 1
         end
     end
@@ -208,6 +232,7 @@ function RecipeCache:adapt_mining_to_force(res, recipes_to_adapt, force)
     if recipes_to_adapt == nil then
         return
     end
+    debug:log_debug("Adapting mining recipes to force mining productivity")
 
     local mining_productivity = (force.mining_drill_productivity_bonus or 0) + 1
 

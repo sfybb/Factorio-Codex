@@ -2,7 +2,7 @@ serpent = require("serpent")
 
 local events = require("scripts.events")
 
-debug:set_log_level(1)
+debug:set_log_level(2)
 
 --[[PlayerData:PreInit()
 

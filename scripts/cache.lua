@@ -96,7 +96,7 @@ function Cache:rebuild_all()
     end
 
     for _, p_c in pairs(self.per_player) do
-        log("Rebuilding caches for player \""..game.get_player(p_c).name.."\"...")
+        log("Rebuilding caches for player \""..game.get_player(_).name.."\"...")
         for _, c in pairs(p_c) do
             log("   "..c.name)
             c:rebuild()
