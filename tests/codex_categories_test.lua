@@ -4,6 +4,7 @@ require("tests.mocks.game")
 local codex_cats = require("scripts.codex.categories")
 
 local cat_class = {}
+local flib_gui = {}
 
 TestCodexCats = {}
 
@@ -11,6 +12,7 @@ TestCodexCats = {}
 		global = {}
 		codex_cats:Init()
 		cat_class = codex_cats:new()
+        flib_gui = require("__flib__.gui")
 	end
 
 	function TestCodexCats:test_category_list()
@@ -58,11 +60,16 @@ TestCodexCats = {}
 
     function TestCodexCats:test_update_gui()
         local entity_list =  {"gets cleared"}
-        cat_class.refs = {
-            available_entities = {
+
+        flib_gui.build = function() return {
+            entities = {
                 clear_items = function () entity_list = {} end,
                 add_item = function (item) table.insert(entity_list, item) end
-            },
+            }
+        } end
+
+        cat_class.refs = {
+            available_entities = {},
 		}
 
 		cat_class.selected_cat = {name="test cat", localised_name={"", "Test Cat"}}

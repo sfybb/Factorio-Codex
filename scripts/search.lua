@@ -175,8 +175,8 @@ local function compare_multi_order(a, b, order_func_list)
     end
 
     if type(order) ~= "boolean" then
-        -- if neither a or b should come first preserve the original order
-        order = true
+        -- if neither a or b should come first return false (required by table.sort!!)   --preserve the original order--
+        order = false
     end
     return order
 end
