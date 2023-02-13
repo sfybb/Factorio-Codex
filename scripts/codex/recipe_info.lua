@@ -117,21 +117,44 @@ function RecipeInfo:build_recipe_slot(recipe_item_info, keep_empty)
     }
 end
 
-function RecipeInfo:get_recipe_slot_style(slot, entity, should_highlight, main_product)
-    local color = "default"
+function RecipeInfo:get_recipe_slot_style(slot, entity, should_highlight, main_product, is_locked)
+    local normal_colors = {
+        default = "default",
+        highlight = "green",
+        main_product = "grey",
+        debug_highlight = "pink"
+    }
+
+    local locked_colors = {
+        default = "red",
+        highlight = "yellow",
+        main_product = "orange",
+        debug_highlight = "purple"
+    }
+
+    local active_color_pallet = is_locked and locked_colors or normal_colors
+
+    local color = active_color_pallet.default
     if should_highlight then
-        color = "green"
+        color = active_color_pallet.highlight
     elseif main_product ~= nil and main_product.name == entity.name then
-        color = "grey"
+        color = active_color_pallet.main_product
     elseif debug:is_enabled() and slot.tooltip[2] == "0 x " then
-        color = "pink"
+        color = active_color_pallet.debug_highlight
     end
 
     return "flib_standalone_slot_button_"..color
 end
 
 function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
-    --(self.force.recipes[recipe.name] ~= nil
+    local recipe_locked = false
+    if recipe.name ~= nil then
+        force_recipe = game.forces[self.force_index].recipes[recipe.name]
+        --log(serpent.line({enabled=force_recipe.enabled,hidden=force_recipe.hidden}, {comment=false}))
+
+        --(self.force.recipes[recipe.name] ~= nil
+        recipe_locked = not force_recipe.enabled
+    end
     local recipe_ui =  {
         type="flow", direction="horizontal", enabled = true, style="player_input_horizontal_flow",
     }
@@ -148,7 +171,7 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
         local slot = self:build_recipe_slot(ingr, has_one_ingr or always_show_recipe)
 
         if slot ~= nil then
-            slot.style = self:get_recipe_slot_style(slot, ingr, should_highlight, nil)
+            slot.style = self:get_recipe_slot_style(slot, ingr, should_highlight, nil, recipe_locked)
 
             if should_highlight then
                 highlight_id_occured = true
@@ -168,7 +191,7 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
         local slot = self:build_recipe_slot(pr, has_one_pr or always_show_recipe)
 
         if slot ~= nil then
-            slot.style = self:get_recipe_slot_style(slot, pr, should_highlight, recipe.main_product)
+            slot.style = self:get_recipe_slot_style(slot, pr, should_highlight, recipe.main_product, recipe_locked)
 
             if should_highlight then
                 highlight_id_occured = true

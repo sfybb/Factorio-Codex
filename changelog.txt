@@ -6,6 +6,7 @@ Date: 13.02.2023
     - Increased visibility of "Produced by" and "Ingredient in" headlines.
     - Changed highlight color to green.
     - Main recipe output has the color gray now, if present.
+    - Locked recipes are shown with different colors (default background = red, main recipe output = orange, highlight color = yellow).
     - If in debug mode ingredients/products with an amount of 0 are shown again.
   Quick Search Features:
     - If in debug mode information relevant for sorting is added to each result.
