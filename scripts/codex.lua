@@ -2,6 +2,7 @@ local gui = require("__flib__.gui")
 
 local RecipeInfo = require("scripts.codex.recipe_info")
 local Categories = require("scripts.codex.categories")
+local EntityInfo = require("scripts.codex.entity_info")
 
 local serpent = require("scripts.serpent")
 
@@ -24,6 +25,7 @@ function Codex:new(player_index)
     o.player_index = player_index
 
     o.visible = false
+    o.keep_open = false
     o.refs = {}
     o.entity_view = {}
 
@@ -84,7 +86,7 @@ function Codex:build_gui()
                 style = "fcodex_codex_main",
                 ref = {"window"},
                 actions = {
-                    on_closed = "cx_close"
+                    on_closed = "cx_auto_close"
                 },
                     {type = "flow", ref = {"titlebar_flow"}, children = {
                         {type ="label", style = "frame_title", caption = "Codex", ignored_by_interaction = true},
@@ -142,6 +144,16 @@ function Codex:item_info(item)
      if #desc == 1 then
         desc = {"", "Empty for now. WIP"}
      end
+    local info_text = ""
+    local info_list = EntityInfo:get_info_for_entity(item)
+    for _,info in ipairs(info_list) do
+        info_text = info_text .. "" .. info.stat .. ": " .. info[1] .. "\n"
+    end
+
+    if info_text ~= "" then
+        desc = {"", info_text}
+    end
+
 
      self.refs.entity_desc.caption = desc
      self.recipe_info:build_gui_for_item(self.refs.entity_usage, "item", item.name)
@@ -271,6 +283,10 @@ function Codex:toggle()
     end
 end
 
+function Codex:toggle_keep_open()
+    self.keep_open = not self.keep_open
+end
+
 function Codex:gui_action(action, event)
     if event.player_index ~= self.player_index then
         log("Error: Event received for codex but player indexes mismatch! (QS: "..self.player_index..", E: "..event.player_index..")")
@@ -286,46 +302,52 @@ function Codex:gui_action(action, event)
     local codex = self
     local action_list = {
         cx_close = function() codex:close() end,
+        cx_auto_close = function()
+            if not codex.keep_open then
+                codex:close()
+            end
+        end,
+        cx_toggle_keep_open = function () codex:toggle_keep_open() end,
         cx_change_category = function() codex.categories:select_by_index(event.element.selected_index) end,
         cx_view_entity =
-            function (event)
-                local selected = {
-                    id= nil,
-                    type= nil
-                }
-                local selected_index = event.element.selected_index
+        function (event)
+            local selected = {
+                id= nil,
+                type= nil
+            }
+            local selected_index = event.element.selected_index
 
-                -- was the entity list clicked?
-                if selected_index ~= nil and selected_index > 0 then
-                    selected = codex.categories:get_selected_entity_info(event)
+            -- was the entity list clicked?
+            if selected_index ~= nil and selected_index > 0 then
+                selected = codex.categories:get_selected_entity_info(event)
 
                 -- was a sprite button in the recipe view clicked?
-                elseif event.element.type == "sprite-button" and  event.element.sprite ~= nil then
-                    local entity_type, id = string.match(event.element.sprite, "^(%S+)[/.]([%S]+)")
+            elseif event.element.type == "sprite-button" and  event.element.sprite ~= nil then
+                local entity_type, id = string.match(event.element.sprite, "^(%S+)[/.]([%S]+)")
 
-                    if entity_type ~= "entity" then
-                        selected.type = entity_type
-                        selected.id = id
-                    else
-                        log("Invalid clicked type: \""..entity_type.."\" ignoring!")
-                    end
+                if entity_type ~= "entity" then
+                    selected.type = entity_type
+                    selected.id = id
+                else
+                    log("Invalid clicked type: \""..entity_type.."\" ignoring!")
                 end
+            end
 
-                if selected == nil or selected.id == nil or selected.type == nil then
-                    return
-                end
+            if selected == nil or selected.id == nil or selected.type == nil then
+                return
+            end
 
-                if codex.visible == false then
-                    game.get_player(codex.player_index).print("Can't view entity ["..selected.type.."="..selected.id.."]: No open codex")
-                    return
-                end
+            if codex.visible == false then
+                game.get_player(codex.player_index).print("Can't view entity ["..selected.type.."="..selected.id.."]: No open codex")
+                return
+            end
 
-                codex:show_info(selected.id, selected.type)
-            end,
+            codex:show_info(selected.id, selected.type)
+        end,
         cx_update_search =
-            function (event)
-                -- do nothing for now
-            end,
+        function (event)
+            -- do nothing for now
+        end,
     }
 
     local player = game.get_player(event.player_index)

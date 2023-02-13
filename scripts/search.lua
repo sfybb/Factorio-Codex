@@ -35,7 +35,12 @@ local sort_order_functions_codex = {
         end
         return a.order < b.order
     end,
-    tech_last = function (a,b) return (a.type == b.type) and nil or (a.type ~= "technology") end,
+    tech_last = function (a,b)
+        if a.type ~= b.type and (a.type == "technology" or b.type == "technology") then
+            return a.type ~= "technology"
+        end
+        return nil
+    end,
     hidden_last = function (a,b)
         local a_hidden = is_entity_hidden(a)
         local b_hidden = is_entity_hidden(b)
@@ -50,7 +55,12 @@ local sort_order_functions = {
     factorio = function (a,b)
         return sort_order_functions_codex.factorio(a.prototype, b.prototype)
     end,
-    match_count = function (a,b) return (a.match_count == b.match_count) and nil or (a.match_count > b.match_count) end,
+    match_count = function (a,b)
+        if a.match_count == b.match_count then
+            return nil
+        end
+        return a.match_count > b.match_count
+    end,
     tech_last = sort_order_functions_codex.tech_last,
     hidden_last = function (a,b)
         return sort_order_functions_codex.hidden_last(a.prototype, b.prototype)
@@ -93,6 +103,9 @@ local function sort_array(A, order_func_list)
         order_func_list = tmp
     end
 
+    table.sort(A, function(a,b) return int_sort_help.compare_multi_order(a,b, order_func_list) end)
+
+    --[[
     local n = #A
     local B = {}
 
@@ -114,7 +127,7 @@ local function sort_array(A, order_func_list)
         -- Now array A is full of runs of length 2*width.
 
         width = 2 * width
-    end
+    end]]
 end
 
 --  Left run is A[iLeft :iRight-1].
@@ -134,6 +147,22 @@ local function bottom_up_merge(A, iLeft, iRight, iEnd, B, order_func_list)
             j = j + 1
         end
     end
+end
+
+local function func_name(f)
+    for n,t in pairs(sort_order_functions) do
+        if t == f then
+            return n
+        end
+    end
+
+    for n,t in pairs(sort_order_functions_codex) do
+        if t == f then
+            return n
+        end
+    end
+
+    return "unknown"
 end
 
 local function compare_multi_order(a, b, order_func_list)

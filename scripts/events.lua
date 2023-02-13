@@ -3,6 +3,8 @@ local gui = require("__flib__.gui")
 local on_tick_n = require("__flib__.on-tick-n")
 
 
+local Features = require("scripts.features")
+
 require("scripts.player-data")
 local migration = require("scripts.migration")
 
@@ -12,6 +14,7 @@ local serpent = require("scripts.serpent")
 
 event.on_init(function(e)
     on_tick_n.init()
+    global.Features = Features:Init()
     PlayerData:Init()
 end )
 
@@ -50,7 +53,10 @@ end)
 
 event.on_string_translated(function(e) PlayerData:string_translated(e) end)
 
-event.on_load(function(e) PlayerData:load(e) end)
+event.on_load(function(e)
+    Features.load(global.Features)
+    PlayerData:load(e)
+end)
 
 script.on_event("fcodex_toggle_quick_search", function(e)
     debug:log_debug("Player used shortcut key to open quick search: "..serpent.line(e))

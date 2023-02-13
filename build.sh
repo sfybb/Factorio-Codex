@@ -23,8 +23,10 @@ changelog_md="# Changelog"
 IFS=''
 while read line; do
     if [[ $line =~ [0-9]+\.[0-9]+\.[0-9]+ ]]; then
-        #echo "  - Version: $BASH_REMATCH"
-        changelog_md="$changelog_md\n  - Version: $BASH_REMATCH"
+        if [[ $line = Version* ]]; then
+          #echo "  - Version: $BASH_REMATCH"
+          changelog_md="$changelog_md\n  - Version: $BASH_REMATCH"
+        fi
     elif [[ $line =~ [\ ]{2}[a-zA-Z] ]]; then
         #[[ $line =~ [a-zA-Z]+.* ]] && echo "    - $BASH_REMATCH"
         [[ $line =~ [a-zA-Z]+.* ]] && changelog_md="$changelog_md\n    - $BASH_REMATCH"

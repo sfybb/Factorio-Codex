@@ -1,4 +1,5 @@
-debug = {enabled = true}
+debug = {enabled = false}
+util = {}
 debug_prefs = {}
 
 local debug_log_funcs = {
@@ -71,8 +72,13 @@ function debug:print(msg)
     end
 end
 
+function debug:is_enabled()
+    return debug.enabled
+end
+
 function debug:set_log_level(level)
     log("Setting log level to " .. level .. " (\"".. (level_order[level] or "unknown") .."\")")
+    debug.log_level = level
     for i,n in ipairs(level_order) do
         if i < level then
             debug[n] = debug_log_funcs.dummy
@@ -80,6 +86,27 @@ function debug:set_log_level(level)
             debug[n] = debug_log_funcs[n]
         end
     end
+end
+
+function util:normalize_version(version)
+    local res = nil
+    for v in string.gmatch(version, "%d+") do
+        res = (res and (res .. ".") or "")  .. string.format("%05d", v)
+    end
+    return res
+end
+
+function util:split(str, delim)
+    if delim == nil then
+        return {str}
+    end
+
+    local res = {}
+    for token in string.gmatch(str, "[^".. delim .. "]+") do
+        table.insert(res, token)
+    end
+
+    return res
 end
 
 

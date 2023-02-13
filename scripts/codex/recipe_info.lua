@@ -35,6 +35,7 @@ function RecipeInfo:destroy()
 end
 
 function RecipeInfo:build_recipe_slot(recipe_item_info, keep_empty)
+    local slot_style = nil
 	local rounded_amount_str
     local amount_str = recipe_item_info.amount
     if amount_str == nil and
@@ -47,6 +48,8 @@ function RecipeInfo:build_recipe_slot(recipe_item_info, keep_empty)
 	else
 		rounded_amount_str = math.round(recipe_item_info.amount, 2)
     end
+
+    --log("Amount: "  .. serpent.line(recipe_item_info.amount,{comment=false}) .. " ; "..serpent.line(recipe_item_info.amount_min,{comment=false}).." - "..serpent.line(recipe_item_info.amount_max,{comment=false}))
 
     if amount_str == nil then
         log("Recipe has neither amount nor amount range for: \""..serpent.line(recipe_item_info).."\"")
@@ -99,6 +102,7 @@ function RecipeInfo:build_recipe_slot(recipe_item_info, keep_empty)
 
     return {
         type="sprite-button",
+        style = slot_style,
         tooltip= tooltip,
         sprite= recipe_item_info.sprite or (recipe_item_info.type .. "/" .. recipe_item_info.name),
         show_percent_for_small_numbers= true,
@@ -113,6 +117,19 @@ function RecipeInfo:build_recipe_slot(recipe_item_info, keep_empty)
     }
 end
 
+function RecipeInfo:get_recipe_slot_style(slot, entity, should_highlight, main_product)
+    local color = "default"
+    if should_highlight then
+        color = "green"
+    elseif main_product ~= nil and main_product.name == entity.name then
+        color = "grey"
+    elseif debug:is_enabled() and slot.tooltip[2] == "0 x " then
+        color = "pink"
+    end
+
+    return "flib_standalone_slot_button_"..color
+end
+
 function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
     --(self.force.recipes[recipe.name] ~= nil
     local recipe_ui =  {
@@ -122,13 +139,16 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
     local highlight_id_occured = false
 
     local has_one_ingr = #recipe.ingredients == 1
+
+    local always_show_recipe = debug:is_enabled()
+
     for _,ingr in pairs(recipe.ingredients) do
         local should_highlight = highlight_id == ingr.name
 
-        local slot = self:build_recipe_slot(ingr, has_one_ingr)
+        local slot = self:build_recipe_slot(ingr, has_one_ingr or always_show_recipe)
 
         if slot ~= nil then
-            slot.style = "flib_standalone_slot_button_" .. (should_highlight and "grey" or "default")
+            slot.style = self:get_recipe_slot_style(slot, ingr, should_highlight, nil)
 
             if should_highlight then
                 highlight_id_occured = true
@@ -145,11 +165,10 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
     for _,pr in pairs(recipe.products) do
         local should_highlight = highlight_id == pr.name
 
-
-        local slot = self:build_recipe_slot(pr, has_one_pr)
+        local slot = self:build_recipe_slot(pr, has_one_pr or always_show_recipe)
 
         if slot ~= nil then
-            slot.style = "flib_standalone_slot_button_" .. (should_highlight and "grey" or "default")
+            slot.style = self:get_recipe_slot_style(slot, pr, should_highlight, recipe.main_product)
 
             if should_highlight then
                 highlight_id_occured = true
@@ -279,7 +298,7 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
                     }
                 },
                 {type="label", style="caption_label", caption={"factorio-codex.produced-by"}},
-                {type="empty-widget", style="fcodex_filler_widget"}
+                {type = "empty-widget", style = "flib_titlebar_drag_handle", ignored_by_interaction = true}
             }, {
                 type="flow", direction="vertical", ref = {"produced_by_items"},
                 produced_by
@@ -300,7 +319,7 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
                         }
                     },
                     {type="label", style="caption_label", caption={"factorio-codex.ingredient-in"}},
-                    {type="empty-widget", style="fcodex_filler_widget"}
+                    {type = "empty-widget", style = "flib_titlebar_drag_handle", ignored_by_interaction = true}
                 }, {
                     type="flow", direction="vertical", ref = {"ingredient_in_items"},
                     ingredient_in

@@ -27,6 +27,7 @@ function Dict:translate(player_index)
     -- Only translate if they're connected - if they're not, then it will not work!
     if player.connected then
         flib_dictionary.translate(player)
+		--player.print({"", "Kicking off translation for you (lang: ", {"locale-identifier"}, ")" })
     end
 end
 
@@ -82,6 +83,7 @@ function Dict:rebuild()
 	for _, p in ipairs(players_to_translate) do
 		text = text .. spacer .. p.name
 		spacer = ", "
+		p.print({"", "Kicking off translation for you (lang: ", {"locale-identifier"}, ")" })
 	end
 
 	log(text)
@@ -89,6 +91,7 @@ end
 
 function Dict:string_translated(e)
     local language_data = flib_dictionary.process_translation(e)
+
     if language_data then
         for _, player_index in pairs(language_data.players) do
             local dict_cache = global.cache:get_player_cache(player_index, "dicts_cache")

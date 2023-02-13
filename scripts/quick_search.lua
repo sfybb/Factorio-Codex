@@ -144,13 +144,11 @@ function QuickSearch:display_result_list(unfiltered_list)
             local icon = "["..data.type.."="..data.id.."]"
             local text = data.name
 
-            local debug_tooltip = nil
+            local debug_postfix = nil
 
-            --[[if util.is_debug(self.player_index) then
-                debug_tooltip = "Type: "..data.type.." Id: "..data.id.."\nMatches: " .. data.match_count
-
-                text =
-            end]]
+            if debug:is_enabled() then
+                debug_postfix = " M: "..data.match_count .. " O: " .. data.prototype.order
+            end
 
             if data.type == "item" and data.prototype.has_flag("hidden") then
                 text = nil
@@ -160,7 +158,7 @@ function QuickSearch:display_result_list(unfiltered_list)
 
             if text ~= nil and data.prototype.valid then
                 table.insert(self.search_results, data)
-                self.refs.results.add_item(icon .. text)
+                self.refs.results.add_item(icon .. text .. (debug_postfix or ""))
             end
         end
     end
@@ -168,14 +166,18 @@ end
 
 function QuickSearch:remove_search_results()
     local math_text = nil
-    if self.has_math == true then
+    if self.search_has_math == true and #self.refs.results.items >= 1 then
         math_text = self.refs.results.get_item(1)
     end
 
     self.refs.results.clear_items()
 
-    if self.has_math == true then
-         self.refs.results.add_item(math_text)
+    if self.search_has_math == true then
+        if math_text == nil then
+            self.search_has_math = false
+        else
+            self.refs.results.add_item(math_text)
+        end
     end
 end
 
@@ -183,21 +185,21 @@ function QuickSearch:set_math_result(result, error)
     if result ~= nil or (error ~= nil and error ~= "") then
         local math_text = result ~= nil and ("=" .. result) or "=?"
 
-        if self.has_math == true then
+        if self.search_has_math == true and #self.refs.results.items >= 1 then
             self.refs.results.set_item(1, math_text)
         else
             self.refs.results.add_item(math_text, 1)
         end
 
         self.math_result = result
-        self.has_math = true
+        self.search_has_math = true
     else
-        if self.has_math == true then
+        if self.search_has_math == true and #self.refs.results.items >= 1 then
             self.refs.results.remove_item(1)
         end
 
         self.math_result = nil
-        self.has_math = false
+        self.search_has_math = false
     end
 end
 
@@ -218,7 +220,7 @@ function QuickSearch:update_input(prompt)
     if prompt == "" then
         self.refs.results.clear_items()
         self.math_result = nil
-        self.has_math = false
+        self.search_has_math = false
 
         --log("Quick search has empty prompt for player "..self.player_index)
         return
@@ -276,6 +278,15 @@ function QuickSearch:execute_task(task)
         --log(serpent.block(self.refs.results.valid, {maxnum=15}))
 
         self:display_result_list(matching_names)
+
+
+        -- informatron magic stuff
+        --[[for interface, functions in pairs(remote.interfaces) do
+            if functions["informatron_menu"] and functions["informatron_page_content"] then
+
+            end
+        end]]
+
         return
     end
 end
@@ -299,7 +310,7 @@ function QuickSearch:gui_action(action, event)
             function (event)
                 local selected_index = event.element.selected_index
 
-                if self.has_math then
+                if self.search_has_math then
                     if selected_index == 1 then
                         -- put math result into input if it is a valid formula
                         if self.math_result ~= nil then

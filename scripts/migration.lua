@@ -6,6 +6,7 @@ local Dict = require("scripts.dictionary")
 local migrations = {
     ["0.0.10"] = require("scripts.migrations.migrate_0_0_10"),
 	["0.0.12"] = require("scripts.migrations.migrate_0_0_13"),
+    ["0.0.15"] = require("scripts.migrations.migrate_0_0_15"),
 }
 
 local migration = {}
