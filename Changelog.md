@@ -1,12 +1,30 @@
 # Changelog
-  - Version: 0.0.14
+  - Version: 0.0.15
+    - Codex Features:
+        - Made category switching less laggy when viewing them again.
+        - Increased visibility of "Produced by" and "Ingredient in" headlines.
+        - Changed highlight color to green.
+        - Main recipe output has the color gray now, if present.
+        - Locked recipes are shown with different colors (default background = red, main recipe output = orange, highlight color = yellow).
+        - If in debug mode ingredients/products with an amount of 0 are shown again.
+    - Quick Search Features:
+        - Now adjusts size and position when opened instead of only once when created
+        - If in debug mode information relevant for sorting is added to each result.
     - Features:
-        - Quick Search: Text input doesn't fight you in multiplayer anymore (this adds a very small delay to the search results).
-        - Codex: Recipes don't show any items/fluids that require/produce 0 units unless this is the only ingredient/product (the other ingredients/products are still shown. This manly affects the Arcosphere recipes in SE).
+        - Added foundation for supporting newer factorio features while remaining compatible with older versions
+    - Changes:
+        - Changelog now has different categories for quick search and codex features.
+    - Bugfixes:
+        - Fixed a bug with the item sorting where the order would be messed up.
+  - Version: 0.0.14
+    - Codex Features:
+        - Recipes don't show any items/fluids that require/produce 0 units unless this is the only ingredient/product (the other ingredients/products are still shown. This manly affects the Arcosphere recipes in SE).
+    - Quick Search Features:
+        - Text input doesn't fight you in multiplayer anymore (this adds a very small delay to the search results).
+    - Features:
         - Re-translation after changes to the mods (Anything that was translated before remains searchable while the re-translation is ongoing).
     - Changes:
         - Under the hood changes to hopefully fix de-syncs once and for all (queue the next de-sync bug).
-    - Debug:
         - Added more log messages.
   - Version: 0.0.13
     - Features:
@@ -21,29 +39,32 @@
     - Bugfixes:
         - Fixed in-game changelog.
   - Version: 0.0.10
+    - Codex Features:
+        - Removed Item description beside the item. Hovering the big icon still displays the item description.
+        - Added rocket launch product support (only supports one rocket silo type for now - meaning this won't show the correct rocket silo for production in space exploration).
+        - Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount).
+        - Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled.
     - Features:
-        - Codex: Removed Item description beside the item. Hovering the big icon still displays the item description.
-        - Codex: Added rocket launch product support (only supports one rocket silo type for now - meaning this won't show the correct rocket silo for production in space exploration).
-        - Codex: Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount).
-        - Codex: Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled.
         - Migrations able to migrate properly now. This means if you had the codex open it should still be open at the same position (same item/fluid) after migration.
     - Bugs:
         - If the codex was open before migration the item/fluid list will not scroll to it (this does not affect the scrolling that happens when an ingredient/product gets clicked or the codex gets opened by quick search).
-    - Other:
+    - Changes:
         - Removed most of the old unknown bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code).
   - Version: 0.0.9
+    - Codex Features:
+        - Change category and show item/fluid when changing viewed item/fluid.
+        - "Ingerdient in" and "Produced by" can be collapsed now.
+        - Added recipe base time.
+        - Added list of machines that produce a given recipe.
+        - Style updates (this took way too long).
+    - Quick Search Features:
+        - keeps last searched input and results when opened again.
     - Features:
-        - Codex: Change category and show item/fluid when changing viewed item/fluid.
-        - Codex: "Ingerdient in" and "Produced by" can be collapsed now.
-        - Codex: Added recipe base time.
-        - Codex: Added list of machines that produce a given recipe.
-        - Codex: Style updates (this took way too long).
-        - Quick search: keeps last searched input and results when opened again.
         - Started with localisation.
     - Bugfixes:
         - Fixed migration bug.
   - Version: 0.0.8
-    - Features:
+    - Codex Features:
         - Reformatted tooltip for temperature when min and max temperature are the same.
         - Huge max temperatures are now considered infinite.
     - Bugfixes:
@@ -53,32 +74,35 @@
         - (fixed in a later versiom) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save).
         - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync.
   - Version: 0.0.7
-    - Features:
-        - Clicking on items/fluids in the recipe view within the codex now navigates you there.
-        - Recipes shown in the codex can now also show min/max, probability and temperature.
-        - Clicking on the math result in the quick search overwrites the search with that result.
-        - Quick search now supports decimals for use in math.
+    - Codex Features:
+        - Clicking on items/fluids in the recipe view now navigates you there.
+        - Recipes shown can now also show min/max, probability and temperature.
+    - Quick Search Features:
+        - Clicking on the math result overwrites the search with that number.
+        - Now supports decimals for use in math formulas.
     - Bugs:
         - Added a bug that crashes the game when viewing some recipes with no "amount" data.
   - Version: 0.0.6
-    - Features:
+    - Quick Search Features:
         - Improved search (no longer searches for continuous match of input text, e.g. "miner ele" finds "electric miner").
         - Sorts results by various criteria (hidden, matches, factorio order ...).
-        - preparation for codex search.
+    - Codex Features:
+        - preparation for search.
   - Version: 0.0.5
-  - Version: 03.01.2023
     - Bugfixes:
         - Fixed crash after closing and opening codex.
         - Fixed crash when clicking on the "X" to clsoe codex (damn you migration code!).
         - Fixed desync for clients when selecting any entity in the codex.
   - Version: 0.0.4
+    - Codex Features:
+        - More readable recipe/ingredient section.
+        - Improved layout.
     - Features:
-        - More readable recipe/ingredient section in codex.
-        - Improved codex layout.
         - Added barebones migration support for deleting/rebuilding codex ui.
   - Version: 0.0.3
-    - Features:
+    - Codex Features:
         - Added barebones recipe/ingredient section to codex.
+    - Quick Search Features:
         - Quick search layout improvements.
         - Quick search sorting.
         - Quick search math.
