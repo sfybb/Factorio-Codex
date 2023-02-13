@@ -77,11 +77,16 @@ function QuickSearch:build_gui()
         self.refs.frame.visible = self.visible
     end
 
+    self.refs.search_field.clear_and_focus_on_right_click = true
+    self:adjust_size_and_position()
+end
+
+function QuickSearch:adjust_size_and_position()
+    local player = game.get_player(self.player_index)
     self.refs.frame.location = {
         x=(player.display_resolution.width/2)-200,
         y=(player.display_resolution.height/2)-50,
     }
-    self.refs.search_field.clear_and_focus_on_right_click = true
     self.refs.results.style.maximal_height = player.display_resolution.height/2 - 100
 end
 
@@ -94,6 +99,7 @@ function QuickSearch:open()
 
         game.get_player(self.player_index).opened = self.refs.frame
 
+        self:adjust_size_and_position()
         self.refs.frame.bring_to_front()
         self.refs.search_field.select_all()
         self.refs.search_field.focus()

@@ -9,6 +9,7 @@ Date: 13.02.2023
     - Locked recipes are shown with different colors (default background = red, main recipe output = orange, highlight color = yellow).
     - If in debug mode ingredients/products with an amount of 0 are shown again.
   Quick Search Features:
+    - Now adjusts size and position when opened instead of only once when created
     - If in debug mode information relevant for sorting is added to each result.
   Features:
     - Added foundation for supporting newer factorio features while remaining compatible with older versions
