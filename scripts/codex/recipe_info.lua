@@ -146,15 +146,8 @@ function RecipeInfo:get_recipe_slot_style(slot, entity, should_highlight, main_p
     return "flib_standalone_slot_button_"..color
 end
 
-function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
-    local recipe_locked = false
-    if recipe.name ~= nil then
-        force_recipe = game.forces[self.force_index].recipes[recipe.name]
-        --log(serpent.line({enabled=force_recipe.enabled,hidden=force_recipe.hidden}, {comment=false}))
-
-        --(self.force.recipes[recipe.name] ~= nil
-        recipe_locked = not force_recipe.enabled
-    end
+function RecipeInfo:get_single_recipe_gui (recipe, highlight_id, locked)
+    locked = locked or false
     local recipe_ui =  {
         type="flow", direction="horizontal", enabled = true, style="player_input_horizontal_flow",
     }
@@ -168,10 +161,10 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
     for _,ingr in pairs(recipe.ingredients) do
         local should_highlight = highlight_id == ingr.name
 
-        local slot = self:build_recipe_slot(ingr, has_one_ingr or always_show_recipe)
+        local slot = RecipeInfo:build_recipe_slot(ingr, has_one_ingr or always_show_recipe)
 
         if slot ~= nil then
-            slot.style = self:get_recipe_slot_style(slot, ingr, should_highlight, nil, recipe_locked)
+            slot.style = RecipeInfo:get_recipe_slot_style(slot, ingr, should_highlight, nil, locked)
 
             if should_highlight then
                 highlight_id_occured = true
@@ -191,7 +184,7 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
         local slot = self:build_recipe_slot(pr, has_one_pr or always_show_recipe)
 
         if slot ~= nil then
-            slot.style = self:get_recipe_slot_style(slot, pr, should_highlight, recipe.main_product, recipe_locked)
+            slot.style = self:get_recipe_slot_style(slot, pr, should_highlight, recipe.main_product, locked)
 
             if should_highlight then
                 highlight_id_occured = true
@@ -200,10 +193,6 @@ function RecipeInfo:get_single_recipe_gui (recipe, highlight_id)
 
             table.insert(recipe_ui, slot)
         end
-    end
-
-    if not highlight_id_occured then
-        return nil
     end
 
     --{type="sprite-button", sprite="", style="flib_standalone_slot_button_default"}
@@ -276,6 +265,9 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     sort.array(prod_recipes, {sort.factorio})
     sort.array(ingr_recipes, {sort.factorio})
 
+    local recipe_locked = false
+    local force_recipes = game.forces[self.force_index].recipes or {}
+
     for _, p in pairs(add_prod_recipes) do
         local recipe_gui = self:get_single_recipe_gui(p, id)
         if recipe_gui ~= nil then
@@ -284,7 +276,7 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     end
 
     for _, p in ipairs(prod_recipes) do
-        local recipe_gui = self:get_single_recipe_gui(p, id)
+        local recipe_gui = self:get_single_recipe_gui(p, id, force_recipes[p.name])
         if recipe_gui ~= nil then
             table.insert(produced_by, recipe_gui)
         end
@@ -303,7 +295,7 @@ function RecipeInfo:build_gui_for_item(root_gui_elem, type, id)
     end
 
     for _, p in ipairs(ingr_recipes) do
-        local recipe_gui = self:get_single_recipe_gui(p, id)
+        local recipe_gui = self:get_single_recipe_gui(p, id, force_recipes[p.name])
         if recipe_gui ~= nil then
             table.insert(ingredient_in, recipe_gui)
         end

@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "tstl",
+    "dev": "tstl --watch",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.4.3",
+    "ts-jest": "^29.0.5",
+    "ts-macros": "^2.1.0",
+    "typed-factorio": "^1.13.0",
+    "typescript": "^4.9.5",
+    "typescript-to-lua": "^1.13.1",
+    "sprintf-js": "^1.1.2",
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "jest-cli": "^29.4.3"
+  }
+}

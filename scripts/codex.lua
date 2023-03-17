@@ -3,6 +3,7 @@ local gui = require("__flib__.gui")
 local RecipeInfo = require("scripts.codex.recipe_info")
 local Categories = require("scripts.codex.categories")
 local EntityInfo = require("scripts.codex.entity_info")
+local TechInfo   = require("scripts.codex.technology_info")
 
 local serpent = require("scripts.serpent")
 
@@ -19,8 +20,11 @@ function Codex:new(player_index)
     local o = {}   -- create object if user does not provide one
     setmetatable(o, Codex_mt)
 
+    local player = game.get_player(player_index)
+
     o.categories = Categories:new()
-    o.recipe_info = RecipeInfo:new(game.get_player(player_index).force.index)
+    o.recipe_info = RecipeInfo:new(player.force.index)
+    o.tech_info = TechInfo:new(player.force.index)
 
     o.player_index = player_index
 
@@ -161,6 +165,8 @@ end
 
 function Codex:technology_info(tech)
     self.refs.entity_desc.caption = tech.localised_description
+
+    self.tech_info:build_gui_for_tech(self.refs.entity_usage, tech)
 end
 
 function Codex:fluid_info(fluid)

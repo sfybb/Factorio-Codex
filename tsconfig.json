@@ -1,0 +1,61 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TypeScriptToLua/vscode-typescript-to-lua/master/tsconfig-schema.json",
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": [
+      "esnext"
+    ],
+    //"rootDir": "ts_version",
+    "baseUrl": "./src",
+    "outDir": "build",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": [
+      "lua-types/5.2",
+      "typed-factorio/runtime",
+      "typed-factorio/strict-index-types",
+      "@typescript-to-lua/language-extensions"
+    ],
+    "plugins": [
+      { "name": "typescript-tstl-plugin" },
+      { "transform": "ts-macros" }
+    ],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "explainFiles": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": false,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    //"noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true
+    //"traceResolution": true
+  },
+  "tstl": {
+    "luaTarget": "5.2",
+    //"tstlVerbose": true,
+    "noHeader": true,
+    "noImplicitSelf": true,
+    "luaLibImport": "require",
+    "sourceMapTraceback": true,
+    "luaPlugins": [
+      { "name":  "./ts-plugin/require-path.ts" }
+    ]
+  },
+  "entryPoints": [
+    "./src/events.ts"
+  ],
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.d.ts"
+  ],
+  "exclude": [
+    "tests/**/*.ts",
+    "**/__mocks__/**/*"
+  ]
+}

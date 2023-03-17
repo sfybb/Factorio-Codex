@@ -1,4 +1,5 @@
 .idea
 /TMP
 /tmp
+node_modules
 /factorio-codex_*.zip

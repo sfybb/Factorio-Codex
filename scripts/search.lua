@@ -91,6 +91,8 @@ local function sort_array(A, order_func_list)
         return
     end
 
+    local prof = game.create_profiler()
+
     if order_func_list == nil or
         (type(order_func_list) ~= "function" and
          type(order_func_list) ~= "table") then
@@ -104,6 +106,9 @@ local function sort_array(A, order_func_list)
     end
 
     table.sort(A, function(a,b) return int_sort_help.compare_multi_order(a,b, order_func_list) end)
+
+    prof.stop()
+    game.print({"", "Factorio Codex: Sort: ", prof})
 
     --[[
     local n = #A
@@ -194,6 +199,8 @@ local function quote_str(str)
 end
 
 local function find_in_dicts(prompt, dicts)
+    local prof = game.create_profiler(false)
+
     prompt = string.lower(prompt)
     tokens = split(prompt)
     quoted_tokens = flib_table.map(tokens, quote_str)
@@ -237,6 +244,8 @@ local function find_in_dicts(prompt, dicts)
         end
     end
 
+    prof.stop()
+    game.print({"", "Factorio Codex: Search: ", prof})
     return result
 end
 

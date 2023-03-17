@@ -1,23 +1,22 @@
-local Features = require("scripts.features")
-
 local function convert_codex(cdx, player_index)
     -- Added "keep_open" to codex
     cdx.keep_open = false
 
 
-    if cdx.categories.refs.available_entities ~= nil then
-        cdx.categories.refs.available_entities.destroy()
+    if cdx.categories ~= nil then
+        if cdx.categories.refs ~= nil then
+            if cdx.categories.refs.available_entities ~= nil then
+                cdx.categories.refs.available_entities.destroy()
+            end
+            cdx.categories.refs.available_entities = {}
+        end
+        cdx.categories.entity_lists = {}
     end
-
-    cdx.categories.refs.available_entities = {}
-    cdx.categories.entity_lists = {}
 end
 
 
 return function(additional_actions)
     log("Applying migrations for 0.0.15")
-
-    global.Features = Features:Init()
 
     -- convert old codex + quick search structure to new one
     if global.players ~= nil then

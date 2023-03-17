@@ -1,23 +1,14 @@
-local Features = require("scripts.features")
+local TechInfo   = require("scripts.codex.technology_info")
 
 local function convert_codex(cdx, player_index)
-    -- Added "keep_open" to codex
-    cdx.keep_open = false
-
-
-    if cdx.categories.refs.available_entities ~= nil then
-        cdx.categories.refs.available_entities.destroy()
-    end
-
-    cdx.categories.refs.available_entities = {}
-    cdx.categories.entity_lists = {}
+    -- Added "tech_info" to codex
+    local player = game.get_player(player_index)
+    cdx.tech_info = TechInfo:new(player.force.index)
 end
 
 
 return function(additional_actions)
-    log("Applying migrations for 0.0.15")
-
-    global.Features = Features:Init()
+    log("Applying migrations for 0.0.17")
 
     -- convert old codex + quick search structure to new one
     if global.players ~= nil then
