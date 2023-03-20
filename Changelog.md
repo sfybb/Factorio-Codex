@@ -1,5 +1,8 @@
 # Changelog
-  - Version: 0.0.15
+  - Version: 0.0.17
+    - Bugfixes:
+        - Fixed validation always failing.
+  - Version: 0.0.16
     - Codex Features:
         - Made category switching less laggy when viewing them again.
         - Increased visibility of "Produced by" and "Ingredient in" headlines.

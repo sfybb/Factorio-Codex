@@ -191,15 +191,16 @@ namespace RecipeUI {
     }
     export function getUI(recipe: AnyRecipe, locked: boolean,
                           highlightId?: string, colorPallet?: ColorPallet): FLIBGuiBuildStructure {
-        if ( colorPallet == undefined ) colorPallet = ColorPallets.default
+        if ( colorPallet == undefined ) colorPallet = !locked ? ColorPallets.default : ColorPallets.locked
 
         const recipeUi: FLIBGuiBuildStructure = {
             ...UIStructures.recipe_visualization,
             children: []
         }
 
+
         for ( let ingredient of recipe.ingredients ) {
-            if (ingredient.amount == 0 && highlightId != ingredient.name) continue
+            if (ingredient.amount == 0 && recipe.ingredients.length != 1 && highlightId != ingredient.name) continue
 
             let style = getStyle(recipe, ingredient, highlightId, colorPallet)
             // @ts-ignore
@@ -210,7 +211,7 @@ namespace RecipeUI {
         recipeUi.children.push(UIStructures.ingredient_product_separator)
 
         for ( let product of recipe.products ) {
-            if (product.amount == 0 && highlightId != product.name) continue
+            if (product.amount == 0 && recipe.products.length != 1 && highlightId != product.name) continue
 
             let style = getStyle(recipe, product, highlightId, colorPallet)
             // @ts-ignore

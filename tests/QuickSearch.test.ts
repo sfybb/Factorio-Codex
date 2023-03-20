@@ -19,14 +19,17 @@ jest.mock('build/Cache', () => ({
     virtual: true
 });
 
-import quickSearch from "../src/QuickSearch"
-import {validate_status} from "../src/Util";
-
 global.$log_info = jest.fn()
 
 global.game = {
     tick: 0,
 }
+global.serpent = {
+    line: jest.fn()
+}
+
+import quickSearch from "../src/QuickSearch"
+import {validate_status} from "../src/Util";
 
 describe("Quick Search module", () => {
     afterEach(() => {

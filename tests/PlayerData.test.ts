@@ -19,14 +19,18 @@ jest.mock('build/Cache', () => ({
     virtual: true
 });
 
-import playerData from "../src/PlayerData"
-
 global.game = {
     get_player: jest.fn(),
 }
 
 global.$log_info = jest.fn()
 global.$log_warn = jest.fn()
+global.$log_crit = jest.fn()
+global.serpent = {
+    line: jest.fn()
+}
+
+import playerData from "../src/PlayerData"
 
 describe("PlayerData module", () => {
     beforeEach(() => {
@@ -51,12 +55,24 @@ describe("PlayerData module", () => {
         playerData.InitPlayer(69 as PlayerIndex)
         expect(global.players).toEqual({69: {
                 codex: {
-                    entity_view: undefined,
-                    keep_open: false,
                     player_index: 69,
-                    rebuild_gui: false,
-                    refs: {},
+
+                    categories: {
+                        selected_index: -1,
+                        selected_cat: undefined,
+
+                        rebuild_gui: false,
+                        refs: {
+                            available_entities: {}
+                        },
+                        entity_lists: {},
+                    },
+
                     visible: false,
+                    keep_open: false,
+                    refs: {},
+                    rebuild_gui: false,
+                    entity_view: undefined,
                 },
                 quick_search: {
                     player_index: 69,

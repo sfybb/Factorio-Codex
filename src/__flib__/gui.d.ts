@@ -60,7 +60,7 @@ interface FLIBGuiBuildStructure {
 
 
 
-    //TODO
+    //TODO all possible properties
 
     ref?: string[]
     actions?: FLIBGuiActions

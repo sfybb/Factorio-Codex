@@ -1,4 +1,19 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.18
+Date:
+  Codex Features:
+    - Now showing information like new recipes and modifiers for technologies.
+    - Improved tooltips for recipe ingredients and products now shows average, min and max amount as well as probability.
+    - Moved resource mining "recipes" to their own list titled "Mined from".
+    - Added tooltip which displays the machine crafting speed for each machine that can craft a given recipe.
+  Quick Search Features:
+    - Improved performance drastically for searches with a lot of results (searching for 'e' can result in up to 3.6k results in SE + K2. This previously needed ~150ms and now only requires ~75ms).
+    - Reduced the maximum number of shown results to 100 (you were not planning to look through more than that anyway right? right?).
+  Features:
+    - Added support for the mod "Lua API global Variable Viewer (gvv)" (https://mods.factorio.com/mod/gvv).
+  Changes:
+    - Completely new code base, it is only equal in functionally. No line was untouched.
+---------------------------------------------------------------------------------------------------
 Version: 0.0.17
 Date:
   Bugfixes:

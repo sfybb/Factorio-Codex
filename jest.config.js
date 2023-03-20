@@ -4,6 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   "moduleDirectories": [
       "node_modules",
-      "ts_version"
-    ]
+      "src"
+    ],
 };

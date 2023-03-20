@@ -38,7 +38,7 @@ class Categories {
     constructor() {
         this.selected_index = -1
         this.selected_cat = undefined
-        this.rebuild_gui = true
+        this.rebuild_gui = false
 
         this.refs = {
             available_entities: {}

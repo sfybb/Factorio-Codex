@@ -24,7 +24,7 @@
     "esModuleInterop": true,
     "explainFiles": true,
     "forceConsistentCasingInFileNames": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,

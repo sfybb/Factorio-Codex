@@ -5,6 +5,13 @@ import RecipeInfo from "codex/RecipeInfo"
 import Categories from "codex/Categories"
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
+import TechnologyInfo from "codex/TechnologyInfo";
+import {Verifiable} from "Validate";
+
+type HistoryItem = {
+    type: string,
+    id: string
+}
 
 class Codex implements TaskExecutor {
     player_index: PlayerIndex;
@@ -24,7 +31,10 @@ class Codex implements TaskExecutor {
         entity_desc_frame?: FlowGuiElement,
         entity_desc?: LabelGuiElement,
         entity_color?: ProgressBarGuiElement,
-        entity_usage?: ScrollPaneGuiElement
+        entity_usage?: ScrollPaneGuiElement,
+
+        hist_bak?: SpriteButtonGuiElement,
+        hist_fwd?: SpriteButtonGuiElement,
     };
     rebuild_gui: boolean;
 
@@ -32,6 +42,9 @@ class Codex implements TaskExecutor {
         type: string,
         id: string
     };
+
+    historyList: HistoryItem[];
+    historyPosition: number
 
     constructor(player_index: PlayerIndex) {
         this.player_index = player_index
@@ -43,6 +56,9 @@ class Codex implements TaskExecutor {
         this.rebuild_gui = false
 
         this.entity_view = undefined
+
+        this.historyList = []
+        this.historyPosition = -1
     }
 
     static load(this: void, c: Codex) {
@@ -89,6 +105,30 @@ class Codex implements TaskExecutor {
                     1: {type: "label", style: "frame_title", caption: "Codex", ignored_by_interaction: true},
                     2: {type: "empty-widget", style: "flib_titlebar_drag_handle", ignored_by_interaction: true},
                     3: {
+                        type: "sprite-button",
+                        style: "frame_action_button",
+                        ref: ["hist_bak"],
+                        sprite: "utility/expand",
+                        hovered_sprite: "utility/expand_dark",
+                        clicked_sprite: "utility/expand",
+                        mouse_button_filter: ["left"],
+                        actions: {
+                            on_click: "cx_hist_back"
+                        }
+                    },
+                    4: {
+                        type: "sprite-button",
+                        style: "frame_action_button",
+                        ref: ["hist_fwd"],
+                        sprite: "utility/expand",
+                        hovered_sprite: "utility/expand_dark",
+                        clicked_sprite: "utility/expand",
+                        mouse_button_filter: ["left"],
+                        actions: {
+                            on_click: "cx_hist_fwd"
+                        }
+                    },
+                    5: {
                         type: "sprite-button",
                         style: "frame_action_button",
                         sprite: "utility/close_white",
@@ -200,7 +240,85 @@ class Codex implements TaskExecutor {
         this.rebuild_gui = true
     }
 
-    show_info(id: string, type: string) {
+    updateHistoryButtons() {
+        let backTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
+        let fwdTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
+
+        let curHistPos = this.historyPosition == -1 ? this.historyList.length-1 : this.historyPosition
+        for (let i = curHistPos - 1; i >= 0; i--) {
+            let item = this.historyList[i]
+            backTooltip.push(
+                `${i+1 != curHistPos ? '\n' : ''}[${item.type}=${item.id}] `,
+                [`${item.type}-name.${item.id}`],
+            )
+        }
+
+        for (let i = curHistPos + 1; i < this.historyList.length; i++) {
+            let item = this.historyList[i]
+            fwdTooltip.push(
+                `${i-1 != curHistPos ? '\n' : ''}[${item.type}=${item.id}] `,
+                [`${item.type}-name.${item.id}`],
+            )
+        }
+
+        $log_info!(`#Back: ${backTooltip.length} #Fwd: ${fwdTooltip.length} HistPos: ${this.historyPosition} Effective pos: ${curHistPos
+        }\n${serpent.line(backTooltip, {comment:false})}\n${serpent.line(fwdTooltip, {comment:false})}`)
+
+        if (this.refs.hist_bak != undefined) {
+            this.refs.hist_bak.tooltip = backTooltip
+            this.refs.hist_bak.enabled = backTooltip.length > 1
+        }
+        if (this.refs.hist_fwd != undefined) {
+            this.refs.hist_fwd.tooltip = fwdTooltip
+            this.refs.hist_fwd.enabled = fwdTooltip.length > 1
+        }
+    }
+
+    addToHistory() {
+        if (this.entity_view == undefined) return;
+
+        let nextItem = this.historyPosition != -1 ? this.historyList[this.historyPosition+1] : undefined
+        if (nextItem != undefined) {
+            if (nextItem.id == this.entity_view.id && nextItem.type == this.entity_view.type) {
+                // Same item as in history - move forward in list
+                this.historyPosition = this.historyPosition + 1 < this.historyList.length-1 ? this.historyPosition+1 : -1
+
+            } else {
+                // Different item than the next in the history list - delete others that would come next this is the newest entry now
+                // TODO removes current viewed item from list
+                this.historyList.splice(this.historyPosition+1)
+                this.historyPosition = -1
+                this.historyList.push(this.entity_view)
+            }
+        } else {
+            this.historyList.push(this.entity_view)
+        }
+        const maxHistLen = 10
+        if (this.historyList.length > maxHistLen) {
+            this.historyList.shift()
+        }
+
+        this.updateHistoryButtons()
+    }
+
+    historyBack() {
+        if (this.historyPosition > 0 || (this.historyPosition == -1 && this.historyList.length > 1)) {
+            let curHistPos = this.historyPosition == -1 ? this.historyList.length-1 : this.historyPosition
+            let histItem = this.historyList[curHistPos-1]
+            this.historyPosition = curHistPos-1
+            this.show_info(histItem.id, histItem.type, false)
+            this.updateHistoryButtons()
+        }
+    }
+
+    historyForward() {
+        if (this.historyPosition != -1 && this.historyPosition < this.historyList.length-1) {
+            let histItem = this.historyList[this.historyPosition+1]
+            this.show_info(histItem.id, histItem.type)
+        }
+    }
+
+    show_info(id: string, type: string, updateHist?: boolean) {
         const supported_types = ["item", "fluid", "technology"]
         if (!supported_types.includes(type)) {
             $log_info!(`Codex cant show info for unsupported type '${type}' (id: '${id}')!`)
@@ -223,6 +341,9 @@ class Codex implements TaskExecutor {
         this.open()
 
         this.entity_view = { id: id, type: type }
+        if (updateHist != false) {
+            this.addToHistory()
+        }
 
 
         if (this.refs.entity_desc != undefined) {
@@ -289,7 +410,7 @@ class Codex implements TaskExecutor {
     }
 
     tech_info(tech: LuaTechnologyPrototype) {
-
+        TechnologyInfo.build_gui(this.refs.entity_usage, tech)
     }
 
     execute_task(task: Task) {
@@ -332,6 +453,10 @@ class Codex implements TaskExecutor {
                 return
             }
             this.show_info(selected.id, selected.type)
+        } else if (action == "cx_hist_back") {
+            this.historyBack()
+        } else if (action == "cx_hist_fwd") {
+            this.historyForward()
         } else if (action == "cx_update_search") {
             // do nothing for now
         }
