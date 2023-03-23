@@ -7,12 +7,10 @@ enum LogLevel {
     CRITICAL
 }
 
-let runtimeLogLvl: LogLevel = LogLevel.DEBUG
-
 function $log(log_lvl: LogLevel, msg: string) {
-    const $compileTimeLogLvl: LogLevel = LogLevel.DEBUG
+    const $compileTimeLogLvl: LogLevel = LogLevel.INFO
     if ($compileTimeLogLvl <= log_lvl) {
-        if (runtimeLogLvl <= log_lvl) log(msg)
+        log(msg)
     }
 }
 
@@ -35,6 +33,11 @@ function $log_err(msg: string) {
 
 function $log_crit(msg: string) {
     game.print("[FACTORIO CODEX] [CRITICAL] "+ msg, {r: 0.5})
+    log("[TRACEBACK] " + debug.traceback())
+    log("[CRITICAL] " + msg)
+}
+
+function $log_crit_ng(msg: string) {
     log("[TRACEBACK] " + debug.traceback())
     log("[CRITICAL] " + msg)
 }

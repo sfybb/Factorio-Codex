@@ -4,6 +4,7 @@ import Codex from "Codex";
 
 import Dictionary from "Dictionary";
 import Cache from "Cache";
+import verify from "Validate";
 
 
 export interface player_data {
@@ -11,7 +12,7 @@ export interface player_data {
     quick_search: QuickSearch
 }
 
-export interface player_table extends LuaTable<PlayerIndex, player_data> {}
+export type player_table = LuaMap<PlayerIndex, player_data>
 
 declare const global: {
     playerData: typeof PlayerData
@@ -136,6 +137,8 @@ namespace PlayerData {
     export function  validate() {
         $log_info!("Validating global table...")
 
+        global.playerData = PlayerData
+
         const print_info: validate_print_info = {
             width: 40,
             indent_step: "    ", // 4 spaces
@@ -160,7 +163,8 @@ namespace PlayerData {
             player_obj_pi.current_indent  = player_data_pi.current_indent + player_obj_pi.indent_step
 
             // @ts-ignore
-            for (let [i, player_data] of global.players) {
+            let tbl: player_table = global.players
+            for (let [i, player_data] of tbl) {
                 if (i == null) {
                     continue
                 }
@@ -175,13 +179,14 @@ namespace PlayerData {
 
                 status = player_data.codex == undefined ? validate_status.FIXABLE : validate_status.OK
                 $log_info!(Util.format_validate_msg(array_pi, "codex", status))
-                /*if (status == validate_status.OK) {
-                    status = player_data.codex.validate(player_obj_pi, i)
+                if (status == validate_status.OK) {
+                    status = verify(player_data.codex, player_obj_pi, i)
                 }
                 if (status == validate_status.ERROR || status == validate_status.FIXABLE) {
                     if (player_data.codex != undefined) player_data.codex.destroy()
                     player_data.codex = new Codex(i)
-                }*/
+                    $log_info!("Rebuilt Codex")
+                }
 
                 status = player_data.quick_search == undefined ? validate_status.FIXABLE : validate_status.OK
                 $log_info!(Util.format_validate_msg(array_pi, "quick_search", status))
@@ -191,6 +196,7 @@ namespace PlayerData {
                 if (status == validate_status.ERROR || status == validate_status.FIXABLE) {
                     if (player_data.quick_search != undefined) player_data.quick_search.destroy()
                     player_data.quick_search = new QuickSearch(i)
+                    $log_info!("Rebuilt Quick Search")
                 }
             }
         }

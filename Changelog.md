@@ -1,4 +1,18 @@
 # Changelog
+  - Version: 0.0.18
+    - Codex Features:
+        - Now showing information like new recipes and modifiers for technologies.
+        - Improved tooltips for recipe ingredients and products now shows average, min and max amount as well as probability.
+        - Moved resource mining "recipes" to their own list titled "Mined from".
+        - Added tooltip which displays the machine crafting speed for each machine that can craft a given recipe.
+        - Added history feature which allows going back and forth to previously visited things (limit: 10 items).
+    - Quick Search Features:
+        - Improved performance drastically for searches with a lot of results (searching for 'e' can result in up to 3.6k results in SE + K2. This previously needed ~150ms and now only requires ~75ms).
+        - Reduced the maximum number of shown results to 100 (you were not planning to look through more than that anyway right? right?).
+    - Features:
+        - Added support for the mod "Lua API global Variable Viewer (gvv)" (https://mods.factorio.com/mod/gvv).
+    - Changes:
+        - Completely new code base, it is only equal in functionally. No line was untouched.
   - Version: 0.0.17
     - Bugfixes:
         - Fixed validation always failing.
@@ -56,7 +70,7 @@
   - Version: 0.0.9
     - Codex Features:
         - Change category and show item/fluid when changing viewed item/fluid.
-        - "Ingerdient in" and "Produced by" can be collapsed now.
+        - "Ingredient in" and "Produced by" can be collapsed now.
         - Added recipe base time.
         - Added list of machines that produce a given recipe.
         - Style updates (this took way too long).
@@ -74,7 +88,7 @@
         - Fixed crash when viewing a recipe with min/max product amounts.
         - Fixed temperature tooltip always showing the same min and max values.
     - Bugs:
-        - (fixed in a later versiom) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save).
+        - (fixed in a later version) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save).
         - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync.
   - Version: 0.0.7
     - Codex Features:
@@ -94,20 +108,20 @@
   - Version: 0.0.5
     - Bugfixes:
         - Fixed crash after closing and opening codex.
-        - Fixed crash when clicking on the "X" to clsoe codex (damn you migration code!).
-        - Fixed desync for clients when selecting any entity in the codex.
+        - Fixed crash when clicking on the "X" to close codex (damn you migration code!).
+        - Fixed de-sync for clients when selecting any entity in the codex.
   - Version: 0.0.4
     - Codex Features:
         - More readable recipe/ingredient section.
         - Improved layout.
     - Features:
-        - Added barebones migration support for deleting/rebuilding codex ui.
+        - Added bare-bones migration support for deleting/rebuilding codex ui.
   - Version: 0.0.3
     - Codex Features:
-        - Added barebones recipe/ingredient section to codex.
+        - Added bare-bones recipe/ingredient section to codex.
     - Quick Search Features:
         - Quick search layout improvements.
         - Quick search sorting.
         - Quick search math.
     - Bugfixes:
-        - Fixed desync/crash when playing in multiplayer (flib thats your fault!).
+        - Fixed de-sync/crash when playing in multiplayer (flib that's your fault!).

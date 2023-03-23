@@ -1,5 +1,6 @@
 import PlayerData, {player_table} from "PlayerData";
 import Dict from "Dictionary";
+import {verifyObject} from "Validate"
 
 /** @noResolution */
 import * as FLIB_migration from "__flib__.migration"
@@ -8,6 +9,7 @@ const migrations = {
     ["0.0.10"]: require("migrations/migrate_0_0_10"),
     ["0.0.12"]: require("migrations/migrate_0_0_12"),
     ["0.0.15"]: require("migrations/migrate_0_0_15"),
+    ["0.0.17"]: require("migrations/migrate_0_0_17")
 }
 
 declare const global: {
@@ -47,13 +49,13 @@ class Migration {
                 player_data.quick_search.set_rebuild_gui()
             }
 
-            /*if (player_data.codex != undefined) {
+            if (player_data.codex != undefined) {
                 player_data.codex.set_rebuild_gui()
-            } TODO */
+            }
 
             let quick_search_open = player_data.quick_search?.is_open()
 
-            /*if ( player_data.codex?.is_open() == true ) {
+            if ( player_data.codex?.is_open() == true ) {
                 player_data.codex.close()
                 player_data.codex.open()
 
@@ -61,7 +63,7 @@ class Migration {
                     let entity_view = player_data.codex.entity_view
                     player_data.codex.show_info(entity_view.id, entity_view.type)
                 }
-            } TODO */
+            }
 
             if ( quick_search_open == true ) {
                 player_data.quick_search.close()

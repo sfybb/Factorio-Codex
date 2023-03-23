@@ -55,8 +55,8 @@ function registerCache(this: void, cf: CacheFactory): void {
         }
     }
 
-    $log_info!(`${serpent.line(globalFactories)}`)
-    $log_info!(`${serpent.line(playerFactories)}`)
+    /*$log_info!(`${serpent.line(globalFactories)}`)
+    $log_info!(`${serpent.line(playerFactories)}`)*/
 }
 
 class CacheManager {
@@ -80,16 +80,16 @@ class CacheManager {
         setmetatable(c, CacheManager.prototype)
     }
     get(cache_id: string): undefined | GlobalCache {
-        let cache = this.globalCaches.get(cache_id)
+        let cache = this?.globalCaches?.get(cache_id)
         if (cache == undefined) {
-            $log_crit!(`Global Cache with id '${cache_id}' does not exist!`)
+            $log_crit_ng!(`Global Cache with id '${cache_id}' does not exist!`)
         }
 
         return cache
     }
 
     get_player(cache_id: string, player: PlayerIndex): undefined | PlayerCache {
-        let playerCacheList = this.playerCaches.get(player)
+        let playerCacheList = this?.playerCaches?.get(player)
 
         if (playerCacheList == undefined) {
             playerCacheList = this.InitPlayer(player)

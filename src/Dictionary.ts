@@ -10,6 +10,8 @@ declare const global: {
     playerData: typeof PlayerData
 }
 
+let empty_prototypes = true
+
 namespace Dictionary {
     let build_done: boolean = false;
     let dict_list: {
@@ -55,8 +57,10 @@ namespace Dictionary {
 
         if (prototypes == undefined) {
             $log_warn!("No prototype definitions in cache! Cannot start translation!")
+            empty_prototypes = true
             return;
         }
+        empty_prototypes = false
 
         let protoTable = new LuaTable<string, LuaTable<string, LuaFluidPrototype | LuaItemPrototype |
                                               LuaTechnologyPrototype | LuaTilePrototype>>()
@@ -103,6 +107,8 @@ namespace Dictionary {
     }
 
     export function string_translated(this: void, e: OnStringTranslatedEvent): void {
+        if (empty_prototypes) return
+
         let lang_data = FLIB_dictionary.process_translation(e)
 
         if ( lang_data != undefined ) {

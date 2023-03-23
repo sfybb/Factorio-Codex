@@ -188,5 +188,29 @@ data:extend({{
         filename = "__factorio-codex__/graphics/arrow.png",
         size = 64,
         flags = { "icon" },
-  }
+    }, {
+        type = "sprite",
+        name = "fcodex_produces",
+        filename = "__factorio-codex__/graphics/arrow.png",
+        size = 64,
+        flags = { "gui-icon" },
+    }, {
+        type = "sprite",
+        name = "fcodex_history_back",
+        filename = "__factorio-codex__/graphics/history-back.png",
+        priority = "extra-high-no-scale",
+        size = 32,
+        scale = 0.5,
+        mipmap_count = 2,
+        flags = { "gui-icon" },
+    }, {
+       type = "sprite",
+       name = "fcodex_history_back_dark",
+       filename = "__factorio-codex__/graphics/history-back-dark.png",
+       priority = "extra-high-no-scale",
+       size = 32,
+       scale = 0.5,
+       mipmap_count = 2,
+       flags = { "gui-icon" },
+    }
 })

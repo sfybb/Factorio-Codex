@@ -6,7 +6,8 @@
     "build": "tstl --sourceMap false",
     "dev": "tstl --watch",
     "test": "jest",
-    "release": "node release.js"
+    "release": "node release.js",
+    "watch-tests": "jest --watchAll "
   },
   "devDependencies": {
     "jest": "^29.4.3",

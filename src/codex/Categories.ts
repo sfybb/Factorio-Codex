@@ -5,6 +5,7 @@ import {validate_print_info, validate_status} from "Util";
 import * as FLIB_gui from "__flib__.gui";
 /** @noResolution */
 import * as FLIB_table from "__flib__.table";
+import {Verifiable, Verifyinfo} from "../Validate";
 
 
 type Category_type = {
@@ -20,7 +21,7 @@ type Categories_storage = {
 
 type anyPrototype = LuaEntityPrototype | LuaTechnologyPrototype | LuaItemPrototype
 
-class Categories {
+class Categories implements Verifiable {
     static categories: Categories_storage
 
     selected_index: uint;
@@ -73,6 +74,10 @@ class Categories {
 
     destroy(): void {
         this.refs?.cat_gui?.destroy()
+    }
+
+    set_rebuild_gui() {
+        this.rebuild_gui = true
     }
 
     build_gui(parent: LuaGuiElement) {
@@ -247,8 +252,28 @@ class Categories {
         }
     }
 
-    validate(print_info: validate_print_info): validate_status {
-        return validate_status.OK
+
+    get_verify_info(args?: any): Verifyinfo[] {
+        return [
+            {field: "selected_index", type: "number"},
+            {field: "selected_cat", type: "object", optional: true, content: [
+                    {field: "name", type: "string"},
+                    {field: "localised_name", type: "array"},
+                    {field: "parent", type: "object", optional: true}
+            ]},
+            {field: "rebuild_gui", type: "boolean"},
+            {field: "refs", type: "object", content: [
+                    {field: "cat_gui", type: "object", optional: true},
+                    {field: "category_picker", type: "object", optional: true},
+                    {field: "available_entities", type: "object", optional: true},
+            ]},
+            {field: "entity_lists", type: "object", content: [
+                    {field: "item", type: "array", optional: true},
+                    {field: "fluid", type: "array", optional: true},
+                    {field: "technology", type: "array", optional: true},
+                    {field: "tile", type: "array", optional: true},
+            ]}
+        ]
     }
 }
 

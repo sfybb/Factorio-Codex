@@ -6,14 +6,14 @@ import Categories from "codex/Categories"
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
 import TechnologyInfo from "codex/TechnologyInfo";
-import {Verifiable} from "Validate";
+import {Verifiable, Verifyinfo} from "Validate";
 
 type HistoryItem = {
     type: string,
     id: string
 }
 
-class Codex implements TaskExecutor {
+class Codex implements TaskExecutor, Verifiable {
     player_index: PlayerIndex;
 
     categories: Categories;
@@ -74,7 +74,7 @@ class Codex implements TaskExecutor {
 
     destroy() {
         this.refs?.window?.destroy()
-        this.categories.destroy()
+        this.categories?.destroy()
     }
 
     build_gui() {
@@ -108,9 +108,9 @@ class Codex implements TaskExecutor {
                         type: "sprite-button",
                         style: "frame_action_button",
                         ref: ["hist_bak"],
-                        sprite: "utility/expand",
-                        hovered_sprite: "utility/expand_dark",
-                        clicked_sprite: "utility/expand",
+                        sprite: "fcodex_history_back",
+                        hovered_sprite: "fcodex_history_back_dark",
+                        clicked_sprite: "fcodex_history_back",
                         mouse_button_filter: ["left"],
                         actions: {
                             on_click: "cx_hist_back"
@@ -238,6 +238,7 @@ class Codex implements TaskExecutor {
 
     set_rebuild_gui() {
         this.rebuild_gui = true
+        this.categories?.set_rebuild_gui()
     }
 
     updateHistoryButtons() {
@@ -248,7 +249,7 @@ class Codex implements TaskExecutor {
         for (let i = curHistPos - 1; i >= 0; i--) {
             let item = this.historyList[i]
             backTooltip.push(
-                `${i+1 != curHistPos ? '\n' : ''}[${item.type}=${item.id}] `,
+                `\n[${item.type}=${item.id}] `,
                 [`${item.type}-name.${item.id}`],
             )
         }
@@ -256,19 +257,18 @@ class Codex implements TaskExecutor {
         for (let i = curHistPos + 1; i < this.historyList.length; i++) {
             let item = this.historyList[i]
             fwdTooltip.push(
-                `${i-1 != curHistPos ? '\n' : ''}[${item.type}=${item.id}] `,
+                `\n[${item.type}=${item.id}] `,
                 [`${item.type}-name.${item.id}`],
             )
         }
 
-        $log_info!(`#Back: ${backTooltip.length} #Fwd: ${fwdTooltip.length} HistPos: ${this.historyPosition} Effective pos: ${curHistPos
-        }\n${serpent.line(backTooltip, {comment:false})}\n${serpent.line(fwdTooltip, {comment:false})}`)
-
         if (this.refs.hist_bak != undefined) {
+            if (backTooltip.length > 1) backTooltip = ["", ["factorio-codex.history-back"], backTooltip]
             this.refs.hist_bak.tooltip = backTooltip
             this.refs.hist_bak.enabled = backTooltip.length > 1
         }
         if (this.refs.hist_fwd != undefined) {
+            if (fwdTooltip.length > 1) fwdTooltip = ["", ["factorio-codex.history-forward"], fwdTooltip]
             this.refs.hist_fwd.tooltip = fwdTooltip
             this.refs.hist_fwd.enabled = fwdTooltip.length > 1
         }
@@ -285,7 +285,6 @@ class Codex implements TaskExecutor {
 
             } else {
                 // Different item than the next in the history list - delete others that would come next this is the newest entry now
-                // TODO removes current viewed item from list
                 this.historyList.splice(this.historyPosition+1)
                 this.historyPosition = -1
                 this.historyList.push(this.entity_view)
@@ -462,9 +461,42 @@ class Codex implements TaskExecutor {
         }
     }
 
-    validate(print_info: validate_print_info, indx: PlayerIndex): validate_status {
-        if (this.categories != undefined) this.categories.validate(print_info)
-        return validate_status.OK
+    get_verify_info(args?: any): Verifyinfo[] {
+        let exp_player_indx = typeof args == "number" ? args : -1
+        return [
+            {field: "player_index", type: "number", value: exp_player_indx},
+            {field: "categories", type: "Verifiable"},
+            {field: "visible", type: "boolean"},
+            {field: "keep_open", type: "boolean"},
+            {field: "rebuild_gui", type: "boolean"},
+            {field: "entity_view", type: "object", content: [
+                {field: "type", type: "string", optional: true},
+                {field: "id", type: "string", optional: true},
+            ]},
+            {field: "historyPosition", type: "number"},
+            {field: "historyList", type: "array", content: {
+                field: "", type: "object", content: [
+                    {field: "type", type: "string"},
+                    {field: "id", type: "string"},
+                ]
+            }},
+            {field: "refs", type: "object", content: [
+                {field: "window", type: "object", optional: true},
+                {field: "titlebar_flow", type: "object", optional: true},
+                {field: "codex_categories", type: "object", optional: true},
+                {field: "search_field", type: "object", optional: true},
+
+                {field: "entity_viewer", type: "object", optional: true},
+                {field: "entity_sprite", type: "object", optional: true},
+                {field: "entity_desc_frame", type: "object", optional: true},
+                {field: "entity_desc", type: "object", optional: true},
+                {field: "entity_color", type: "object", optional: true},
+                {field: "entity_usage", type: "object", optional: true},
+
+                {field: "hist_bak", type: "object", optional: true},
+                {field: "hist_fwd", type: "object", optional: true},
+            ]},
+        ]
     }
 }
 

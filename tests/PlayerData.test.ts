@@ -26,6 +26,7 @@ global.game = {
 global.$log_info = jest.fn()
 global.$log_warn = jest.fn()
 global.$log_crit = jest.fn()
+global.$log_crit_ng = jest.fn()
 global.serpent = {
     line: jest.fn()
 }
@@ -73,6 +74,9 @@ describe("PlayerData module", () => {
                     refs: {},
                     rebuild_gui: false,
                     entity_view: undefined,
+
+                    historyList: [],
+                    historyPosition: -1
                 },
                 quick_search: {
                     player_index: 69,

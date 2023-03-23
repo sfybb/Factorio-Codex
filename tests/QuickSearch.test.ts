@@ -4,6 +4,8 @@ import {describe, expect, afterEach, test, jest} from '@jest/globals';
 import "./LuaMocks"
 import "./FLIBMocks"
 
+import "events"
+
 jest.mock('build/Cache', () => ({
     __esModule: true,
     registerCache: jest.fn(),
