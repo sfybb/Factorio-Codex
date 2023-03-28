@@ -208,6 +208,7 @@ class QuickSearch implements TaskExecutor {
         }
 
         if ( this.refs.results != undefined ) this.refs.results.clear_items()
+        this.search_results = []
 
         if ( math_text != undefined ) {
             if ( this.refs.results != undefined ) this.refs.results.add_item(math_text)
@@ -341,8 +342,14 @@ class QuickSearch implements TaskExecutor {
             if (this.search_results.length < selectedIndex) {
                 $log_info!("Aborted opening Codex: Index out of range!"+
                 `Selected element: ${selectedIndex} but only ${this.search_results.length} elements are available!`)
+                return;
             }
             let selectedResult = this.search_results[selectedIndex]
+
+            if (selectedResult == undefined) {
+                $log_info!(`Aborted opening Codex: Selected element is undefined! Index: ${selectedIndex}`)
+                return;
+            }
 
             // @ts-ignore
             if (event.element?.selected_index != undefined) event.element.selected_index = 0
