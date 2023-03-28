@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "factorio-codex",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "scripts": {
     "build": "tstl --sourceMap false",
     "dev": "tstl --watch",
