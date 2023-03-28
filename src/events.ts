@@ -26,6 +26,10 @@ import * as FLIB_gui from "__flib__.gui"
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 
 
+const errorHandler = (err: any) => {
+    $log_crit_ng!(`Critical error: ${err}`)
+    $log_crit!(`An unknown critical error occurred. Details are in the log file`)
+}
 
 script.on_init(() => {
     FLIB_on_tick_n.init()
@@ -68,7 +72,9 @@ script.on_event(defines.events.on_tick, (e) => {
                 taskExecutor = PlayerData.getCodex(task.player_index)
             }
 
-            if (taskExecutor != undefined) taskExecutor.execute_task(task)
+            if (taskExecutor != undefined) {
+                xpcall(taskExecutor.execute_task, errorHandler, taskExecutor, task)
+            }
         }
     }
 })
@@ -77,17 +83,22 @@ FLIB_gui.hook_events((e) => {
     let action = FLIB_gui.read_action(e)
 
     if ( action != undefined ) {
-        if ( action.startsWith("qs_") ) {
-            PlayerData.getQuickSearch(e)?.gui_action(action, e)
-        } else if ( action.startsWith("cx_") ) {
-            PlayerData.getCodex(e)?.gui_action(action, e)
-        } else if ( action == "toggle_list_collapse" ) {
-            let parent_ele = e.element?.parent?.parent
-            if (parent_ele != undefined && parent_ele["list_container"] != undefined) {
-                parent_ele["list_container"].visible = !parent_ele["list_container"].visible
+        // @ts-ignore
+        let trypart = (this: any, action: string) => {
+            if (action.startsWith("qs_")) {
+                PlayerData.getQuickSearch(e)?.gui_action(action, e)
+            } else if (action.startsWith("cx_")) {
+                PlayerData.getCodex(e)?.gui_action(action, e)
+            } else if (action == "toggle_list_collapse") {
+                let parent_ele = e.element?.parent?.parent
+                if (parent_ele != undefined && parent_ele["list_container"] != undefined) {
+                    parent_ele["list_container"].visible = !parent_ele["list_container"].visible
+                }
+            } else {
+                $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
             }
-        } else {
-            $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
         }
+
+        xpcall(trypart, errorHandler, undefined, action)
     }
 })

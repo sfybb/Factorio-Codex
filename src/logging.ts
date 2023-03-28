@@ -33,11 +33,11 @@ function $log_err(msg: string) {
 
 function $log_crit(msg: string) {
     game.print("[FACTORIO CODEX] [CRITICAL] "+ msg, {r: 0.5})
-    log("[TRACEBACK] " + debug.traceback())
     log("[CRITICAL] " + msg)
+    log("[TRACEBACK] " + debug.traceback())
 }
 
 function $log_crit_ng(msg: string) {
-    log("[TRACEBACK] " + debug.traceback())
     log("[CRITICAL] " + msg)
+    log("[TRACEBACK] " + debug.traceback())
 }
