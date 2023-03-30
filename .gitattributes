@@ -1,0 +1,5 @@
+* text eol=lf
+*.ts text
+*.lua text
+
+*.png binary
