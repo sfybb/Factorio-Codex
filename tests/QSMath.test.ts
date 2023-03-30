@@ -1,6 +1,6 @@
 import {describe, expect, afterEach, test, jest} from '@jest/globals';
 
-import "./StringMock"
+import "./mocks/StringMock"
 
 import QSMath from "../src/quick_search/QS_math";
 

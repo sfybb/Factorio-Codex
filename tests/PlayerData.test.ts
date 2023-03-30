@@ -1,8 +1,8 @@
 // @ts-nocheck
 import {describe, expect, test, jest, beforeEach} from '@jest/globals';
 
-import "./LuaMocks"
-import "./FLIBMocks"
+import "./mocks/LuaMocks"
+import "./mocks/FLIBMocks"
 
 jest.mock('build/Cache', () => ({
     __esModule: true,

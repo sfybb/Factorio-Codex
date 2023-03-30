@@ -1,8 +1,8 @@
 // @ts-nocheck
 import {describe, expect, afterEach, test, jest} from '@jest/globals';
 
-import "./LuaMocks"
-import "./FLIBMocks"
+import "./mocks/LuaMocks"
+import "./mocks/FLIBMocks"
 
 import "events"
 
