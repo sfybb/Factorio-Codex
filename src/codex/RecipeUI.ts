@@ -170,7 +170,7 @@ namespace RecipeUI {
                         type: "sprite", sprite: "entity." + m.name,
                         style: "fcodex_produced_in_sprite",
                         tooltip: ["", `[entity=${m.name}]`, m.localised_name,
-                            ["factorio-codex.machine-crafting-speed", m.crafting_speed]]
+                            ["factorio-codex.machine-crafting-speed", m.crafting_speed != undefined ? m.crafting_speed : m.mining_speed]]
                     })
                 }
             }
