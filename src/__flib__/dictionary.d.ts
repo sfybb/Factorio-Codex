@@ -6,8 +6,8 @@ declare class FLIBRawDictionary {
     total: number
 
     // internal
-    ref: {}
-    strings: {}
+    ref: LocalisedString
+    strings: LocalisedString
     name: string
 
     add(internal: string, translation: LocalisedString): void;

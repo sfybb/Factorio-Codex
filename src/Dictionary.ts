@@ -13,6 +13,8 @@ declare const global: {
 let empty_prototypes = true
 
 namespace Dictionary {
+    let tmp = 0
+
     let build_done: boolean = false;
     let dict_list: {
         names: LuaTable<string, FLIBRawDictionary>,
@@ -53,6 +55,8 @@ namespace Dictionary {
             return
         }
 
+        $log_info!("Building raw dictionaries...")
+
         let prototypes = getPrototypeCache()?.getAll()
 
         if (prototypes == undefined) {
@@ -71,7 +75,7 @@ namespace Dictionary {
         // @ts-ignore
         protoTable.set("technology", prototypes.technology)
         // @ts-ignore
-        protoTable.set("tile", prototypes.tile)
+        //protoTable.set("tile", prototypes.tile)
 
         for (let [type, list] of protoTable) {
             let names = FLIB_dictionary.new(type + "_names")
@@ -110,6 +114,17 @@ namespace Dictionary {
         if (empty_prototypes) return
 
         let lang_data = FLIB_dictionary.process_translation(e)
+
+        // @ts-ignore
+        /*if (tmp < 5 && e.translated && e.localised_string[2].indexOf("factorio-codex") != 0) {
+            tmp++
+
+            $log_info!(`=============== [${tmp}] ===============`)
+            $log_info!(`${serpent.line(e.localised_string, {comment: false})}`)
+            for (let [n, dict] of dict_list.names) {
+                $log_info!(`${n}:    I ${dict.dict_i} / Total ${dict.total}  Batch ${dict.batch_i}`)
+            }
+        }*/
 
         if ( lang_data != undefined ) {
             for (let player_index of lang_data.players) {

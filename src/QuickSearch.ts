@@ -9,18 +9,20 @@ import {Task, TaskExecutor} from "events";
 import QSMath from "quick_search/QS_math";
 import PlayerData from "PlayerData";
 import {getDictionaryCache} from "cache/DictionaryCache";
-import searchUtils, {SortOrderQS} from "SearchUtils";
+import Search, {SortOrderQS} from "search/Search";
 
 declare const global: {
     playerData: typeof PlayerData
 }
 
 type QSResult = {
-    prototype: LuaEntityPrototype | LuaTechnologyPrototype |  LuaItemPrototype | LuaFluidPrototype | LuaTilePrototype
     type: string
     name: string
     id: string
+
     match_count: number
+    hidden: boolean,
+    order: string
 }
 
 const dicts_to_search = ["item", "fluid", "technology"]
@@ -179,7 +181,7 @@ class QuickSearch implements TaskExecutor {
         }
 
         for ( let data of unfiltered_list ) {
-            if (data.prototype == null || !data.prototype.valid || searchUtils.isPrototypeHidden(data.prototype)) {
+            if (data.hidden) {
                 continue
             }
 
@@ -290,22 +292,13 @@ class QuickSearch implements TaskExecutor {
                 return;
             }
 
-            // @ts-ignore
-            let dicts = dicts_to_search.map((e) => ({
-                // @ts-ignore
-                prototype_list: game[e + "_prototypes"],
-                type: e,
-                // @ts-ignore
-                data: dictsCache.getNamesTranslation(e)
-            }))
-
-            let matching_names = searchUtils.find(dicts, task.prompt)
-            //$log_info!(serpent.block(matching_names,  {}))
-            searchUtils.sort(matching_names, [
+            let matching_names = Search.search(task.prompt, this.player_index, [
                 SortOrderQS.hidden_last,
                 SortOrderQS.tech_last,
                 SortOrderQS.match_count,
-                SortOrderQS.factorio], 100)
+                SortOrderQS.factorio],
+                100)
+            //$log_info!(serpent.block(matching_names,  {}))
 
             this.display_result_list(matching_names)
         }

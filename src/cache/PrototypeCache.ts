@@ -61,6 +61,18 @@ class PrototypeCache implements GlobalCache {
         return this.luaPrototypes
     }
 
+    getItems(): LuaTable<string, LuaItemPrototype> {
+        return this.luaPrototypes.item
+    }
+
+    getFluid(): LuaTable<string, LuaFluidPrototype> {
+        return this.luaPrototypes.fluid
+    }
+
+    getTech(): LuaTable<string, LuaTechnologyPrototype> {
+        return this.luaPrototypes.technology
+    }
+
     validate(): void {
 
     }

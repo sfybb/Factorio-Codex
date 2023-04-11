@@ -16,9 +16,10 @@ class LuaTableMock {
     }
 
     *[Symbol.iterator]() {
-        return Object.entries(this)
+        yield* Object.entries(this)
     }
 
 }
 
+global.LuaSet = Set
 global.LuaTable = LuaTableMock
