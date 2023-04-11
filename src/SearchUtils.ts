@@ -5,11 +5,12 @@ type orderFunction<T> = ((this: any, a: T, b: T, ...args: any[]) => number)
 export type multiOrderFunc<T> = orderFunction<T> | orderFunction<T>[]
 
 
-type anyPrototype = LuaTechnologyPrototype |
+export type anyPrototype = LuaTechnologyPrototype |
     LuaItemPrototype |
     LuaFluidPrototype |
     LuaTilePrototype |
-    LuaEntityPrototype
+    LuaEntityPrototype |
+    LuaRecipePrototype
 
 export type SearchResult = {
     hidden: boolean,
@@ -25,7 +26,8 @@ const isHiddenTable = {
     LuaFluidPrototype: (p: LuaFluidPrototype) => p.hidden,
     LuaItemPrototype: (p: LuaItemPrototype) => p.has_flag("hidden"),
     LuaTilePrototype: (p: LuaTilePrototype) => false,
-    LuaEntityPrototype: (p: LuaEntityPrototype) => p.has_flag("hidden")
+    LuaEntityPrototype: (p: LuaEntityPrototype) => p.has_flag("hidden"),
+    LuaRecipePrototype: (p: LuaRecipePrototype) => p.hidden
 }
 
 const SortOrderDefault = {

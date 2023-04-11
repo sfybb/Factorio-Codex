@@ -4,10 +4,24 @@ import CodexCommonUI from "codex/CodexCommonUI";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
+import SearchUtils, {anyPrototype, SortOrderDefault} from "../SearchUtils";
 
 
 
 namespace RecipeInfo {
+    function sortRawResults(raw: LuaCustomTable<string, LuaRecipePrototype>, mainProd?: string): LuaRecipePrototype[] {
+        mainProd = mainProd != undefined ? mainProd : ""
+        let res: LuaRecipePrototype[] = []
+        let mainProdArr: LuaRecipePrototype[] = []
+        for (let [, recipe] of raw) {
+            if(recipe.main_product?.name != mainProd) res.push(recipe)
+            else mainProdArr.push(recipe)
+        }
+        SearchUtils.sort(res, SortOrderDefault.factorio)
+        SearchUtils.sort(mainProdArr, SortOrderDefault.factorio)
+
+        return mainProd != "" ? mainProdArr.concat(res) : res
+    }
     function get_mineable_from(itemOrFluid: LuaItemPrototype | LuaFluidPrototype, force: LuaForce): FLIBGuiBuildStructure[] {
         let miner_recipes = getRecipeCache()?.getMinerRecipesFor(itemOrFluid, force)
         let mineable_from:FLIBGuiBuildStructure[] = []
@@ -39,11 +53,11 @@ namespace RecipeInfo {
             filter: isItem ? "has-product-item" : "has-product-fluid",
             elem_filters: [{ filter: "name", name: itemOrFluid.name}]
         }]
-        const prod_recipes_raw = game.get_filtered_recipe_prototypes(filter)
+        const prod_recipes_arr = sortRawResults(game.get_filtered_recipe_prototypes(filter), itemOrFluid.name)
 
         let produced_by:FLIBGuiBuildStructure[] = []
 
-        for (let [, recipe] of prod_recipes_raw) {
+        for (let recipe of prod_recipes_arr) {
             let isUnavailable = !(recipe.name in force_recipes) || !force_recipes[recipe.name].enabled
             produced_by.push(RecipeUI.getUI(recipe, isUnavailable, itemOrFluid.name))
         }
@@ -58,10 +72,10 @@ namespace RecipeInfo {
             filter: isItem ? "has-ingredient-item" : "has-ingredient-fluid",
             elem_filters: [{ filter: "name", name: itemOrFluid.name}]
         }]
-        const ingr_recipes_raw = game.get_filtered_recipe_prototypes(filter)
+        const ingr_recipes_arr: LuaRecipePrototype[] = sortRawResults(game.get_filtered_recipe_prototypes(filter))
 
         let ingredient_in:FLIBGuiBuildStructure[] = []
-        for (let [, recipe] of ingr_recipes_raw) {
+        for (let recipe of ingr_recipes_arr) {
             let isUnavailable = !(recipe.name in force_recipes) || !force_recipes[recipe.name].enabled
             ingredient_in.push(RecipeUI.getUI(recipe, isUnavailable, itemOrFluid.name))
         }
