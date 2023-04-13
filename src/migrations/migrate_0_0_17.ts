@@ -54,19 +54,9 @@ function migrateCodex(c: any, pId: PlayerIndex): Codex {
             refs: {
                 cat_gui: c.categories.refs.cat_gui,
                 category_picker: c.categories.refs.category_picker,
-                available_entities: {
-                    item: c.categories.refs.available_entities?.item != undefined ? c.categories.refs.available_entities.item : undefined,
-                    fluid: c.categories.refs.available_entities?.fluid != undefined ? c.categories.refs.available_entities.fluid : undefined,
-                    tile: c.categories.refs.available_entities?.tile != undefined ? c.categories.refs.available_entities.tile : undefined,
-                    technology: c.categories.refs.available_entities?.technology != undefined ? c.categories.refs.available_entities.technology : undefined,
-                }
+                available_entities: {}
             },
-            entity_lists: {
-                item: c.categories.entity_lists?.item != undefined ? c.categories.entity_lists.item : undefined,
-                fluid: c.categories.entity_lists?.fluid != undefined ? c.categories.entity_lists.fluid : undefined,
-                tile: c.categories.entity_lists?.tile != undefined ? c.categories.entity_lists.tile : undefined,
-                technology: c.categories.entity_lists?.technology != undefined ? c.categories.entity_lists.technology : undefined,
-            }
+            entity_lists: {}
         },
 
         // New Fields

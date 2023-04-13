@@ -119,6 +119,8 @@ namespace PlayerData {
     }
 
     export function  player_update(this: void, e: OnPlayerJoinedGameEvent) {
+        global.playerData = PlayerData
+        Codex.Init()
         Dictionary.translate(e.player_index)
     }
 

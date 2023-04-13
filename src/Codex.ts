@@ -10,7 +10,8 @@ import {Verifiable, Verifyinfo} from "Validate";
 
 type HistoryItem = {
     type: string,
-    id: string
+    id: string,
+    proto: LuaItemPrototype | LuaTechnologyPrototype | LuaFluidPrototype
 }
 
 class Codex implements TaskExecutor, Verifiable {
@@ -250,7 +251,7 @@ class Codex implements TaskExecutor, Verifiable {
             let item = this.historyList[i]
             backTooltip.push(
                 `\n[${item.type}=${item.id}] `,
-                [`${item.type}-name.${item.id}`],
+                item.proto.localised_name,
             )
         }
 
@@ -258,7 +259,7 @@ class Codex implements TaskExecutor, Verifiable {
             let item = this.historyList[i]
             fwdTooltip.push(
                 `\n[${item.type}=${item.id}] `,
-                [`${item.type}-name.${item.id}`],
+                item.proto.localised_name,
             )
         }
 
@@ -274,7 +275,7 @@ class Codex implements TaskExecutor, Verifiable {
         }
     }
 
-    addToHistory() {
+    addToHistory(entityprotoype: LuaFluidPrototype | LuaItemPrototype | LuaTechnologyPrototype) {
         if (this.entity_view == undefined) return;
 
         let nextItem = this.historyPosition != -1 ? this.historyList[this.historyPosition+1] : undefined
@@ -287,10 +288,16 @@ class Codex implements TaskExecutor, Verifiable {
                 // Different item than the next in the history list - delete others that would come next this is the newest entry now
                 this.historyList.splice(this.historyPosition+1)
                 this.historyPosition = -1
-                this.historyList.push(this.entity_view)
+                this.historyList.push({
+                    ...this.entity_view,
+                    proto: entityprotoype
+                })
             }
         } else {
-            this.historyList.push(this.entity_view)
+            this.historyList.push({
+                ...this.entity_view,
+                proto: entityprotoype
+            })
         }
         const maxHistLen = 10
         if (this.historyList.length > maxHistLen) {
@@ -341,7 +348,7 @@ class Codex implements TaskExecutor, Verifiable {
 
         this.entity_view = { id: id, type: type }
         if (updateHist != false) {
-            this.addToHistory()
+            this.addToHistory(entity_prototype)
         }
 
 

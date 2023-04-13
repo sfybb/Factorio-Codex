@@ -57,7 +57,12 @@ namespace Dictionary {
 
         $log_info!("Building raw dictionaries...")
 
-        let prototypes = getPrototypeCache()?.getAll()
+        let prototypes = undefined
+
+        let protoCache = getPrototypeCache()
+        if (protoCache != undefined && protoCache?.getAll != undefined) {
+            prototypes = protoCache.getAll()
+        }
 
         if (prototypes == undefined) {
             $log_warn!("No prototype definitions in cache! Cannot start translation!")
@@ -142,7 +147,7 @@ namespace Dictionary {
                     game.get_player(player_index)?.print("Factorio Codex: Quick search is now ready to be used!")
                 }
 
-                global.playerData.getQuickSearch(player_index)?.update_input()
+                global.playerData?.getQuickSearch(player_index)?.update_input()
             }
         }
     }

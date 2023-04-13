@@ -130,9 +130,12 @@ class Categories implements Verifiable {
             this.entity_lists[cat_name] = entities
         }
 
-        if (catOld?.name != undefined && this.entity_lists[catOld.name] != undefined) {
-            this.refs.available_entities[catOld.name].visible = false
-            this.refs.available_entities[catOld.name].selected_index = 0
+        if (catOld?.name != undefined) {
+            let oldCatUI = this.refs.available_entities[catOld.name]
+            if (oldCatUI != undefined) {
+                oldCatUI.visible = false
+                oldCatUI.selected_index = 0
+            }
         }
 
         let entitiesUI = this.refs.available_entities[cat_name]
@@ -242,7 +245,7 @@ class Categories implements Verifiable {
         let entities = this.entity_lists[cat_name]
         let entitiesUI = this.refs.available_entities[cat_name]
 
-        if (entities == undefined || entitiesUI != e.element) {
+        if (entities == undefined || entitiesUI != e.element || entitiesUI == undefined) {
             return {id: "", type: ""}
         }
 
