@@ -71,7 +71,6 @@ function migration_0_0_17(): void {
 
     global.cache = new CacheManager()
     Dictionary.Init()
-    Codex.Init()
 
     if (global.players == undefined) {
         global.players = new LuaTable()

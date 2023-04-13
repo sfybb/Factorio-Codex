@@ -69,10 +69,6 @@ class Codex implements TaskExecutor, Verifiable {
         if (c?.categories != undefined) Categories.load(c.categories)
     }
 
-    static Init() {
-        Categories.Init()
-    }
-
     destroy() {
         this.refs?.window?.destroy()
         this.categories?.destroy()

@@ -1,28 +1,15 @@
 import SearchUtils, {SortOrderDefault} from "SearchUtils";
-import {validate_print_info, validate_status} from "Util";
+import {Verifiable, Verifyinfo} from "Validate";
+import {Category_type, getPrototypeCache} from "cache/PrototypeCache";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
 /** @noResolution */
 import * as FLIB_table from "__flib__.table";
-import {Verifiable, Verifyinfo} from "../Validate";
-
-
-type Category_type = {
-    name: string,
-    localised_name: LocalisedString
-    parent?: Category_type
-}
-
-type Categories_storage = {
-    tree: Category_type[],
-    list: Category_type[],
-}
 
 type anyPrototype = LuaEntityPrototype | LuaTechnologyPrototype | LuaItemPrototype
 
 class Categories implements Verifiable {
-    static categories: Categories_storage
 
     selected_index: uint;
     selected_cat: undefined | Category_type;
@@ -50,26 +37,6 @@ class Categories implements Verifiable {
     static load(this: void, c: Categories): void {
         // @ts-ignore
         setmetatable(c, Categories.prototype)
-    }
-
-    static Init(): void {
-        let cat_tree: Category_type[] = [
-            {name: "item", localised_name: ["", "Items"]},
-            {name: "fluid", localised_name: ["", "Fluids"]},
-            {name: "technology", localised_name: ["", "Technologies"]},
-            {name: "tile", localised_name: ["", "Tiles"]}
-        ]
-
-        let cat_list: Category_type[] = []
-        for (let cat of cat_tree) {
-            cat_list.push(cat)
-            // TODO subcategories
-        }
-
-        Categories.categories = {
-            tree: cat_tree,
-            list: cat_list
-        }
     }
 
     destroy(): void {
@@ -106,7 +73,13 @@ class Categories implements Verifiable {
         if (this.refs.category_picker != undefined) {
             let cat_picker = this.refs.category_picker
             cat_picker.clear_items()
-            Categories.categories.list.forEach((c) => cat_picker.add_item(c.localised_name))
+
+            let categoriesList = getPrototypeCache()?.getCategories()
+            if (categoriesList != undefined) {
+                for (let cat of categoriesList) {
+                    cat_picker.add_item(cat.localised_name)
+                }
+            }
         }
 
         if (this.selected_index >= 0) {
@@ -192,12 +165,18 @@ class Categories implements Verifiable {
     }
 
     select_by_name(name: string): void {
-        let catIndx = Categories.categories.list.findIndex((c) => c.name  == name)
+        let categoriesList = getPrototypeCache()?.getCategories()
+        let catIndx = categoriesList?.findIndex((c) => c.name  == name)
+        catIndx = catIndx == undefined ? -1 : catIndx
+
         this.select_by_index(catIndx)
     }
 
     select_by_index(index: uint): void {
-        let cat = index >= 0 ? Categories.categories.list[index] : undefined
+        let categoriesList = getPrototypeCache()?.getCategories()
+        categoriesList = categoriesList == undefined ? [] : categoriesList
+
+        let cat = index >= 0 ? categoriesList[index] : undefined;
 
         if ( cat?.name == undefined || cat?.name == this?.selected_cat?.name ) {
             return

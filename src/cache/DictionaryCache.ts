@@ -120,6 +120,10 @@ class DictionaryCache implements PlayerCache {
         return this.searchables
     }
 
+    Rebuild() {
+        //this.translated = false
+    }
+
     validate(ownerIndex: PlayerIndex): void {
 
     }

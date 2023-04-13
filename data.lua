@@ -109,8 +109,8 @@ styles.fcodex_codex_info_scroll = {
 styles.fcodex_codex_entity_list = {
     type = "list_box_style",
     parent = "list_box",
-    natural_width = 390,
-    minimal_width = 390
+    width = 390,
+    horizontally_stretchable="off"
 }
 
 styles.fcodex_produces_sprite = {

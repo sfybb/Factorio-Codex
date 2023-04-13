@@ -86,6 +86,21 @@ class RecipeCache implements GlobalCache {
             pumping: new LuaTable(),
             rockets: new LuaTable(),
         }
+        this.Rebuild()
+    }
+
+    Rebuild() {
+        this.additionalRecipes = {
+            fluid:    {type: "fluid",    products: new LuaTable(), ingredients: new LuaTable(), list: []},
+            item:     {type: "item",     products: new LuaTable(), ingredients: new LuaTable(), list: []},
+            resource: {type: "resource", products: new LuaTable(), ingredients: new LuaTable(), list: []}
+        }
+        this.category_machines = {
+            resources: new LuaTable(),
+            crafting: new LuaTable(),
+            pumping: new LuaTable(),
+            rockets: new LuaTable(),
+        }
 
         this.initCategories()
 

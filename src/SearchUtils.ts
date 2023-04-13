@@ -1,6 +1,3 @@
-import GeneralizedSuffixTree from "search/suffixtree/GeneralizedSuffixTree";
-import Search from "search/Search";
-
 type orderFunction<T> = ((this: any, a: T, b: T, ...args: any[]) => number)
 export type multiOrderFunc<T> = orderFunction<T> | orderFunction<T>[]
 

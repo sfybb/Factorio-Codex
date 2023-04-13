@@ -27,8 +27,12 @@ namespace PlayerData {
         global.players = new LuaTable()
         global.cache = new Cache()
 
+        // @ts-ignore
+        global.playerData = {}
+        // @ts-ignore
+        setmetatable(global.playerData, {__index: PlayerData })
+
         Dictionary.Init()
-        Codex.Init()
     }
 
     export function  Load() {
@@ -45,6 +49,11 @@ namespace PlayerData {
     }
 
     export function  LoadMetatables() {
+        if (global.playerData != undefined) {
+            // @ts-ignore
+            setmetatable(global.playerData, {__index: PlayerData })
+        }
+
         if (global?.players != null) {
             for (let [i, player_data] of global.players) {
                 if (player_data == null) {
@@ -119,8 +128,6 @@ namespace PlayerData {
     }
 
     export function  player_update(this: void, e: OnPlayerJoinedGameEvent) {
-        global.playerData = PlayerData
-        Codex.Init()
         Dictionary.translate(e.player_index)
     }
 
@@ -139,7 +146,13 @@ namespace PlayerData {
     export function  validate() {
         $log_info!("Validating global table...")
 
-        global.playerData = PlayerData
+        if (global.playerData == undefined) {
+            $log_info!("Adding global access to playerdata")
+            // @ts-ignore
+            global.playerData = {}
+        }
+        // @ts-ignore
+        setmetatable(global.playerData, {__index: PlayerData })
 
         const print_info: validate_print_info = {
             width: 40,
@@ -204,8 +217,6 @@ namespace PlayerData {
         }
     }
 }
-
-global.playerData = PlayerData
 
 function get_player_index(ind_pi: indirect_player_index): PlayerIndex {
     if ( typeof (ind_pi) == "number" ) {

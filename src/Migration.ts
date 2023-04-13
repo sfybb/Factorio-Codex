@@ -1,9 +1,11 @@
 import PlayerData, {player_table} from "PlayerData";
+import CacheManager from "Cache";
 import Dict from "Dictionary";
-import {verifyObject} from "Validate"
 
 /** @noResolution */
 import * as FLIB_migration from "__flib__.migration"
+import Features from "Features";
+import Codex from "Codex";
 
 const migrations = {
     ["0.0.10"]: require("migrations/migrate_0_0_10"),
@@ -14,6 +16,7 @@ const migrations = {
 
 declare const global: {
     players?: player_table
+    cache?: CacheManager
 }
 
 class Migration {
@@ -28,15 +31,15 @@ class Migration {
             PlayerData.validate()
 
             $log_info!("Invalidating and rebuilding caches")
-            //global.cache.rebuild_all()
+            global.cache?.RebuildAll()
             Dict.Rebuild()
+
+            Migration.modCompatCheck()
 
             $log_info!("Running final migration actions")
             Migration.refresh_guis()
 
             $log_info!("Migration done")
-        } else {
-            $log_info!("Nothing to do!")
         }
     }
 
@@ -69,6 +72,13 @@ class Migration {
                 player_data.quick_search.close()
                 player_data.quick_search.open()
             }
+        }
+    }
+
+    static modCompatCheck(): void {
+        if (Features.supports("localised_fallback") && Features.supports("dictionary")) {
+            $log_crit!(`FLib version ${game.active_mods["flib"]
+            } does not support Factorio versions above 1.1.74! Please update FLib to at least version 0.12.0!`)
         }
     }
 }

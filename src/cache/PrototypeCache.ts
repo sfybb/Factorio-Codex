@@ -32,6 +32,17 @@ type ProtoStorage = {
     tile: LuaTable<string, LuaTilePrototype>;
 }
 
+export type Category_type = {
+    name: string,
+    localised_name: LocalisedString
+    parent?: Category_type
+}
+
+type Categories_storage = {
+    tree: Category_type[],
+    list: Category_type[],
+}
+
 class PrototypeCache implements GlobalCache {
     readonly id: string = PrototypeCacheFactory.cache_id;
     readonly name: string = PrototypeCacheFactory.cache_name;
@@ -39,12 +50,18 @@ class PrototypeCache implements GlobalCache {
 
     luaPrototypes: ProtoStorage;
 
+    categories: Categories_storage
+
     constructor() {
         this.luaPrototypes = {
             fluid: new LuaTable(),
             item: new LuaTable(),
             technology: new LuaTable(),
             tile: new LuaTable()
+        }
+        this.categories = {
+            tree: [],
+            list: []
         }
 
         this.Rebuild()
@@ -55,6 +72,24 @@ class PrototypeCache implements GlobalCache {
         this.luaPrototypes.item = FLIB_table.shallow_copy(game.item_prototypes) as LuaTable<string, LuaItemPrototype>
         this.luaPrototypes.technology = FLIB_table.shallow_copy(game.technology_prototypes) as LuaTable<string, LuaTechnologyPrototype>
         this.luaPrototypes.tile = FLIB_table.shallow_copy(game.tile_prototypes) as LuaTable<string, LuaTilePrototype>
+
+        let cat_tree: Category_type[] = [
+            {name: "item", localised_name: ["", "Items"]},
+            {name: "fluid", localised_name: ["", "Fluids"]},
+            {name: "technology", localised_name: ["", "Technologies"]},
+            {name: "tile", localised_name: ["", "Tiles"]}
+        ]
+
+        let cat_list: Category_type[] = []
+        for (let cat of cat_tree) {
+            cat_list.push(cat)
+            // TODO subcategories
+        }
+
+        this.categories = {
+            tree: cat_tree,
+            list: cat_list
+        }
     }
 
     getAll(): ProtoStorage {
@@ -71,6 +106,10 @@ class PrototypeCache implements GlobalCache {
 
     getTech(): LuaTable<string, LuaTechnologyPrototype> {
         return this.luaPrototypes.technology
+    }
+
+    getCategories(): Category_type[] {
+        return this.categories.list
     }
 
     validate(): void {

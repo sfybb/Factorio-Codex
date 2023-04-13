@@ -17,6 +17,7 @@ export interface Cache {
     readonly name: string
     readonly is_global: boolean
 
+    Rebuild(): void
     validate(ownerIndex?: PlayerIndex): void
 }
 
@@ -78,6 +79,37 @@ class CacheManager {
     static load(this: void, c: CacheManager) {
         // @ts-ignore
         setmetatable(c, CacheManager.prototype)
+
+        if (c.globalCaches != undefined && globalFactories != undefined) {
+            $log_info!(`Loading global caches...`)
+            for (let [id, gCache] of c.globalCaches) {
+                let gFactory = globalFactories.get(id)
+                if (gFactory != undefined) {
+                    gFactory.Load(gCache)
+                    $log_info!(`    ${gFactory.cache_name}      LOADED`)
+                } else {
+                    $log_info!(`    Unknown cache ${gCache.id} "${gCache.name}"      ERROR`)
+                }
+            }
+        }
+
+        if (c.playerCaches != undefined && playerFactories != undefined) {
+            $log_info!(`Loading player caches...`)
+
+            for (let [pId, pCacheList] of c.playerCaches) {
+                if (pCacheList == undefined) continue
+                $log_info!(`Loading caches for player ${pId}('${game?.get_player(pId)?.name}')...`)
+                for (let [id, pCache] of pCacheList) {
+                    let pFactory = playerFactories.get(id)
+                    if (pFactory != undefined) {
+                        pFactory.Load(pCache)
+                        $log_info!(`    ${pFactory.cache_name}      LOADED`)
+                    } else {
+                        $log_info!(`    Unknown cache ${pCache.id} "${pCache.name}"      ERROR`)
+                    }
+                }
+            }
+        }
     }
     get(cache_id: string): undefined | GlobalCache {
         let cache = this?.globalCaches?.get(cache_id)
@@ -115,6 +147,32 @@ class CacheManager {
 
         this.playerCaches.set(player, playerCacheList)
         return playerCacheList
+    }
+
+    RebuildAll(): void {
+        if (this.globalCaches != undefined) {
+            $log_info!(`Rebuilding global caches...`)
+            for (let [id, gCache] of this.globalCaches) {
+                gCache?.Rebuild()
+                $log_info!(`    ${gCache.name}      REBUILT`)
+            }
+        }
+
+        if (this.playerCaches != undefined) {
+            $log_info!(`Rebuilding player caches...`)
+            for (let [pId, pCacheList] of this.playerCaches) {
+                if (pCacheList == undefined) {
+                    $log_warn!(`Invalid cache list for player ${pId}('${game.get_player(pId)?.name}') - deleting`)
+                    this.playerCaches.delete(pId)
+                    continue
+                }
+                $log_info!(`Rebuilding caches for player ${pId}('${game.get_player(pId)?.name}')...`)
+                for (let [id, pCache] of pCacheList) {
+                    pCache.Rebuild()
+                    $log_info!(`    ${pCache.name}      LOADED`)
+                }
+            }
+        }
     }
 }
 
