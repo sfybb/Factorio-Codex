@@ -15,7 +15,7 @@ let PrototypeCacheFactory: CacheFactory = {
 
     Load(cache: GlobalCache): void {
         // @ts-ignore
-        setmetatable(c, PrototypeCache.prototype)
+        setmetatable(cache, PrototypeCache.prototype)
     }
 }
 

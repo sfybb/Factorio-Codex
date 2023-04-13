@@ -13,7 +13,7 @@ let RecipeCacheFactory: CacheFactory = {
 
     Load(cache: GlobalCache): void {
         // @ts-ignore
-        setmetatable(c, RecipeCache.prototype)
+        setmetatable(cache, RecipeCache.prototype)
     }
 }
 

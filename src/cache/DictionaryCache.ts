@@ -24,7 +24,7 @@ let DictionaryCacheFactory: CacheFactory = {
 
     Load(cache: PlayerCache): void {
         // @ts-ignore
-        setmetatable(c, DictionaryCache.prototype)
+        setmetatable(cache, DictionaryCache.prototype)
     }
 }
 
