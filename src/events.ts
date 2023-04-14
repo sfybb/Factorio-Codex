@@ -5,18 +5,7 @@ import Features from "Features"
 // https://mods.factorio.com/mod/gvv
 if (Features.supports("gvv")) require("@NoResolution:__gvv__.gvv")();
 
-
-export type Task = {
-    gui: string,
-    player_index: PlayerIndex,
-
-    [key: string]: any
-}
-export interface TaskExecutor {
-    execute_task(task: Task): void;
-}
-
-
+import {Task, TaskExecutor} from "Task";
 import PlayerData from "PlayerData"
 import Migration from "Migration"
 

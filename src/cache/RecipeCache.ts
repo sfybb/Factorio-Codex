@@ -192,6 +192,8 @@ class RecipeCache implements GlobalCache {
         let tmpRocketLaunchProducts = []
         for (let [_, s] of rocketLaunchProducts) tmpRocketLaunchProducts.push(s.name)
 
+        if (tmpRocketSilos.length == 0) return
+
         $log_info!(`Found ${rocketSilos.length()} rocket silo(s)! (${serpent.line(tmpRocketSilos, {nocode: true, comment: false})})`)
         $log_info!(`Found ${rocketLaunchProducts.length()} items produced by rocket launches!`)
 

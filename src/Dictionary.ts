@@ -51,7 +51,7 @@ namespace Dictionary {
     }
 
     export function Build(): void {
-        if (build_done ) {
+        if (build_done) {
             return
         }
 
@@ -72,13 +72,20 @@ namespace Dictionary {
         empty_prototypes = false
 
         let protoTable = new LuaTable<string, LuaTable<string, LuaFluidPrototype | LuaItemPrototype |
-                                              LuaTechnologyPrototype | LuaTilePrototype>>()
-        // @ts-ignore
-        protoTable.set("fluid", prototypes.fluid)
-        // @ts-ignore
-        protoTable.set("item", prototypes.item)
-        // @ts-ignore
-        protoTable.set("technology", prototypes.technology)
+            LuaTechnologyPrototype | LuaTilePrototype>>()
+
+        if (prototypes.fluid != undefined) {
+            // @ts-ignore
+            protoTable.set("fluid", prototypes.fluid)
+        }
+        if (prototypes.item != undefined) {
+            // @ts-ignore
+            protoTable.set("item", prototypes.item)
+        }
+        if (prototypes.technology != undefined) {
+            // @ts-ignore
+            protoTable.set("technology", prototypes.technology)
+        }
         // @ts-ignore
         //protoTable.set("tile", prototypes.tile)
 

@@ -5,7 +5,6 @@ import Dict from "Dictionary";
 /** @noResolution */
 import * as FLIB_migration from "__flib__.migration"
 import Features from "Features";
-import Codex from "Codex";
 
 const migrations = {
     ["0.0.10"]: require("migrations/migrate_0_0_10"),

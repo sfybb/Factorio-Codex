@@ -1,5 +1,5 @@
 import {validate_print_info, validate_status} from "Util";
-import {Task, TaskExecutor} from "events";
+import {Task, TaskExecutor} from "Task";
 import RecipeInfo from "codex/RecipeInfo"
 
 import Categories from "codex/Categories"
@@ -243,7 +243,7 @@ class Codex implements TaskExecutor, Verifiable {
         let fwdTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
 
         let curHistPos = this.historyPosition == -1 ? this.historyList.length-1 : this.historyPosition
-        for (let i = curHistPos - 1; i >= 0; i--) {
+        for (const i of $range(curHistPos - 1,0, -1)) {
             let item = this.historyList[i]
             backTooltip.push(
                 `\n[${item.type}=${item.id}] `,
@@ -251,7 +251,7 @@ class Codex implements TaskExecutor, Verifiable {
             )
         }
 
-        for (let i = curHistPos + 1; i < this.historyList.length; i++) {
+        for (const i of $range(curHistPos+1, this.historyList.length-1)) {
             let item = this.historyList[i]
             fwdTooltip.push(
                 `\n[${item.type}=${item.id}] `,

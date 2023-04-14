@@ -21,5 +21,17 @@ class LuaTableMock {
 
 }
 
+function rangeMock(start: number, limit: number, step?: number): Iterable<number> {
+    step = step == undefined ? 1 : step
+    return {
+        *[Symbol.iterator]() {
+            for (let i = start; i != limit; i += step) yield i;
+            yield limit;
+        }
+    }
+}
+
+global.$range = rangeMock
 global.LuaSet = Set
 global.LuaTable = LuaTableMock
+global.setmetatable = () => {}

@@ -23,50 +23,17 @@ describe("Generalized Suffix Tree", () => {
         console.log(stree.toGraphviz())
     })
     test("complex insertion", () => {
-        let stree = new GeneralizedSuffixTree<any>()
+        let stree = new GeneralizedSuffixTree<number>()
 
         let testStr = "abcabxabcd"
-        stree.add(testStr, "val")
+        stree.add(testStr, 1)
 
-        expect(stree.toGraphviz()).toBe("digraph {\n" +
-            "\trankdir = LR;\n" +
-            "\tnode0 [label=\"node0\",style=filled,shape=circle]\n" +
-            "\tnode0 -> node1 [label=\"ab\"]\n" +
-            "\tnode1 [label=\"node1\",style=filled,shape=circle]\n" +
-            "\tnode1 -> node2 [label=\"c\"]\n" +
-            "\tnode2 [label=\"node2\",style=filled,shape=circle]\n" +
-            "\tnode2 -> node3 [label=\"abxabcd\"]\n" +
-            "\tnode3 [label=\"node3\",style=filled,shape=circle]\n" +
-            "\tnode2 -> node4 [label=\"d\"]\n" +
-            "\tnode4 [label=\"node4\",style=filled,shape=circle]\n" +
-            "\tnode2 -> node5 [label=\"\",style=dotted,weight=0]\n" +
-            "\tnode1 -> node6 [label=\"xabcd\"]\n" +
-            "\tnode6 [label=\"node6\",style=filled,shape=circle]\n" +
-            "\tnode1 -> node7 [label=\"\",style=dotted,weight=0]\n" +
-            "\tnode0 -> node7 [label=\"b\"]\n" +
-            "\tnode7 [label=\"node7\",style=filled,shape=circle]\n" +
-            "\tnode7 -> node5 [label=\"c\"]\n" +
-            "\tnode5 [label=\"node5\",style=filled,shape=circle]\n" +
-            "\tnode5 -> node8 [label=\"abxabcd\"]\n" +
-            "\tnode8 [label=\"node8\",style=filled,shape=circle]\n" +
-            "\tnode5 -> node9 [label=\"d\"]\n" +
-            "\tnode9 [label=\"node9\",style=filled,shape=circle]\n" +
-            "\tnode5 -> node10 [label=\"\",style=dotted,weight=0]\n" +
-            "\tnode7 -> node11 [label=\"xabcd\"]\n" +
-            "\tnode11 [label=\"node11\",style=filled,shape=circle]\n" +
-            "\tnode7 -> node0 [label=\"\",style=dotted,weight=0]\n" +
-            "\tnode0 -> node10 [label=\"c\"]\n" +
-            "\tnode10 [label=\"node10\",style=filled,shape=circle]\n" +
-            "\tnode10 -> node12 [label=\"abxabcd\"]\n" +
-            "\tnode12 [label=\"node12\",style=filled,shape=circle]\n" +
-            "\tnode10 -> node13 [label=\"d\"]\n" +
-            "\tnode13 [label=\"node13\",style=filled,shape=circle]\n" +
-            "\tnode10 -> node0 [label=\"\",style=dotted,weight=0]\n" +
-            "\tnode0 -> node14 [label=\"d\"]\n" +
-            "\tnode14 [label=\"node14\",style=filled,shape=circle]\n" +
-            "\tnode0 -> node15 [label=\"xabcd\"]\n" +
-            "\tnode15 [label=\"node15\",style=filled,shape=circle]\n" +
-            "}")
+        for (let i=0; i < testStr.length; i++) {
+            let set = new LuaSet<number>()
+            let substr = testStr.substring(i)
+            stree.getResults(substr, set)
+            expect({has: set.has(1), str: substr, key: 1}).toEqual({has: true, str: substr, key: 1})
+        }
     })
 
     test("multi insertion", () => {

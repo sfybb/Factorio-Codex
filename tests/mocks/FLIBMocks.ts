@@ -32,7 +32,8 @@ jest.mock('__flib__.dictionary', () => ({
     __esModule: true,
     set_use_local_storage: jest.fn(),
     init: jest.fn(),
-    load: jest.fn()
+    load: jest.fn(),
+    new: jest.fn(),
 }), {
     virtual: true
 });

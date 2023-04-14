@@ -1,4 +1,5 @@
 import {describe, expect, afterEach, test, jest} from '@jest/globals';
+import "./mocks/LuaMocks"
 
 import SearchUtils, {SortOrderDefault, SortOrderQS} from "../src/SearchUtils";
 import {ExpectationResult, MatcherContext} from "expect";
@@ -195,7 +196,7 @@ describe("SearchUtils module", () => {
         expect(toSort).toStrictEqual(truth)
     })
 
-    test("Sorts are ...", () => {
+    test("Sorts are commutative", () => {
         let water = {
             id: "water",
             match_count: 2,
@@ -225,9 +226,9 @@ describe("SearchUtils module", () => {
             SortOrderQS.factorio]
 
         // @ts-ignore´
-        expect(SearchUtils.compare_multi_order(sortFuncs, water, cosmic_water)).toBe(0)
+        expect(SearchUtils.compare_multi_order( water, cosmic_water, ...sortFuncs)).toBe(0)
         // @ts-ignore´
-        expect(SearchUtils.compare_multi_order(sortFuncs, cosmic_water, water)).toBe(0)
+        expect(SearchUtils.compare_multi_order(cosmic_water, water, ...sortFuncs)).toBe(0)
     })
 
     test("Partial quicksort", () => {

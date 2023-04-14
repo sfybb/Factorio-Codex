@@ -27,7 +27,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
         let s = this.root
         let text: SubString = new SubString(key, 0, 0)
         let rest: SubString
-        for (let i = 0; i < key.length; i++ ) {
+        for (const i of $range(0, key.length-1)) {
             rest = new SubString(key, i);
             text.lengthen(1);
 

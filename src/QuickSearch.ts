@@ -5,7 +5,7 @@ import * as FLIB_gui from "__flib__.gui"
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 
-import {Task, TaskExecutor} from "events";
+import {Task, TaskExecutor} from "Task";
 import QSMath from "quick_search/QS_math";
 import PlayerData from "PlayerData";
 import {getDictionaryCache} from "cache/DictionaryCache";

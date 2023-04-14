@@ -83,12 +83,12 @@ namespace SearchUtils {
      *   > 0: sort a after b
      *   = 0: keep original order of a and b
      */
-    export function compare_multi_order<T>(this: any, A: T, B: T, ...args: any[]): number {
+    export function compare_multi_order<T>(this: any, A: T, B: T, ...args: orderFunction<T>[]): number {
         let sort_order = 0
         //let orderIndx = -1
         for (let func of args) {
             //orderIndx++
-            sort_order = func(null, A, B)
+            sort_order = func(A, B)
             if (sort_order != 0) break
         }
         // @ts-ignore
@@ -106,8 +106,8 @@ namespace SearchUtils {
     export function sort<T>(A: T[], order: multiOrderFunc<T>, maxResults?: number): void {
         if (A == undefined || A.length == 0) return
 
-        let profSplice = game.create_profiler(true)
-        let prof = game.create_profiler()
+        /*let profSplice = game.create_profiler(true)
+        let prof = game.create_profiler()*/
 
         let orderCompositeFunc: orderFunction<T>
         let orderArgs: any[] = []
@@ -130,13 +130,13 @@ namespace SearchUtils {
             maxResults = maxResults == undefined ? A.length : maxResults
             partial_quicksort(A, orderCompositeFunc, maxResults, undefined, undefined, ...orderArgs)
 
-        prof.stop()
-        profSplice.restart()
+        /*prof.stop()
+        profSplice.restart()*/
 
         if (A.length > maxResults) A.splice(maxResults, A.length-maxResults)
-        profSplice.stop()
+        //profSplice.stop()
 
-        game.print(["", "Factorio Codex: Sort: ", prof, "; Splice: ", profSplice])
+        //game.print(["", "Factorio Codex: Sort: ", prof, "; Splice: ", profSplice])
         //}
 
         /**/
@@ -171,7 +171,8 @@ namespace SearchUtils {
         }
 
         let storeIndex = l
-        for (let i = l; i < r; i++) {
+
+        for (const i of $range(l, r-1)) {
             /*let cmp = order(A[i], pivotVal)
             console.log(`${JSON.stringify(A[i])}  vs.  pivot ${JSON.stringify(pivotVal)}:  ${cmp < 0 ? "Front" : "End"}`)*/
             if (order(A[i], pivotVal, ...args) < 0) {

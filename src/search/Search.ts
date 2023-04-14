@@ -102,7 +102,7 @@ namespace Search {
             }
         ]
 
-        let prof = game.create_profiler(false)
+       // let prof = game.create_profiler(false)
 
         prompt = prompt.toLowerCase()
         let tokens = prompt.split(" ")
@@ -146,8 +146,8 @@ namespace Search {
                 }
             }
         }
-        prof.stop()
-        game.print(["", "Factorio Codex: Old Search: ", prof])
+        /*prof.stop()
+        game.print(["", "Factorio Codex: Old Search: ", prof])*/
 
         return matchingResults
     }
