@@ -55,12 +55,16 @@ function genChangelogMd() {
     allFileContents.split(/\r?\n/).forEach(line =>  {
         let num_spaces = line.search(/\S|$/)
 
+        let remLine = line.substring(num_spaces)
+        remLine = remLine.replaceAll("__", "\\_\\_")
+        remLine = remLine.replaceAll("**", "\\*\\*")
+
         if (num_spaces === 0 && line.indexOf(":") !== -1 && line.startsWith("Version")) {
-            changelog_md += "\n  - " + line
+            changelog_md += "\n  - " + remLine
         } else if (num_spaces === 2) {
-            changelog_md += "\n    - " + line.substring(num_spaces)
+            changelog_md += "\n    - " + remLine
         } else if (num_spaces === 4) {
-            changelog_md += "\n        " + line.substring(num_spaces)
+            changelog_md += "\n        " + remLine
         }
     });
 

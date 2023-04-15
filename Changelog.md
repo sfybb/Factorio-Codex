@@ -8,6 +8,7 @@
         - Instead of crashing the game most errors will now be logged and only a notification will be shown to the player.
         - Massive performance improvements while using quick search.
     - Bugfixes:
+        - Fixed a bug where offshore pumping recipes (pumping water) would show up as "Rocket launch crafting".
         - Fixed a bug where the codex would show "\_\_1\_\_" instead of the miner speed
         - Fixed a bug where the mod would crash when clicking on the quick search result "Waiting for translation...".
         - Fixed a bug where shared player data failed to initialize correctly after a saved game was loaded.

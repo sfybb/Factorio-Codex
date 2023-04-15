@@ -282,7 +282,7 @@ class RecipeCache implements GlobalCache {
                         amount: Math.round(pump.pumping_speed*60)
                     }]
                 }
-                this.addRecipeToStorage(this.additionalRecipes.fluid, recipe)
+                this.addRecipeToStorage(this.additionalRecipes.resource, recipe)
             }
         }
     }

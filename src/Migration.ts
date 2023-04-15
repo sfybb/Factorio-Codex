@@ -10,7 +10,8 @@ const migrations = {
     ["0.0.10"]: require("migrations/migrate_0_0_10"),
     ["0.0.12"]: require("migrations/migrate_0_0_12"),
     ["0.0.15"]: require("migrations/migrate_0_0_15"),
-    ["0.0.17"]: require("migrations/migrate_0_0_17")
+    ["0.0.17"]: require("migrations/migrate_0_0_17"),
+    ["0.0.19"]: require("migrations/migrate_0_0_19")
 }
 
 declare const global: {

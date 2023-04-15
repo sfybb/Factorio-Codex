@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.19
-Date:
+Date: 15.04.2023
   Codex Features:
     - When viewing recipes the "Produced by" tab prioritizes recipes that mainly produce the currently viewed item.
   Features:
@@ -9,6 +9,7 @@ Date:
     - Instead of crashing the game most errors will now be logged and only a notification will be shown to the player.
     - Massive performance improvements while using quick search.
   Bugfixes:
+    - Fixed a bug where offshore pumping recipes (pumping water) would show up as "Rocket launch crafting".
     - Fixed a bug where the codex would show "__1__" instead of the miner speed
     - Fixed a bug where the mod would crash when clicking on the quick search result "Waiting for translation...".
     - Fixed a bug where shared player data failed to initialize correctly after a saved game was loaded.
@@ -19,7 +20,7 @@ Date:
     - Fixed a bug where the codex failed to show the entity list on first load.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.18
-Date: 23.04.2023
+Date: 23.03.2023
   Codex Features:
     - Now showing information like new recipes and modifiers for technologies.
     - Improved tooltips for recipe ingredients and products now shows average, min and max amount as well as probability.
@@ -35,7 +36,7 @@ Date: 23.04.2023
     - Completely new code base, it is only equal in functionally. No line was untouched.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.17
-Date:
+Date: None
   Bugfixes:
     - Fixed validation always failing.
 ---------------------------------------------------------------------------------------------------

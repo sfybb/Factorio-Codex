@@ -20,7 +20,7 @@ describe("Generalized Suffix Tree", () => {
     test("simple insertion", () => {
         let stree = new GeneralizedSuffixTree<any>()
         stree.add("abc", "val")
-        console.log(stree.toGraphviz())
+        //console.log(stree.toGraphviz())
     })
     test("complex insertion", () => {
         let stree = new GeneralizedSuffixTree<number>()

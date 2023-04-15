@@ -67,6 +67,7 @@ function migrateCodex(c: any, pId: PlayerIndex): Codex {
 
 
 function migration_0_0_17(): void {
+    $log_info!("Applying migrations for 0.0.17")
     FLIB_on_tick_n.init()
 
     global.cache = new CacheManager()
