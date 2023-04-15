@@ -1,6 +1,16 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.0.18
+Version: 0.0.19
 Date:
+  Features:
+    - Added command to reset and rebuild mod data
+  Changes:
+    - Instead of crashing the game most errors will now be logged and only a notification will be shown to the player.
+  Bugfixes:
+    - Fixed a bug where the mod would crash when clicking on the quick search result "Waiting for translation...".
+    - Fixed a bug where shared player data failed to initialize correctly after a saved game was loaded.
+---------------------------------------------------------------------------------------------------
+Version: 0.0.18
+Date: 23.04.2023
   Codex Features:
     - Now showing information like new recipes and modifiers for technologies.
     - Improved tooltips for recipe ingredients and products now shows average, min and max amount as well as probability.

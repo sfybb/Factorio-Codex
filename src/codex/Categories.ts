@@ -18,10 +18,10 @@ class Categories implements Verifiable {
     refs: {
         cat_gui?: FlowGuiElement,
         category_picker?: ListBoxGuiElement,
-        available_entities: { [keys: string]: ListBoxGuiElement }
+        available_entities: LuaTable<string, ListBoxGuiElement>
     }
 
-    entity_lists: { [keys: string]: anyPrototype[] }
+    entity_lists: LuaTable<string, anyPrototype[]>
 
     constructor() {
         this.selected_index = -1
@@ -29,9 +29,9 @@ class Categories implements Verifiable {
         this.rebuild_gui = false
 
         this.refs = {
-            available_entities: {}
+            available_entities: new LuaTable()
         }
-        this.entity_lists = {}
+        this.entity_lists = new LuaTable()
     }
 
     static load(this: void, c: Categories): void {
@@ -51,7 +51,7 @@ class Categories implements Verifiable {
         if (this.rebuild_gui) {
             this.refs?.cat_gui?.destroy()
             this.refs = {
-                available_entities: {}
+                available_entities: new LuaTable()
             }
         }
 
@@ -66,7 +66,7 @@ class Categories implements Verifiable {
                         actions: {on_selection_state_changed: "cx_change_category"}
                     }
                 }]),
-                available_entities: {}
+                available_entities: new LuaTable()
             }
         }
 
@@ -95,23 +95,23 @@ class Categories implements Verifiable {
         }
 
         let cat_name = this.selected_cat.name
-        let entities = this.entity_lists[cat_name]
+        let entities = this.entity_lists.get(cat_name)
 
         if (entities == undefined) {
             entities = this.get_unfiltered_entities()
             $log_info!(`Gathered entity list for '${cat_name}': Size: ${entities.length}`)
-            this.entity_lists[cat_name] = entities
+            this.entity_lists.set(cat_name, entities)
         }
 
         if (catOld?.name != undefined) {
-            let oldCatUI = this.refs.available_entities[catOld.name]
+            let oldCatUI = this.refs.available_entities.get(catOld.name)
             if (oldCatUI != undefined) {
                 oldCatUI.visible = false
                 oldCatUI.selected_index = 0
             }
         }
 
-        let entitiesUI = this.refs.available_entities[cat_name]
+        let entitiesUI = this.refs.available_entities.get(cat_name)
         if (entitiesUI == undefined) {
             entitiesUI = FLIB_gui.build(this.refs.cat_gui, [{
                 type: "list-box",
@@ -120,9 +120,11 @@ class Categories implements Verifiable {
                 actions: {on_selection_state_changed: "cx_view_entity"}
             }]).entities as ListBoxGuiElement
 
-            this.refs.available_entities[cat_name] = entitiesUI
+            this.refs.available_entities.set(cat_name, entitiesUI)
 
             for (let e of entities) {
+                if (!e.valid) continue
+
                 let text:LocalisedString = ["", `[${cat_name}=${e.name}]`, e.localised_name]
 
                 if (SearchUtils.isPrototypeHidden(e)) {
@@ -178,9 +180,10 @@ class Categories implements Verifiable {
 
         let cat = index >= 0 ? categoriesList[index] : undefined;
 
-        if ( cat?.name == undefined || cat?.name == this?.selected_cat?.name ) {
+        if ( cat?.name == undefined) {
             return
         }
+        if (cat.name == this.selected_cat?.name && this.refs.available_entities.get(cat.name)?.valid == true) return;
 
         if (this.refs.category_picker?.valid) this.refs.category_picker.selected_index = index+1
 
@@ -192,8 +195,8 @@ class Categories implements Verifiable {
 
     scroll_to(entityId: string) {
         let cat_name = this.selected_cat?.name != undefined ? this.selected_cat.name : ""
-        let entities = this.entity_lists[cat_name]
-        let entitiesUI = this.refs.available_entities[cat_name]
+        let entities = this.entity_lists.get(cat_name)
+        let entitiesUI = this.refs.available_entities.get(cat_name)
 
         if (cat_name == "" || entities == undefined || entitiesUI == undefined) {
             $log_warn!(`Can't scroll to entity id '${entityId}': Empty list or gui non existent! Is mod data corrupted?`)
@@ -221,8 +224,8 @@ class Categories implements Verifiable {
             return {id: "", type: ""}
         }
 
-        let entities = this.entity_lists[cat_name]
-        let entitiesUI = this.refs.available_entities[cat_name]
+        let entities = this.entity_lists.get(cat_name)
+        let entitiesUI = this.refs.available_entities.get(cat_name)
 
         if (entities == undefined || entitiesUI != e.element || entitiesUI == undefined) {
             return {id: "", type: ""}

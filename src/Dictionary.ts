@@ -93,11 +93,23 @@ namespace Dictionary {
             let names = FLIB_dictionary.new(type + "_names")
             //let desc  = FLIB_dictionary.new(type + "_descriptions")
 
+            let invalidProtos = []
+
             // @ts-ignore
             for (let [name, proto] of list) {
+                if (!proto.valid){
+                    invalidProtos.push(name)
+                    continue
+                }
+
                 names.add(name, proto.localised_name)
                 //desc.add( name, proto.localised_description)
             }
+            if (invalidProtos.length > 0) {
+                $log_warn!(`Skipped ${invalidProtos.length} invalid ${type} prototypes!${
+                    serpent.line(invalidProtos, {comment: false, maxnum: 10})}`)
+            }
+
             dict_list.names.set(type, names)
             //dict_list.descs.set(type, desc)
         }

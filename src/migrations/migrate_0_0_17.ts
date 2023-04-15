@@ -54,9 +54,9 @@ function migrateCodex(c: any, pId: PlayerIndex): Codex {
             refs: {
                 cat_gui: c.categories.refs.cat_gui,
                 category_picker: c.categories.refs.category_picker,
-                available_entities: {}
+                available_entities: new LuaTable()
             },
-            entity_lists: {}
+            entity_lists: new LuaTable()
         },
 
         // New Fields

@@ -135,6 +135,8 @@ namespace Search {
                 }
                 if (match_count > 0) {
                     let proto = dict.prototype_list.get(key)
+                    if (proto == undefined) continue // skip invalid protoypes
+
                     matchingResults.push({
                         type: dict.type,
                         id: key,
