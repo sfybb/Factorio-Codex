@@ -48,6 +48,18 @@ namespace PlayerData {
         Dictionary.Build()
     }
 
+    export function Rebuild() {
+        // Destroy all guis before deleting the references to them
+        if (global?.players != null) {
+            for (let [i, player_data] of global.players) {
+                player_data?.codex?.destroy()
+                player_data?.quick_search?.destroy()
+            }
+        }
+
+        Init();
+    }
+
     export function  LoadMetatables() {
         if (global.playerData != undefined) {
             // @ts-ignore

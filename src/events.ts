@@ -13,6 +13,7 @@ import Migration from "Migration"
 import * as FLIB_gui from "__flib__.gui"
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
+import Dictionary from "Dictionary";
 
 
 const errorHandler = (err: any) => {
@@ -48,21 +49,29 @@ script.on_event(defines.events.on_tick, (e) => {
     let tasks = FLIB_on_tick_n.retrieve(e.tick)
     if (tasks != undefined) {
         for (let taskData of tasks) {
-            if (typeof taskData != "object" || typeof taskData.gui != "string" || typeof taskData.player_index != "number") {
+            if (typeof taskData != "object" || typeof taskData.type != "string" || typeof taskData.player_index != "number") {
                 $log_warn!(`Unknown task type: ${typeof taskData}! Contents: ${serpent.line(taskData)}`)
                 continue
             }
             let task = taskData as Task
 
-            let taskExecutor: undefined | TaskExecutor;
-            if (task.gui == "qs") {
-                taskExecutor = PlayerData.getQuickSearch(task.player_index)
-            } else if (task.gui == "codex") {
-                taskExecutor = PlayerData.getCodex(task.player_index)
-            }
+            if (task.type == "gui") {
+                let taskExecutor: undefined | TaskExecutor;
+                if (task.gui == "qs") {
+                    taskExecutor = PlayerData.getQuickSearch(task.player_index)
+                } else if (task.gui == "codex") {
+                    taskExecutor = PlayerData.getCodex(task.player_index)
+                }
 
-            if (taskExecutor != undefined) {
-                xpcall(taskExecutor.execute_task, errorHandler, taskExecutor, task)
+                if (taskExecutor != undefined) {
+                    xpcall(taskExecutor.execute_task, errorHandler, taskExecutor, task)
+                }
+            } else if (task.type == "command") {
+                if (task.command == "fc-rebuild-all") {
+                    PlayerData.Rebuild()
+                    Dictionary.Rebuild()
+                    game.print("[color=green]Rebuild complete. Waiting for translation to finish...[/color]")
+                }
             }
         }
     }
@@ -90,4 +99,29 @@ FLIB_gui.hook_events((e) => {
 
         xpcall(trypart, errorHandler, undefined, action)
     }
+})
+
+commands.add_command("fc-rebuild-all", [ "command-help.fc-rebuild-all" ], (e) => {
+    if (e.player_index == undefined) {
+        $log_warn!(`Unable to run command "fc-rebuild-all": Invalid command args, no player index! ${serpent.line(e, {comment: false})}`)
+        return;
+    }
+
+    let player = game.get_player(e.player_index)
+    if (player?.admin != true) {
+        $log_info!(`Player ${e.player_index} "${player?.name}" tried to run command "fc-rebuild-all" but is not admin`)
+        player?.print(["cant-run-command-not-admin", "fc-rebuild-all"])
+        return
+    }
+
+    $log_info!(`Player ${e.player_index} "${player.name}" triggered a complete rebuild`)
+    game.print("[color=red]Rebuilding Factorio Codex[/color]")
+
+    let task: Task = {
+        type: "command",
+        command: "fc-rebuild-all",
+        player_index: e.player_index,
+    }
+
+    FLIB_on_tick_n.add(game.tick + 1, task)
 })

@@ -270,17 +270,19 @@ class QuickSearch implements TaskExecutor {
             FLIB_on_tick_n.remove(this.last_search_task)
         }
         let task: Task = {
+            type: "gui",
             player_index: this.player_index,
             gui: "qs",
-            name: "update_search",
-            prompt: prompt
+            args: new LuaTable<string, any>()
         }
+        task.args?.set("name", "update_search")
+        task.args?.set("prompt", prompt)
 
         this.last_search_task = FLIB_on_tick_n.add(game.tick + 1, task)
     }
 
     execute_task(task: Task) {
-        if (task?.name == "update_search") {
+        if (task.args?.get("name") == "update_search") {
             let dictsCache = getDictionaryCache(this.player_index)
             if (dictsCache == undefined) {
                 $log_warn!("Could not retrieve Dictionary cache!")
@@ -292,7 +294,7 @@ class QuickSearch implements TaskExecutor {
                 return;
             }
 
-            let matching_names = Search.search(task.prompt, this.player_index, [
+            let matching_names = Search.search(task.args?.get("prompt"), this.player_index, [
                 SortOrderQS.hidden_last,
                 SortOrderQS.tech_last,
                 SortOrderQS.match_count,
