@@ -242,6 +242,19 @@ class Codex implements TaskExecutor, Verifiable {
         let backTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
         let fwdTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
 
+        // remove invalid prototypes
+        let removed_any = false
+        for (const i of $range( this.historyList.length - 1,0, -1)) {
+            if (this.historyList[i]?.proto.valid != true) {
+                table.remove(this.historyList, i)
+                removed_any = true
+            }
+        }
+        if (removed_any) {
+            $log_info!(`Removed invalid history entries and reset history position for player ${this.player_index}`)
+            this.historyPosition = -1
+        }
+
         let curHistPos = this.historyPosition == -1 ? this.historyList.length-1 : this.historyPosition
         for (const i of $range(curHistPos - 1,0, -1)) {
             let item = this.historyList[i]
