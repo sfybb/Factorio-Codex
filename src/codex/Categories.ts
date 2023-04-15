@@ -150,13 +150,22 @@ class Categories implements Verifiable {
         let cat_type = this.selected_cat.parent == undefined ? this.selected_cat.name : this.selected_cat.parent.name
 
         if (!is_group) {
+            let protoCache = getPrototypeCache()
+
+            let allProtos = protoCache?.getAll()
+            if (allProtos == undefined) return []
             // @ts-ignore
-            res_table = FLIB_table.shallow_copy(game[cat_type + "_prototypes"])
+            res_table = allProtos[cat_type]
+
+            if (res_table == undefined) return []
         } else {
             $log_crit!(`Cannot retrieve Entity list for a subgroup '${cat_type}.${this.selected_cat.name}' (yet)!`)
         }
 
-        for (let [, v] of res_table) res.push(v)
+        for (let [, v] of res_table) {
+            if (!v.valid) continue
+            res.push(v)
+        }
 
         SearchUtils.sort(res, [
             SortOrderDefault.hidden_last,
