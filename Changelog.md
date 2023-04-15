@@ -1,4 +1,21 @@
 # Changelog
+  - Version: 0.0.19
+    - Codex Features:
+        - When viewing recipes the "Produced by" tab prioritizes recipes that mainly produce the currently viewed item.
+    - Features:
+        - Added command to reset and rebuild mod data ("/fc-rebuild-all").
+    - Changes:
+        - Instead of crashing the game most errors will now be logged and only a notification will be shown to the player.
+        - Massive performance improvements while using quick search.
+    - Bugfixes:
+        - Fixed a bug where the codex would show "\_\_1\_\_" instead of the miner speed
+        - Fixed a bug where the mod would crash when clicking on the quick search result "Waiting for translation...".
+        - Fixed a bug where shared player data failed to initialize correctly after a saved game was loaded.
+        - Fixed a bug where after installing/removing mods some new recipes wouldn't show up.
+        - Fixed a bug where invalid prototypes cause the translation to crash.
+        - Fixed a bug where invalid prototypes crash the codex.
+        - Fixed a bug where invalid prototypes crash quick search.
+        - Fixed a bug where the codex failed to show the entity list on first load.
   - Version: 0.0.18
     - Codex Features:
         - Now showing information like new recipes and modifiers for technologies.
@@ -25,10 +42,10 @@
         - Locked recipes are shown with different colors (default background = red, main recipe output = orange, highlight color = yellow).
         - If in debug mode ingredients/products with an amount of 0 are shown again.
     - Quick Search Features:
-        - Now adjusts size and position when opened instead of only once when created
+        - Now adjusts size and position when opened instead of only once when created.
         - If in debug mode information relevant for sorting is added to each result.
     - Features:
-        - Added foundation for supporting newer factorio features while remaining compatible with older versions
+        - Added foundation for supporting newer factorio features while remaining compatible with older versions.
     - Changes:
         - Changelog now has different categories for quick search and codex features.
     - Bugfixes:
