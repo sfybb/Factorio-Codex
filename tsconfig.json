@@ -18,7 +18,7 @@
     ],
     "plugins": [
       { "name": "typescript-tstl-plugin" },
-      { "transform": "ts-macros" }
+      { "transform": "ts-macros", "noComptime": true }
     ],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
