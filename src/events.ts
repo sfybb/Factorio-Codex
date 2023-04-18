@@ -14,6 +14,7 @@ import * as FLIB_gui from "__flib__.gui"
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 import Dictionary from "Dictionary";
+import {GuiAction} from "IGuiRoot";
 
 
 const errorHandler = (err: any) => {
@@ -82,11 +83,22 @@ FLIB_gui.hook_events((e) => {
 
     if ( action != undefined ) {
         // @ts-ignore
-        let trypart = (this: any, action: string) => {
-            if (action.startsWith("qs_")) {
-                PlayerData.getQuickSearch(e)?.gui_action(action, e)
-            } else if (action.startsWith("cx_")) {
-                PlayerData.getCodex(e)?.gui_action(action, e)
+        let trypart = (this: any, action: FLIBGuiAction) => {
+            let guiAction: GuiAction
+
+            if ( typeof action == "object" && typeof action.gui == "string" && typeof action.action == "string") {
+                guiAction = action as GuiAction
+
+                switch (guiAction.gui) {
+                    case "quick_search":
+                        PlayerData.getQuickSearch(e)?.gui_action(guiAction, e)
+                        break
+                    case "codex":
+                        PlayerData.getCodex(e)?.gui_action(guiAction, e)
+                        break
+                    default:
+                        $log_warn!(`Unknown gui identifier "${guiAction.gui}" cannot assign action "${guiAction.action}" to gui!`)
+                }
             } else if (action == "toggle_list_collapse") {
                 let parent_ele = e.element?.parent?.parent
                 if (parent_ele != undefined && parent_ele["list_container"] != undefined) {

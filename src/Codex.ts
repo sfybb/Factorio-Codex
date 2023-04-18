@@ -1,12 +1,12 @@
-import {validate_print_info, validate_status} from "Util";
-import {Task, TaskExecutor} from "Task";
-import RecipeInfo from "codex/RecipeInfo"
-
-import Categories from "codex/Categories"
-/** @noResolution */
-import * as FLIB_gui from "__flib__.gui";
 import TechnologyInfo from "codex/TechnologyInfo";
 import {Verifiable, Verifyinfo} from "Validate";
+import RecipeInfo from "codex/RecipeInfo";
+import Categories from "codex/Categories"
+import {Task, TaskExecutor} from "Task";
+import IGuiRoot, {GuiAction} from "IGuiRoot";
+
+/** @noResolution */
+import * as FLIB_gui from "__flib__.gui";
 
 type HistoryItem = {
     type: string,
@@ -14,7 +14,9 @@ type HistoryItem = {
     proto: LuaItemPrototype | LuaTechnologyPrototype | LuaFluidPrototype
 }
 
-class Codex implements TaskExecutor, Verifiable {
+const gui_name = "codex"
+
+class Codex implements TaskExecutor, Verifiable, IGuiRoot {
     player_index: PlayerIndex;
 
     categories: Categories;
@@ -95,7 +97,7 @@ class Codex implements TaskExecutor, Verifiable {
                 style: "fcodex_codex_main",
                 ref: ["window"],
                 actions: {
-                    on_closed: "cx_auto_close"
+                    on_closed: { gui: gui_name, action: "auto_close" }
                 },
                 1: {
                     type: "flow", ref: ["titlebar_flow"],
@@ -110,7 +112,7 @@ class Codex implements TaskExecutor, Verifiable {
                         clicked_sprite: "fcodex_history_back",
                         mouse_button_filter: ["left"],
                         actions: {
-                            on_click: "cx_hist_back"
+                            on_click: { gui: gui_name, action: "hist_back" }
                         }
                     },
                     4: {
@@ -122,7 +124,7 @@ class Codex implements TaskExecutor, Verifiable {
                         clicked_sprite: "utility/expand",
                         mouse_button_filter: ["left"],
                         actions: {
-                            on_click: "cx_hist_fwd"
+                            on_click: { gui: gui_name, action: "hist_fwd" }
                         }
                     },
                     5: {
@@ -133,7 +135,7 @@ class Codex implements TaskExecutor, Verifiable {
                         clicked_sprite: "utility/close_black",
                         mouse_button_filter: ["left"],
                         actions: {
-                            on_click: "cx_close"
+                            on_click: { gui: gui_name, action: "close" }
                         }
                 }},
                 2: {
@@ -149,7 +151,7 @@ class Codex implements TaskExecutor, Verifiable {
                             text: "Work In Progress",
                             ref: ["search_field"],
                             actions: {
-                                on_text_changed: "cx_update_search"
+                                on_text_changed: { gui: gui_name, action: "update_search" }
                             }
                         },
                     },
@@ -431,7 +433,8 @@ class Codex implements TaskExecutor, Verifiable {
     execute_task(task: Task) {
     }
 
-    gui_action(action: string, event: GuiEventData) {
+    gui_action(guiAction: GuiAction, event: GuiEventData) {
+        let action = guiAction.action
         if ( event.player_index != this.player_index ) {
             $log_err!("Something is not right. Received event for another player! "+
                 `Expected player id: ${this.player_index} got: ${event.player_index}!`)
@@ -439,16 +442,16 @@ class Codex implements TaskExecutor, Verifiable {
             return
         }
 
-        if (action == "cx_close") {
+        if (action == "close") {
             this.close()
-        } else if (action == "cx_auto_close") {
+        } else if (action == "auto_close") {
             if (!this.keep_open) this.close()
-        } else if (action == "cx_toggle_keep_open") {
+        } else if (action == "toggle_keep_open") {
             this.toggle_keep_open()
-        } else if (action == "cx_change_category") {
+        } else if (action == "change_category") {
             let indx = event.element?.selected_index as number
             if (indx != undefined) this.categories.select_by_index(indx-1)
-        } else if (action == "cx_view_entity" ) {
+        } else if (action == "view_entity" ) {
             let selected: {id?: string, type?: string} = {}
             const selected_index = event.element?.selected_index
 
@@ -468,11 +471,11 @@ class Codex implements TaskExecutor, Verifiable {
                 return
             }
             this.show_info(selected.id, selected.type)
-        } else if (action == "cx_hist_back") {
+        } else if (action == "hist_back") {
             this.historyBack()
-        } else if (action == "cx_hist_fwd") {
+        } else if (action == "hist_fwd") {
             this.historyForward()
-        } else if (action == "cx_update_search") {
+        } else if (action == "update_search") {
             // do nothing for now
         }
     }

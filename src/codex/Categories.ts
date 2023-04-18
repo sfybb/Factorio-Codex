@@ -1,13 +1,12 @@
+import {Category_type, getPrototypeCache} from "cache/PrototypeCache";
 import SearchUtils, {SortOrderDefault} from "SearchUtils";
 import {Verifiable, Verifyinfo} from "Validate";
-import {Category_type, getPrototypeCache} from "cache/PrototypeCache";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
-/** @noResolution */
-import * as FLIB_table from "__flib__.table";
 
 type anyPrototype = LuaEntityPrototype | LuaTechnologyPrototype | LuaItemPrototype
+const gui_name = "codex"
 
 class Categories implements Verifiable {
 
@@ -63,7 +62,9 @@ class Categories implements Verifiable {
                     type: "flow", direction: "horizontal", ref: ["cat_gui"],
                     1: {
                         type: "list-box", ref: ["category_picker"], style: "fcodex_codex_type_section",
-                        actions: {on_selection_state_changed: "cx_change_category"}
+                        actions: {
+                            on_selection_state_changed: { gui: gui_name, action: "change_category" }
+                        }
                     }
                 }]),
                 available_entities: new LuaTable()
@@ -117,7 +118,9 @@ class Categories implements Verifiable {
                 type: "list-box",
                 style: "fcodex_codex_entity_list",
                 ref: ["entities"],
-                actions: {on_selection_state_changed: "cx_view_entity"}
+                actions: {
+                    on_selection_state_changed: { gui: gui_name, action: "view_entity" }
+                }
             }]).entities as ListBoxGuiElement
 
             this.refs.available_entities.set(cat_name, entitiesUI)

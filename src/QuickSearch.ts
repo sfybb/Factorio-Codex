@@ -1,15 +1,15 @@
 import {default as Util, validate_print_info, validate_status} from "Util";
-
-/** @noResolution */
-import * as FLIB_gui from "__flib__.gui"
-/** @noResolution */
-import * as FLIB_on_tick_n from "__flib__.on-tick-n"
-
-import {Task, TaskExecutor} from "Task";
-import QSMath from "quick_search/QS_math";
-import PlayerData from "PlayerData";
 import {getDictionaryCache} from "cache/DictionaryCache";
 import Search, {SortOrderQS} from "search/Search";
+import QSMath from "quick_search/QS_math";
+import {Task, TaskExecutor} from "Task";
+import PlayerData from "PlayerData";
+import IGuiRoot, {GuiAction} from "IGuiRoot";
+
+/** @noResolution */
+import * as FLIB_on_tick_n from "__flib__.on-tick-n";
+/** @noResolution */
+import * as FLIB_gui from "__flib__.gui";
 
 declare const global: {
     playerData: typeof PlayerData
@@ -26,8 +26,9 @@ type QSResult = {
 }
 
 const dicts_to_search = ["item", "fluid", "technology"]
+const gui_name = "quick_search"
 
-class QuickSearch implements TaskExecutor {
+class QuickSearch implements TaskExecutor, IGuiRoot {
     player_index: PlayerIndex;
     visible: boolean;
     refs: {
@@ -90,17 +91,19 @@ class QuickSearch implements TaskExecutor {
                 style: "fcodex_quick_search",
                 ref: ["frame"],
                 actions: {
-                    on_closed: "qs_close"
+                    on_closed: { gui: gui_name, action: "close" }
                 },
 
                 1: {type: "label"    , style: "fcodex_quick_search_label", ref: ["caption"]     , caption: "QUICK SEARCH"},
                 2: {type: "textfield", style: "fcodex_quick_search_input", ref: ["search_field"],
                     actions: {
-                        on_text_changed: "qs_update_search",
-                        on_confirmed: "qs_test_debug"
+                        on_text_changed: { gui: gui_name, action: "update_search" },
+                        on_confirmed: { gui: gui_name, action: "test_debug" }
                     }},
                 3: {type: "list-box" , style: "fcodex_quick_search_results", ref: ["results"],
-                    actions: { on_selection_state_changed: "qs_try_open_codex" }
+                    actions: {
+                        on_selection_state_changed: { gui: gui_name, action: "try_open_codex" }
+                    }
                 }
             }])
 
@@ -306,7 +309,8 @@ class QuickSearch implements TaskExecutor {
         }
     }
 
-    gui_action(action: string, event: GuiEventData) {
+    gui_action(guiAction: GuiAction, event: GuiEventData) {
+        let action = guiAction.action
         if ( event.player_index != this.player_index ) {
             $log_err!("Something is not right. Received event for another player! "+
             `Expected player id: ${this.player_index} got: ${event.player_index}!`)
@@ -315,15 +319,15 @@ class QuickSearch implements TaskExecutor {
         }
 
 
-        if (action == "qs_update_search") {
+        if (action == "update_search") {
             this.update_input()
-        } else if (action == "qs_close") {
+        } else if (action == "close") {
             this.close()
-        } else if ( action == "qs_test_debug" ) {
+        } else if ( action == "test_debug" ) {
             if (event.element?.text == "debug!") {
                 // TODO toggle debug
             }
-        } else if ( action == "qs_try_open_codex" ) {
+        } else if ( action == "try_open_codex" ) {
             let selectedIndex = event.element?.selected_index as uint
             if (selectedIndex == undefined || selectedIndex == 0) return
 

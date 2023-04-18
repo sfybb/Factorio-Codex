@@ -13,7 +13,9 @@ type FLIBGuiActionsNames =
     | "on_checked_state_changed"
     | "on_selection_state_changed"
 
-type FLIBGuiActions = { [key in FLIBGuiActionsNames]?: { action: string, [key:string]: string } | string }
+type FLIBGuiAction = string | { action: string, [key:string]: string }
+
+type FLIBGuiActions = { [key in FLIBGuiActionsNames]?: FLIBGuiAction }
 
 type FLIBTabAndContent = {
     tab: FLIBGuiBuildStructure
@@ -75,9 +77,9 @@ interface FLIBGuiBuildStructure {
 declare module "__flib__.gui" {
     export function hook_events(callback: ((e: GuiEventData) => void)): void;
 
-    export function read_action(e: GuiEventData): string | nil;
-    export function set_action(elem: LuaGuiElement, event_name: FLIBGuiActions, msg: string | nil): void;
-    export function get_action(elem: LuaGuiElement, event_name: FLIBGuiActions): string | nil;
+    export function read_action(e: GuiEventData): FLIBGuiAction | null;
+    export function set_action(elem: LuaGuiElement, event_name: FLIBGuiActions, msg: string | null): void;
+    export function get_action(elem: LuaGuiElement, event_name: FLIBGuiActions): string | null;
 
 
     export function build(parent: LuaGuiElement, structures: FLIBGuiBuildStructure[]): { [key: string]: LuaGuiElement };
