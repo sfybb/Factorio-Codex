@@ -36,11 +36,11 @@ namespace GUI {
         for( let elem of elems ) {
             let type_id = elem.elementInfo.type_id
             if ( type_id in uielements.vanilla ) {
-                $log_warn(`LuaGuiElement with id "${type_id}" already exists! It cannot be overwritten!`)
+                $log_warn!(`LuaGuiElement with id "${type_id}" already exists! It cannot be overwritten!`)
                 continue
             }
             if ( uielements.others[type_id] != undefined ) {
-                $log_warn(`Ui Element with id "${type_id}" already exists!`)
+                $log_warn!(`Ui Element with id "${type_id}" already exists!`)
                 continue
             }
 

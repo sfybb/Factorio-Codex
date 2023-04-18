@@ -9,7 +9,7 @@ namespace CodexCommonUI {
                     name: "collapse_button",
                     mouse_button_filter: ["left"],
                     actions: {
-                        on_click: "toggle_list_collapse"
+                        on_click: { gui: "common", action: "toggle_list_collapse" }
                     }
                 },
                 2: {type: "label", style: "caption_label", caption: label},

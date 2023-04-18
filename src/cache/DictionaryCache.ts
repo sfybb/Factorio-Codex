@@ -1,5 +1,4 @@
-// @ts-ignore
-import CacheManager, {getPlayerCache, registerCache, CacheFactory, PlayerCache} from "Cache";
+import {getPlayerCache, registerCache, CacheFactory, PlayerCache} from "Cache";
 import GeneralizedSuffixTree from "search/suffixtree/GeneralizedSuffixTree";
 import ISearchable from "search/Searchable";
 import {getPrototypeCache} from "./PrototypeCache";

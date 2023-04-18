@@ -5,6 +5,8 @@ import Codex from "Codex";
 import Dictionary from "Dictionary";
 import Cache from "Cache";
 import verify from "Validate";
+import FLIB_gui from "__flib__.gui";
+import {GuiAction} from "./IGuiRoot";
 
 
 export interface player_data {
@@ -41,7 +43,7 @@ namespace PlayerData {
         if (global.cache != undefined) {
             Cache.load(global.cache)
         } else {
-            $log_warn("Unable to load Cache! Cache has not been created yet!")
+            $log_warn!("Unable to load Cache! Cache has not been created yet!")
         }
 
         Dictionary.Load()
@@ -60,7 +62,7 @@ namespace PlayerData {
         Init();
     }
 
-    export function  LoadMetatables() {
+    export function LoadMetatables() {
         if (global.playerData != undefined) {
             // @ts-ignore
             setmetatable(global.playerData, {__index: PlayerData })
@@ -90,7 +92,7 @@ namespace PlayerData {
         }
     }
 
-    export function  InitPlayer(this: void, index: PlayerIndex): undefined | player_data {
+    export function InitPlayer(this: void, index: PlayerIndex): undefined | player_data {
         const player = game.get_player(index)
         if (player == null) {
             $log_warn!(`Invalid request of player data initialization! Player with index ${index} does not exist!`)
@@ -111,7 +113,7 @@ namespace PlayerData {
         return data;
     }
 
-    export function  get(this: void, ind_pi: indirect_player_index): undefined | player_data {
+    export function get(this: void, ind_pi: indirect_player_index): undefined | player_data {
         const index = get_player_index(ind_pi)
         if (index == 0) {
             $log_crit!(`Invalid player index ${serpent.line(ind_pi, {comment: false, nocode: true})}!`)
@@ -124,38 +126,45 @@ namespace PlayerData {
         return data != undefined ? data : PlayerData.InitPlayer(index)
     }
 
-    export function  getCodex(this: void, ind_pi: indirect_player_index): undefined | Codex {
+    export function getCodex(this: void, ind_pi: indirect_player_index): undefined | Codex {
         const data = PlayerData.get(ind_pi)
         return data?.codex
     }
 
-    export function  getQuickSearch(this: void, ind_pi: indirect_player_index): undefined | QuickSearch {
+    export function getQuickSearch(this: void, ind_pi: indirect_player_index): undefined | QuickSearch {
         const data = PlayerData.get(ind_pi)
         return data?.quick_search
     }
 
-    export function  create_player(this: void, e: OnPlayerCreatedEvent) {
-        Dictionary.translate(e.player_index)
-        PlayerData.get(e)
+    export function handleUIEvents(this: any, action: FLIBGuiAction | null, e: GuiEventData) {
+        if ( action != undefined ) {
+            if ( typeof action == "object" && typeof action.gui == "string" && typeof action.action == "string") {
+                let guiAction: GuiAction
+                guiAction = action as GuiAction
+
+                switch (guiAction.gui) {
+                    case "quick_search":
+                        PlayerData.getQuickSearch(e)?.gui_action(guiAction, e)
+                        break
+                    case "codex":
+                        PlayerData.getCodex(e)?.gui_action(guiAction, e)
+                        break
+                    case "common":
+                        let parent_ele = e.element?.parent?.parent
+                        if (parent_ele != undefined && parent_ele["list_container"] != undefined) {
+                            parent_ele["list_container"].visible = !parent_ele["list_container"].visible
+                        }
+                        break
+                    default:
+                        $log_warn!(`Unknown gui identifier "${guiAction.gui}" cannot assign action "${guiAction.action}" to gui!`)
+                }
+            } else {
+                $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
+            }
+        }
     }
 
-    export function  player_update(this: void, e: OnPlayerJoinedGameEvent) {
-        Dictionary.translate(e.player_index)
-    }
-
-    export function  cancel_player_update(this: void, e: OnPlayerLeftGameEvent) {
-        Dictionary.cancel_translate(e.player_index)
-    }
-
-    export function  string_translated(this: void, e: OnStringTranslatedEvent) {
-        Dictionary.string_translated(e)
-    }
-
-    export function  check_skipped(this: void) {
-        Dictionary.check_skipped()
-    }
-
-    export function  validate() {
+    export function validate() {
         $log_info!("Validating global table...")
 
         if (global.playerData == undefined) {

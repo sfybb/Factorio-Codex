@@ -6,15 +6,15 @@ import Features from "Features"
 if (Features.supports("gvv")) require("@NoResolution:__gvv__.gvv")();
 
 import {Task, TaskExecutor} from "Task";
-import PlayerData from "PlayerData"
-import Migration from "Migration"
+import Dictionary from "Dictionary";
+import PlayerData from "PlayerData";
+import {GuiAction} from "IGuiRoot";
+import Migration from "Migration";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui"
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
-import Dictionary from "Dictionary";
-import {GuiAction} from "IGuiRoot";
 
 
 const errorHandler = (err: any) => {
@@ -38,14 +38,24 @@ script.on_event("fcodex_toggle_quick_search", (e) => {
     PlayerData.getQuickSearch(e)?.toggle()
 })
 
-script.on_event(defines.events.on_player_created, PlayerData.create_player)
-script.on_event(defines.events.on_player_joined_game, PlayerData.player_update)
-script.on_event(defines.events.on_player_left_game, PlayerData.cancel_player_update)
+script.on_event(defines.events.on_player_created, (e: OnPlayerCreatedEvent) => {
+    Dictionary.translate(e.player_index)
+    PlayerData.get(e)
+})
 
-script.on_event(defines.events.on_string_translated, PlayerData.string_translated)
+script.on_event(defines.events.on_player_joined_game, (e: OnPlayerJoinedGameEvent) => {
+    Dictionary.translate(e.player_index)
+})
+script.on_event(defines.events.on_player_left_game, (e: OnPlayerLeftGameEvent) => {
+    Dictionary.cancel_translate(e.player_index)
+})
+
+script.on_event(defines.events.on_string_translated, (e: OnStringTranslatedEvent) => {
+    Dictionary.string_translated(e)
+})
 
 script.on_event(defines.events.on_tick, (e) => {
-    PlayerData.check_skipped()
+    Dictionary.check_skipped()
 
     let tasks = FLIB_on_tick_n.retrieve(e.tick)
     if (tasks != undefined) {
@@ -79,38 +89,7 @@ script.on_event(defines.events.on_tick, (e) => {
 })
 
 FLIB_gui.hook_events((e) => {
-    let action = FLIB_gui.read_action(e)
-
-    if ( action != undefined ) {
-        // @ts-ignore
-        let trypart = (this: any, action: FLIBGuiAction) => {
-            let guiAction: GuiAction
-
-            if ( typeof action == "object" && typeof action.gui == "string" && typeof action.action == "string") {
-                guiAction = action as GuiAction
-
-                switch (guiAction.gui) {
-                    case "quick_search":
-                        PlayerData.getQuickSearch(e)?.gui_action(guiAction, e)
-                        break
-                    case "codex":
-                        PlayerData.getCodex(e)?.gui_action(guiAction, e)
-                        break
-                    default:
-                        $log_warn!(`Unknown gui identifier "${guiAction.gui}" cannot assign action "${guiAction.action}" to gui!`)
-                }
-            } else if (action == "toggle_list_collapse") {
-                let parent_ele = e.element?.parent?.parent
-                if (parent_ele != undefined && parent_ele["list_container"] != undefined) {
-                    parent_ele["list_container"].visible = !parent_ele["list_container"].visible
-                }
-            } else {
-                $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
-            }
-        }
-
-        xpcall(trypart, errorHandler, undefined, action)
-    }
+    xpcall(PlayerData.handleUIEvents, errorHandler, undefined, FLIB_gui.read_action(e), e)
 })
 
 commands.add_command("fc-rebuild-all", [ "command-help.fc-rebuild-all" ], (e) => {

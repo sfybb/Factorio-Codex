@@ -14,7 +14,7 @@ type Dict = {
 
 namespace Search {
     export function search(this: any, prompt: string, player: PlayerIndex, order: multiOrderFunc<SearchResult>, maxRes?: number) {
-        //$log_info(`Args: prompt: "${prompt} player: ${player} ... maxRes: ${maxRes}"`)
+        //$log_info!(`Args: prompt: "${prompt} player: ${player} ... maxRes: ${maxRes}"`)
         //if (prompt == undefined || prompt.length == 0) return []
 
         maxRes = maxRes == undefined ? 100 : maxRes

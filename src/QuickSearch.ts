@@ -10,6 +10,7 @@ import IGuiRoot, {GuiAction} from "IGuiRoot";
 import * as FLIB_on_tick_n from "__flib__.on-tick-n";
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
+import {getSettingsCache} from "./cache/SettingsCache";
 
 declare const global: {
     playerData: typeof PlayerData
@@ -35,7 +36,8 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         frame?: FlowGuiElement
         caption?: LabelGuiElement
         search_field?: TextFieldGuiElement
-        results?: ListBoxGuiElement
+        results?: ListBoxGuiElement,
+        debug?: LuaTable<string, BaseGuiElement>
     };
 
     rebuild_gui: boolean;
@@ -325,7 +327,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.close()
         } else if ( action == "test_debug" ) {
             if (event.element?.text == "debug!") {
-                // TODO toggle debug
+                getSettingsCache(this.player_index)?.toggleDebug()
             }
         } else if ( action == "try_open_codex" ) {
             let selectedIndex = event.element?.selected_index as uint
@@ -355,9 +357,20 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
 
             global.playerData.getCodex(event.player_index)?.show_info(selectedResult.id, selectedResult.type)
+        } else if ( action == "debugToggle") {
+            if (this.refs.debug == undefined) return;
+
+            let  is_debug = getSettingsCache(this.player_index)?.is_debug()
+            is_debug = is_debug == undefined ? false : is_debug
+
+            for (let [id, debugElem] of this.refs.debug) {
+                if (debugElem != undefined) {
+                    debugElem.visible = is_debug
+                }
+            }
         } else {
-            $log_info(`Received Unknown action "${action}" for QuickSearch of player ${this.player_index}`+
-                `('${game.get_player(this.player_index)?.name}')`)
+            $log_info!(`Received Unknown action "${action}" for QuickSearch of player ${this.player_index
+            }('${game.get_player(this.player_index)?.name}')`)
         }
     }
 

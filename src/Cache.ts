@@ -154,7 +154,7 @@ class CacheManager {
             $log_info!(`Rebuilding global caches...`)
             for (let [id, gCache] of this.globalCaches) {
                 gCache?.Rebuild()
-                $log_info!(`    ${gCache.name}      REBUILT`)
+                $log_info!(`    ${gCache.name}      Rebuilt`)
             }
         }
 
@@ -168,12 +168,25 @@ class CacheManager {
                 }
                 $log_info!(`Rebuilding caches for player ${pId}('${game.get_player(pId)?.name}')...`)
                 for (let [id, pCache] of pCacheList) {
-                    pCache.Rebuild()
-                    $log_info!(`    ${pCache.name}      LOADED`)
+                    if (!playerFactories.has(id)) {
+                        pCacheList.delete(id)
+                        $log_info!(`    ${pCache.name}      DELETED`)
+                    } else {
+                        pCache.Rebuild()
+                        $log_info!(`    ${pCache.name}      Rebuilt`)
+                    }
+                }
+                for (let [id, pCacheFactory] of playerFactories ) {
+                    if (pCacheList.has(id)) continue
+
+                    pCacheList.set(id, <PlayerCache>pCacheFactory.Create(pId))
+                    $log_info!(`    ${pCacheFactory.cache_name}      Initialized`)
                 }
             }
         }
     }
+
+
 }
 
 function getGlobalCache(cache_id: string): undefined | GlobalCache {
