@@ -7,11 +7,12 @@ import IGuiRoot, {GuiAction} from "IGuiRoot";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
+import MigratablePrototype from "./PrototypeHelper";
 
 type HistoryItem = {
     type: string,
     id: string,
-    proto: LuaItemPrototype | LuaTechnologyPrototype | LuaFluidPrototype
+    proto: MigratablePrototype<LuaItemPrototype | LuaTechnologyPrototype | LuaFluidPrototype>
 }
 
 const gui_name = "codex"
@@ -260,6 +261,8 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
         let curHistPos = this.historyPosition == -1 ? this.historyList.length-1 : this.historyPosition
         for (const i of $range(curHistPos - 1,0, -1)) {
             let item = this.historyList[i]
+            if (!item.proto.valid) continue // unreachable because list gets cleaned at the start of this function
+
             backTooltip.push(
                 `\n[${item.type}=${item.id}] `,
                 item.proto.localised_name,
@@ -268,6 +271,8 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
 
         for (const i of $range(curHistPos+1, this.historyList.length-1)) {
             let item = this.historyList[i]
+            if (!item.proto.valid) continue // unreachable because list gets cleaned at the start of this function
+
             fwdTooltip.push(
                 `\n[${item.type}=${item.id}] `,
                 item.proto.localised_name,

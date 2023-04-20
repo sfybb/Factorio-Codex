@@ -1,6 +1,5 @@
 // @ts-ignore
 import {CacheFactory, getGlobalCache, GlobalCache, registerCache} from "Cache";
-import type = defines.control_behavior.type;
 
 let RecipeCacheFactory: CacheFactory = {
     cache_id: "recipe_cache",

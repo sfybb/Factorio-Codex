@@ -5,6 +5,7 @@ FLIB_dictionary.set_use_local_storage(true)
 import {getDictionaryCache} from "cache/DictionaryCache";
 import {getPrototypeCache} from "cache/PrototypeCache"
 import PlayerData from "PlayerData";
+import MigratablePrototype from "./PrototypeHelper";
 
 declare const global: {
     playerData: typeof PlayerData
@@ -71,8 +72,8 @@ namespace Dictionary {
         }
         empty_prototypes = false
 
-        let protoTable = new LuaTable<string, LuaTable<string, LuaFluidPrototype | LuaItemPrototype |
-            LuaTechnologyPrototype | LuaTilePrototype>>()
+        let protoTable = new LuaTable<string, LuaTable<string, MigratablePrototype<LuaFluidPrototype | LuaItemPrototype |
+            LuaTechnologyPrototype | LuaTilePrototype>>>()
 
         if (prototypes.fluid != undefined) {
             // @ts-ignore

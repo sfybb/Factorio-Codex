@@ -2,6 +2,7 @@ import {getPlayerCache, registerCache, CacheFactory, PlayerCache} from "Cache";
 import GeneralizedSuffixTree from "search/suffixtree/GeneralizedSuffixTree";
 import ISearchable from "search/Searchable";
 import {getPrototypeCache} from "./PrototypeCache";
+import MigratablePrototype from "../PrototypeHelper";
 
 export type DictionaryEntry = {
     type: string,
@@ -87,7 +88,7 @@ class DictionaryCache implements PlayerCache {
 
         let protoCache = getPrototypeCache()
         // @ts-ignore
-        let relevantProtos: LuaTable<string, LuaItemPrototype> = protoCache != undefined ? protoCache.getAll()[name] : game[`${name}_prototypes`]
+        let relevantProtos: LuaTable<string, MigratablePrototype<LuaItemPrototype>> = protoCache != undefined ? protoCache.getAll()[name] : game[`${name}_prototypes`]
 
 
         $log_info!(`Building suffix tree for  "${name}"`)
@@ -96,6 +97,8 @@ class DictionaryCache implements PlayerCache {
 
         for (let [id, translated] of data) {
             let proto = relevantProtos.get(id)
+            if (proto == undefined || !proto.valid) continue // skip invalid prototypes
+
             let dictEntry: DictionaryEntry = {
                 type: name,
                 id: id,

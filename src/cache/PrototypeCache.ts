@@ -3,6 +3,7 @@ import CacheManager, {getGlobalCache, registerCache, CacheFactory, GlobalCache} 
 
 /** @noResolution */
 import * as FLIB_table from "__flib__.table"
+import MigratablePrototype from "../PrototypeHelper";
 
 let PrototypeCacheFactory: CacheFactory = {
     cache_id: "prototype_cache",
@@ -26,10 +27,10 @@ function getPrototypeCache(): undefined | PrototypeCache {
 }
 
 type ProtoStorage = {
-    fluid: LuaTable<string, LuaFluidPrototype>;
-    item: LuaTable<string, LuaItemPrototype>;
-    technology: LuaTable<string, LuaTechnologyPrototype>;
-    tile: LuaTable<string, LuaTilePrototype>;
+    fluid: LuaTable<string, MigratablePrototype<LuaFluidPrototype>>;
+    item: LuaTable<string, MigratablePrototype<LuaItemPrototype>>;
+    technology: LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>>;
+    tile: LuaTable<string, MigratablePrototype<LuaTilePrototype>>;
 }
 
 export type Category_type = {
@@ -68,10 +69,10 @@ class PrototypeCache implements GlobalCache {
     }
 
     Rebuild() {
-        this.luaPrototypes.fluid = FLIB_table.shallow_copy(game.fluid_prototypes) as LuaTable<string, LuaFluidPrototype>
-        this.luaPrototypes.item = FLIB_table.shallow_copy(game.item_prototypes) as LuaTable<string, LuaItemPrototype>
-        this.luaPrototypes.technology = FLIB_table.shallow_copy(game.technology_prototypes) as LuaTable<string, LuaTechnologyPrototype>
-        this.luaPrototypes.tile = FLIB_table.shallow_copy(game.tile_prototypes) as LuaTable<string, LuaTilePrototype>
+        this.luaPrototypes.fluid = FLIB_table.shallow_copy(game.fluid_prototypes) as LuaTable<string, MigratablePrototype<LuaFluidPrototype>>
+        this.luaPrototypes.item = FLIB_table.shallow_copy(game.item_prototypes) as LuaTable<string, MigratablePrototype<LuaItemPrototype>>
+        this.luaPrototypes.technology = FLIB_table.shallow_copy(game.technology_prototypes) as LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>>
+        this.luaPrototypes.tile = FLIB_table.shallow_copy(game.tile_prototypes) as LuaTable<string, MigratablePrototype<LuaTilePrototype>>
 
         let cat_tree: Category_type[] = [
             {name: "item", localised_name: ["", "Items"]},
@@ -96,15 +97,15 @@ class PrototypeCache implements GlobalCache {
         return this.luaPrototypes
     }
 
-    getItems(): LuaTable<string, LuaItemPrototype> {
+    getItems(): LuaTable<string, MigratablePrototype<LuaItemPrototype>> {
         return this.luaPrototypes.item
     }
 
-    getFluid(): LuaTable<string, LuaFluidPrototype> {
+    getFluid(): LuaTable<string, MigratablePrototype<LuaFluidPrototype>> {
         return this.luaPrototypes.fluid
     }
 
-    getTech(): LuaTable<string, LuaTechnologyPrototype> {
+    getTech(): LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>> {
         return this.luaPrototypes.technology
     }
 

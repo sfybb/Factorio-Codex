@@ -4,6 +4,7 @@ import {Verifiable, Verifyinfo} from "Validate";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
+import MigratablePrototype from "PrototypeHelper";
 
 type anyPrototype = LuaEntityPrototype | LuaTechnologyPrototype | LuaItemPrototype
 const gui_name = "codex"
@@ -20,7 +21,7 @@ class Categories implements Verifiable {
         available_entities: LuaTable<string, ListBoxGuiElement>
     }
 
-    entity_lists: LuaTable<string, anyPrototype[]>
+    entity_lists: LuaTable<string, MigratablePrototype<anyPrototype>[]>
 
     constructor() {
         this.selected_index = -1
@@ -216,7 +217,7 @@ class Categories implements Verifiable {
         }
 
         for (let [i, entity] of entities.entries()) {
-            if (entity?.name == entityId) {
+            if (entity?.valid && entity.name == entityId) {
                 entitiesUI.scroll_to_item(i, "in-view")
                 entitiesUI.selected_index = i+1
                 return;
@@ -243,9 +244,12 @@ class Categories implements Verifiable {
             return {id: "", type: ""}
         }
 
+        let entity = entities[entitiesUI.selected_index-1]
+        if (!entity.valid) return {id: "", type: ""}
+
         return {
             type: cat_name,
-            id: entities[entitiesUI.selected_index-1].name
+            id: entity.name
         }
     }
 

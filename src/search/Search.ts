@@ -1,13 +1,14 @@
 import {DictionaryEntry, getDictionaryCache} from "cache/DictionaryCache";
-import ISearchable from "search/Searchable";
 import SearchUtils, {SearchResult, multiOrderFunc} from "SearchUtils";
-import {getPrototypeCache} from "../cache/PrototypeCache";
+import {getPrototypeCache} from "cache/PrototypeCache";
+import ISearchable from "search/Searchable";
+import MigratablePrototype from "PrototypeHelper";
 
 type Dict = {
-    prototype_list: LuaTable<string, LuaTechnologyPrototype> |
-        LuaTable<string, LuaItemPrototype> |
-        LuaTable<string, LuaFluidPrototype> |
-        LuaTable<string, LuaTilePrototype>,
+    prototype_list: LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>> |
+        LuaTable<string, MigratablePrototype<LuaItemPrototype>> |
+        LuaTable<string, MigratablePrototype<LuaFluidPrototype>> |
+        LuaTable<string, MigratablePrototype<LuaTilePrototype>>,
     type: string,
     data?: LuaTable<string, string>
 }
@@ -102,7 +103,7 @@ namespace Search {
             }
         ]
 
-       // let prof = game.create_profiler(false)
+        // let prof = game.create_profiler(false)
 
         prompt = prompt.toLowerCase()
         let tokens = prompt.split(" ")
@@ -135,7 +136,7 @@ namespace Search {
                 }
                 if (match_count > 0) {
                     let proto = dict.prototype_list.get(key)
-                    if (proto == undefined) continue // skip invalid protoypes
+                    if (proto == undefined || !proto.valid) continue // skip invalid prototypes
 
                     matchingResults.push({
                         type: dict.type,
