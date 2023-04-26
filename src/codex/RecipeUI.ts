@@ -43,11 +43,17 @@ type ProdOrIngr = (Product | Ingredient | CustomIngredient) & ProdOrIngrExtensio
 
 const infinityTemp = (2 ** 100)
 
-const UIStructures: {[key: string]: FLIBGuiBuildStructure} = {
+const gui_name = "codex"
+const UIStructures : {
+    base_recipe_ui: FLIBGuiBuildStructure,
+    recipe_visualization: FLIBGuiBuildStructure,
+    ingredient_product_separator: FLIBGuiBuildStructure,
+    slotButton: FLIBGuiBuildStructure
+} = {
     base_recipe_ui: {type: "flow", direction: "vertical"},
     recipe_visualization: {type: "flow", direction: "horizontal", enabled: true, style: "player_input_horizontal_flow"},
     ingredient_product_separator:  {type: "sprite", sprite: "fcodex_produces", style: "fcodex_produces_sprite"},
-    slotButton: { type: "sprite-button", show_percent_for_small_numbers: true, actions: { on_click: "cx_view_entity" }}
+    slotButton: { type: "sprite-button", show_percent_for_small_numbers: true, actions: { on_click: { gui: gui_name, action: "view_entity"} }}
 }
 
 namespace RecipeUI {
