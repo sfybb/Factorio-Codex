@@ -1,3 +1,4 @@
+import Util from "Util";
 interface feature {
     supported: boolean,
     check: {
@@ -9,12 +10,18 @@ interface feature {
     }
 }
 
-const compare_versions = {
-    "<":  (a:string, b:string) => a <  b,
-    "<=": (a:string, b:string) => a <= b,
-    "=":  (a:string, b:string) => a == b,
-    ">=": (a:string, b:string) => a >= b,
-    ">":  (a:string, b:string) => a >  b,
+const compare_versions : {
+    "<":  (this: void, a: string, b: string) => boolean,
+    "<=": (this: void, a: string, b: string) => boolean,
+    "=":  (this: void, a: string, b: string) => boolean,
+    ">=": (this: void, a: string, b: string) => boolean,
+    ">":  (this: void, a: string, b: string) => boolean
+} = {
+    "<":  (a: string, b: string) => a <  b,
+    "<=": (a: string, b: string) => a <= b,
+    "=":  (a: string, b: string) => a == b,
+    ">=": (a: string, b: string) => a >= b,
+    ">":  (a: string, b: string) => a >  b,
 }
 
 
@@ -31,7 +38,9 @@ namespace Features {
     export function Init() {
         feature_list = {}
         for (let [feat, check] of Object.entries(Feature_ids)) {
-            feature_list[feat] = create_feature(check)
+            let tmp = create_feature(check)
+            feature_list[feat] = tmp
+            $log_info!(`Feature "${feat}" ("${check}") is ${tmp.supported ? "" : "not " }supported (current version: ${tmp.check.avail_version})`)
         }
 
         $log_info!("Initialized Feature check")
@@ -73,15 +82,20 @@ namespace Features {
         let is_supported = false;
 
         res.check.avail_version = avail_version
-        $log_info!(`Mod ${res.check.mod_id} has ver ${avail_version == undefined ? "null" : avail_version}`)
+
+        $log_info!(`Check: ${serpent.line(res, {comment: false})}`)
 
         if (res.check.comparator != undefined) {
             // unreachable but makes typescript happy
             if (res.check.exp_version == undefined) return res
 
-            if ( res.check.exp_version in compare_versions ) {
+            if ( res.check.comparator in compare_versions && res.check.avail_version != undefined) {
+                res.check.avail_version = Util.normalize_version(res.check.avail_version)
+                res.check.exp_version   = Util.normalize_version(res.check.exp_version)
+
                 // @ts-ignore
-                is_supported = compare_versions[res.check.comparator](avail_version, res.check.exp_version)
+                let func: (this: void, a: string, b: string) => boolean = compare_versions[res.check.comparator]
+                is_supported = func(res.check.avail_version, res.check.exp_version)
             } else {
                 is_supported = false
             }

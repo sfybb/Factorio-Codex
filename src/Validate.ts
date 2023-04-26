@@ -1,5 +1,4 @@
-import {validate_print_info, validate_status} from "./Util";
-import Util from "Util";
+import Util, {validate_print_info, validate_status} from "Util";
 
 interface VerifyinfoBase {
     readonly type: "string" | "number" | "object" | "boolean" | "function" | "array"| "Verifiable",

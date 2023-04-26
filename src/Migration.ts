@@ -22,6 +22,7 @@ declare const global: {
 class Migration {
     static migrate(this: void, e: ConfigurationChangedData): void {
         $log_info!("Checking for migration")
+        $log_info!(`Inventory bonus: ${game.forces["player"].character_inventory_slots_bonus}`)
 
         if ( FLIB_migration.on_config_changed(e, migrations, undefined) ) {
             $log_info!("Migration scripts done")
@@ -76,6 +77,7 @@ class Migration {
     }
 
     static modCompatCheck(): void {
+        $log_info!("Checking for incompatible mod combinations...")
         if (Features.supports("localised_fallback") && Features.supports("dictionary")) {
             $log_crit!(`FLib version ${game.active_mods["flib"]
             } does not support Factorio versions above 1.1.74! Please update FLib to at least version 0.12.0!`)
