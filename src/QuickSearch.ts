@@ -74,8 +74,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
     build_gui() {
         if (this.rebuild_gui) {
-            this.refs?.frame?.destroy()
-            this.refs = {}
+            this.destroy()
         }
 
         let player = game.get_player(this.player_index)

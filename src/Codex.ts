@@ -75,12 +75,13 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
     destroy() {
         this.refs?.window?.destroy()
         this.categories?.destroy()
+
+        this.refs = {}
     }
 
     build_gui() {
         if(this.rebuild_gui) {
-            this.refs?.window?.destroy()
-            this.refs = {}
+            this.destroy()
         }
 
         let player = game.get_player(this.player_index)
@@ -247,8 +248,8 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
 
         // remove invalid prototypes
         let removed_any = false
-        for (const i of $range( this.historyList.length - 1,0, -1)) {
-            if (this.historyList[i]?.proto.valid != true) {
+        for (const i of $range( this.historyList.length ,1, -1)) {
+            if (this.historyList[i-1]?.proto.valid != true) {
                 table.remove(this.historyList, i)
                 removed_any = true
             }

@@ -41,6 +41,11 @@ class Categories implements Verifiable {
 
     destroy(): void {
         this.refs?.cat_gui?.destroy()
+
+        this.refs = {
+            available_entities: new LuaTable()
+        }
+        this.entity_lists = new LuaTable()
     }
 
     set_rebuild_gui() {
@@ -49,10 +54,7 @@ class Categories implements Verifiable {
 
     build_gui(parent: LuaGuiElement) {
         if (this.rebuild_gui) {
-            this.refs?.cat_gui?.destroy()
-            this.refs = {
-                available_entities: new LuaTable()
-            }
+            this.destroy()
         }
 
         if (this.refs?.cat_gui?.valid != true) {
