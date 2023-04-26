@@ -80,16 +80,16 @@ namespace RecipeUI {
         return prefix + colorPallet.default
     }
 
-    function getTooltip(itemOrFluid: ProdOrIngr): LuaMultiReturn<[LocalisedString,string]> {
+    function getTooltip(itemOrFluid: ProdOrIngr, force?: LuaForce): LuaMultiReturn<[LocalisedString,string]> {
         let sprite = itemOrFluid.sprite != undefined ? itemOrFluid.sprite : `${itemOrFluid.type}.${itemOrFluid.name}`
         let tooltip: [string, ...LocalisedString[]] = ["", `[img=${sprite}] `]
+        let localised_name = itemOrFluid.localised_name
 
-        if (itemOrFluid.localised_name == undefined) {
+        if (localised_name == undefined) {
             let proto = (itemOrFluid.type == "item" ? game.item_prototypes : game.fluid_prototypes)[itemOrFluid.name]
-            tooltip.push(proto?.localised_name != undefined ? proto.localised_name : itemOrFluid.name)
-        } else {
-            tooltip.push(itemOrFluid.localised_name)
+            localised_name = proto?.localised_name != undefined ? proto.localised_name : itemOrFluid.name
         }
+        tooltip.push(localised_name)
 
         let roundedAmountStr
         if ( itemOrFluid.amount == undefined ) {
@@ -137,11 +137,55 @@ namespace RecipeUI {
             }
         }
 
+        let prodRecipes = getMainProductionWays(itemOrFluid, force)
+        if (prodRecipes != undefined) {
+            tooltip.push(["factorio-codex.tooltip_main_production_ways", `[img=${itemOrFluid.type}/${itemOrFluid.name}]`, localised_name, prodRecipes])
+        }
+
         return $multi(tooltip, roundedAmountStr)
     }
 
-    function getSlot(itemOrFluid: ProdOrIngr, style: string, is_clickable?: boolean): FLIBGuiBuildStructure {
-        let [tooltip, roundedAmountStr] = getTooltip(itemOrFluid)
+    function getMainProductionWays(itemOrFluid: ProdOrIngr, force?: LuaForce) : LocalisedString | undefined {
+        let recipeCache = getRecipeCache()
+        if (recipeCache == undefined) {
+            return undefined
+        }
+
+        let mainRecipes = recipeCache.getMainProductionWays(itemOrFluid, force)
+        let localisedString: [string, ...string[]] = [""]
+
+        let recipeString: string[]
+
+        let maxRecipes = 2
+        for (let recipe of mainRecipes) {
+            recipeString = ["\n"]
+            for (let ingr of recipe.ingredients) {
+                recipeString.push(`${roundAmount(ingr.amount)}`, " [img=", ingr.type, "/", ingr.name, "] ")
+            }
+
+            let spriteString : string = UIStructures.ingredient_product_separator.sprite as string
+            recipeString.push("[img=", spriteString, "] ")
+
+            for (let prod of recipe.products) {
+                let amount = prod.amount
+                if (amount == undefined) {
+                    // @ts-ignore
+                    amount = (prod.amount_max - prod.amount_min)*0.5 + prod.amount_min
+                }
+                amount *= prod.probability != undefined ? prod.probability : 1
+
+                recipeString.push(`${roundAmount(amount)}`, " [img=", prod.type, "/", prod.name, "] ")
+            }
+
+            localisedString.push(recipeString.join(""))
+            maxRecipes -= 1
+            if (maxRecipes <= 0) break
+        }
+        return localisedString
+    }
+
+    function getSlot(itemOrFluid: ProdOrIngr, style: string, is_clickable?: boolean, force?: LuaForce): FLIBGuiBuildStructure {
+        let [tooltip, roundedAmountStr] = getTooltip(itemOrFluid, force)
 
         let sprite = itemOrFluid.sprite != undefined ? itemOrFluid.sprite : (itemOrFluid.type + "/" + itemOrFluid.name)
         is_clickable = (is_clickable != undefined ? is_clickable : true) &&
@@ -196,7 +240,7 @@ namespace RecipeUI {
         return additionalInfoUi
     }
     export function getUI(recipe: AnyRecipe, locked: boolean,
-                          highlightId?: string, colorPallet?: ColorPallet): FLIBGuiBuildStructure {
+                          highlightId?: string, force?: LuaForce, colorPallet?: ColorPallet): FLIBGuiBuildStructure {
         if ( colorPallet == undefined ) colorPallet = !locked ? ColorPallets.default : ColorPallets.locked
 
         const recipeUi: FLIBGuiBuildStructure = {
@@ -210,7 +254,7 @@ namespace RecipeUI {
 
             let style = getStyle(recipe, ingredient, highlightId, colorPallet)
             // @ts-ignore
-            recipeUi.children.push(getSlot(ingredient, style, highlightId != ingredient.name))
+            recipeUi.children.push(getSlot(ingredient, style, highlightId != ingredient.name, force))
         }
 
         // @ts-ignore
@@ -221,7 +265,7 @@ namespace RecipeUI {
 
             let style = getStyle(recipe, product, highlightId, colorPallet)
             // @ts-ignore
-            recipeUi.children.push(getSlot(product, style, highlightId != product.name))
+            recipeUi.children.push(getSlot(product, style, highlightId != product.name, force))
         }
 
         let completeUi = {

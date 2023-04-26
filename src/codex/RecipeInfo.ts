@@ -28,26 +28,26 @@ namespace RecipeInfo {
 
         if (miner_recipes != undefined) {
             mineable_from = miner_recipes.map(
-                (recipe) => RecipeUI.getUI(recipe, false, itemOrFluid.name))
+                (recipe) => RecipeUI.getUI(recipe, false, itemOrFluid.name, force))
         }
 
         return mineable_from
     }
 
-    function get_rocket_launch_recipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype): FLIBGuiBuildStructure[] {
+    function get_rocket_launch_recipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype, force?: LuaForce): FLIBGuiBuildStructure[] {
         let rl_recipes = getRecipeCache()?.getRocketLaunchRecipes(itemOrFluid)
         let rl_ui:FLIBGuiBuildStructure[] = []
 
         if (rl_recipes != undefined) {
             rl_ui = rl_recipes.map(
-                (recipe) => RecipeUI.getUI(recipe, false, itemOrFluid.name))
+                (recipe) => RecipeUI.getUI(recipe, false, itemOrFluid.name, force))
         }
 
         return rl_ui
     }
 
     function get_produced_by_recipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype,
-                                     force_recipes: Record<string, LuaRecipe>): FLIBGuiBuildStructure[] {
+                                     force_recipes: Record<string, LuaRecipe>, force?: LuaForce): FLIBGuiBuildStructure[] {
         let isItem = itemOrFluid.object_name == "LuaItemPrototype"
         const filter: RecipePrototypeFilterWrite[] = [{
             filter: isItem ? "has-product-item" : "has-product-fluid",
@@ -59,14 +59,14 @@ namespace RecipeInfo {
 
         for (let recipe of prod_recipes_arr) {
             let isUnavailable = !(recipe.name in force_recipes) || !force_recipes[recipe.name].enabled
-            produced_by.push(RecipeUI.getUI(recipe, isUnavailable, itemOrFluid.name))
+            produced_by.push(RecipeUI.getUI(recipe, isUnavailable, itemOrFluid.name, force))
         }
 
         return produced_by
     }
 
     function get_ingredient_in_recipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype,
-                                       force_recipes: Record<string, LuaRecipe>): FLIBGuiBuildStructure[] {
+                                       force_recipes: Record<string, LuaRecipe>, force?: LuaForce): FLIBGuiBuildStructure[] {
         let isItem = itemOrFluid.object_name == "LuaItemPrototype"
         const filter: RecipePrototypeFilterWrite[] = [{
             filter: isItem ? "has-ingredient-item" : "has-ingredient-fluid",
@@ -77,7 +77,7 @@ namespace RecipeInfo {
         let ingredient_in:FLIBGuiBuildStructure[] = []
         for (let recipe of ingr_recipes_arr) {
             let isUnavailable = !(recipe.name in force_recipes) || !force_recipes[recipe.name].enabled
-            ingredient_in.push(RecipeUI.getUI(recipe, isUnavailable, itemOrFluid.name))
+            ingredient_in.push(RecipeUI.getUI(recipe, isUnavailable, itemOrFluid.name, force))
         }
 
         return ingredient_in
@@ -100,17 +100,17 @@ namespace RecipeInfo {
             }
         }
 
-        let rocketLaunchRecipes = get_rocket_launch_recipes(itemOrFluid)
+        let rocketLaunchRecipes = get_rocket_launch_recipes(itemOrFluid, force)
         if (rocketLaunchRecipes.length > 0) {
             recipeGui.push(CodexCommonUI.get_collapsable_list(["factorio-codex.rocket-launch-recipes"], rocketLaunchRecipes))
         }
 
-        let producedBy = get_produced_by_recipes(itemOrFluid, force_recipes)
+        let producedBy = get_produced_by_recipes(itemOrFluid, force_recipes, force)
         if (producedBy.length > 0) {
             recipeGui.push(CodexCommonUI.get_collapsable_list(["factorio-codex.produced-by"], producedBy))
         }
 
-        let ingredientIn = get_ingredient_in_recipes(itemOrFluid, force_recipes)
+        let ingredientIn = get_ingredient_in_recipes(itemOrFluid, force_recipes, force)
         if (ingredientIn.length > 0) {
             recipeGui.push(CodexCommonUI.get_collapsable_list(["factorio-codex.ingredient-in"], ingredientIn))
         }

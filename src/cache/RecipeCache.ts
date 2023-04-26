@@ -44,6 +44,8 @@ type VirtualRecipe = {
 
 export type AnyRecipe = VirtualRecipe | LuaRecipePrototype | LuaRecipe
 
+export type ItemOfFluidId = { name: string, type: "item" | "fluid" | "resource" }
+
 type RecipeStorage = {
     type: "item" | "fluid" | "resource"
     products: LuaTable<string, AnyRecipe[]>
@@ -73,6 +75,11 @@ class RecipeCache implements GlobalCache {
         rockets: LuaTable<string, LuaEntityPrototype[]>  // id: 'rocket/${silo.name}'
     }
 
+    mainProductionWays: {
+        fluid: LuaTable<string, AnyRecipe[]>,
+        item: LuaTable<string, AnyRecipe[]>,
+    }
+
     constructor() {
         this.additionalRecipes = {
             fluid:    {type: "fluid",    products: new LuaTable(), ingredients: new LuaTable(), list: []},
@@ -84,6 +91,10 @@ class RecipeCache implements GlobalCache {
             crafting: new LuaTable(),
             pumping: new LuaTable(),
             rockets: new LuaTable(),
+        }
+        this.mainProductionWays = {
+            fluid: new LuaTable(),
+            item: new LuaTable(),
         }
         this.Rebuild()
     }
@@ -99,6 +110,10 @@ class RecipeCache implements GlobalCache {
             crafting: new LuaTable(),
             pumping: new LuaTable(),
             rockets: new LuaTable(),
+        }
+        this.mainProductionWays = {
+            fluid: new LuaTable(),
+            item: new LuaTable(),
         }
 
         this.initCategories()
@@ -387,6 +402,99 @@ class RecipeCache implements GlobalCache {
         }
 
         return res
+    }
+
+    getMainProductionWays(itemOrFluid: ItemOfFluidId, force?: LuaForce): AnyRecipe[] {
+        let force_recipes = force?.recipes
+        let type = itemOrFluid.type
+        let expectedId = itemOrFluid.name
+
+        if (type == "resource") return []
+
+        let cachedRecipes = this.mainProductionWays[type].get(expectedId)
+        if (cachedRecipes != undefined) {
+            if (force_recipes != undefined) {
+                let filteredResult = []
+                for (let recipe of cachedRecipes) {
+                    // @ts-ignore
+                    if (recipe.name == undefined) {
+                        continue
+                    }
+
+                    // @ts-ignore
+                    if (force_recipes[recipe.name]?.enabled) {
+                        filteredResult.push(recipe)
+                    }
+                }
+
+                if (filteredResult.length > 0) return filteredResult
+            }
+
+            return cachedRecipes
+        }
+
+        cachedRecipes = []
+        const filter: RecipePrototypeFilterWrite[] = [{
+            filter: type == "item" ? "has-product-item" : "has-product-fluid",
+            elem_filters: [{ filter: "name", name: expectedId}]
+        }]
+        let filteredProtos = game.get_filtered_recipe_prototypes(filter)
+
+        if (filteredProtos.length() > 0) {
+            let hasItemAsMainProd = false
+            for (let [recipeId, recipe] of filteredProtos) {
+                let main_prod = recipe.main_product
+                if (main_prod != undefined && main_prod.name == expectedId && main_prod.type == type) {
+                    hasItemAsMainProd = true
+                    break
+                }
+            }
+
+            for (let [recipeId, recipe] of filteredProtos) {
+                let main_prod = recipe.main_product
+
+                // include this recipe if it has the item / fluid we are searching for as main product
+                let shouldInclude = main_prod != undefined && main_prod.name == expectedId && main_prod.type == type
+                // or if this is not a main product for any recipe we found and this recipe has no main product
+                shouldInclude ||= main_prod == undefined
+
+                if (shouldInclude) {
+                    cachedRecipes.push(recipe)
+                }
+            }
+        } else {
+            /*if (force != undefined) {
+                cachedRecipes = this.getMinerRecipesFor(itemOrFluid, force)
+            } else {
+                cachedRecipes = this.getRocketLaunchRecipes(itemOrFluid)
+            }*/
+        }
+
+        const maxRecipesToCache = 50
+        if (cachedRecipes.length > maxRecipesToCache) {
+            cachedRecipes = cachedRecipes.slice(0, maxRecipesToCache)
+        }
+
+        this.mainProductionWays[type].set(expectedId, cachedRecipes)
+
+        if (force_recipes != undefined) {
+            let filteredResult = []
+            for (let recipe of cachedRecipes) {
+                // @ts-ignore
+                if (recipe.name == undefined) {
+                    continue
+                }
+
+                // @ts-ignore
+                if (force_recipes[recipe.name]?.enabled) {
+                    filteredResult.push(recipe)
+                }
+            }
+
+            if (filteredResult.length > 0) return filteredResult
+        }
+
+        return cachedRecipes
     }
 
     validate(): void {
