@@ -21,6 +21,10 @@ export function clearConsoleMessages() {
 
 // Mock game
 // TODO
+// @ts-ignore
+global.script = {
+
+}
 
 
 

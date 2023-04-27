@@ -1,16 +1,9 @@
 import {describe, expect, test, jest} from '@jest/globals';
 
-global.log = console.log
+import "./mocks/BaseMocks";
 // @ts-ignore
-global.$log_info = jest.fn()
-// @ts-ignore
-global.$log_warn = jest.fn()
-
-// @ts-ignore
-global.script = {
-    active_mods: {
-        "gvv": "0"
-    }
+global.script.active_mods = {
+    "gvv": "0"
 }
 
 import Features, {Feature_ids} from "../src/Features";

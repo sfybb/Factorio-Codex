@@ -9,10 +9,12 @@ import MigratablePrototype from "PrototypeHelper";
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
 
+type ViewablePrototype = LuaItemPrototype | LuaTechnologyPrototype | LuaFluidPrototype
+
 type HistoryItem = {
     type: string,
     id: string,
-    proto: MigratablePrototype<LuaItemPrototype | LuaTechnologyPrototype | LuaFluidPrototype>
+    proto: MigratablePrototype<ViewablePrototype>
 }
 
 const gui_name = "codex"
@@ -298,7 +300,7 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
         }
     }
 
-    addToHistory(entityprotoype: LuaFluidPrototype | LuaItemPrototype | LuaTechnologyPrototype) {
+    addToHistory(entityPrototype: ViewablePrototype) {
         if (this.entity_view == undefined) return;
 
         let nextItem = this.historyPosition != -1 ? this.historyList[this.historyPosition+1] : undefined
@@ -313,13 +315,13 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
                 this.historyPosition = -1
                 this.historyList.push({
                     ...this.entity_view,
-                    proto: entityprotoype
+                    proto: entityPrototype
                 })
             }
         } else {
             this.historyList.push({
                 ...this.entity_view,
-                proto: entityprotoype
+                proto: entityPrototype
             })
         }
         const maxHistLen = 10
