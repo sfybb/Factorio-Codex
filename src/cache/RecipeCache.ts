@@ -344,7 +344,7 @@ class RecipeCache implements GlobalCache {
         return []
     }
 
-    getRocketLaunchRecipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype, ): AnyRecipe[] {
+    getRocketLaunchRecipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype): AnyRecipe[] {
         let res: AnyRecipe[]
 
         if (itemOrFluid.object_name == "LuaItemPrototype") {

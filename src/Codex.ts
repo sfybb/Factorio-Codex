@@ -4,10 +4,10 @@ import RecipeInfo from "codex/RecipeInfo";
 import Categories from "codex/Categories"
 import {Task, TaskExecutor} from "Task";
 import IGuiRoot, {GuiAction} from "IGuiRoot";
+import MigratablePrototype from "PrototypeHelper";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
-import MigratablePrototype from "./PrototypeHelper";
 
 type HistoryItem = {
     type: string,
@@ -77,6 +77,25 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
         this.categories?.destroy()
 
         this.refs = {}
+
+        // remove invalid prototypes in history
+        let removed_any = false
+        let newHistPosition = this.historyPosition
+        for (const i of $range( this.historyList.length - 1,0, -1)) {
+            if (this.historyList[i]?.proto.valid != true) {
+                table.remove(this.historyList, i+1)
+                removed_any = true
+
+                if (i <= this.historyPosition) {
+                    newHistPosition--
+                }
+            }
+        }
+
+        this.historyPosition = newHistPosition
+        if (removed_any) {
+            $log_info!(`Removed invalid history entries and moved history position (new: ${newHistPosition}) for player ${this.player_index}`)
+        }
     }
 
     build_gui() {
@@ -245,19 +264,6 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
     updateHistoryButtons() {
         let backTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
         let fwdTooltip: (string | number | boolean | LuaObject | nil | [string, ...LocalisedString[]]) = [""]
-
-        // remove invalid prototypes
-        let removed_any = false
-        for (const i of $range( this.historyList.length ,1, -1)) {
-            if (this.historyList[i-1]?.proto.valid != true) {
-                table.remove(this.historyList, i)
-                removed_any = true
-            }
-        }
-        if (removed_any) {
-            $log_info!(`Removed invalid history entries and reset history position for player ${this.player_index}`)
-            this.historyPosition = -1
-        }
 
         let curHistPos = this.historyPosition == -1 ? this.historyList.length-1 : this.historyPosition
         for (const i of $range(curHistPos - 1,0, -1)) {
@@ -494,9 +500,9 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
             {field: "visible", type: "boolean"},
             {field: "keep_open", type: "boolean"},
             {field: "rebuild_gui", type: "boolean"},
-            {field: "entity_view", type: "object", content: [
-                {field: "type", type: "string", optional: true},
-                {field: "id", type: "string", optional: true},
+            {field: "entity_view", type: "object", optional: true, content: [
+                {field: "type", type: "string"},
+                {field: "id", type: "string"},
             ]},
             {field: "historyPosition", type: "number"},
             {field: "historyList", type: "array", content: {
