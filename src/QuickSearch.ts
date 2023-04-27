@@ -119,11 +119,16 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         let player = game.get_player(this.player_index)
 
         if (player != null && this.refs.frame != undefined && this.refs.results != undefined) {
+            let display_scale = player.display_scale
+            let half_height = player.display_resolution.height / 2
+            let half_width  = player.display_resolution.width / 2
+
             this.refs.frame.location = {
-                x: (player.display_resolution.width / 2) - 200,
-                y: (player.display_resolution.height / 2) - 50,
+                x: half_width - 200 * display_scale,
+                y: half_height - 50 * display_scale,
             }
-            this.refs.results.style.maximal_height = player.display_resolution.height / 2 - 100
+
+            this.refs.results.style.maximal_height = (half_height - 100) / display_scale
         }
     }
 
