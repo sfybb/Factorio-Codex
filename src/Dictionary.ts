@@ -155,8 +155,7 @@ namespace Dictionary {
             for (let player_index of lang_data.players) {
                 let dict_cache = getDictionaryCache(player_index)
                 if (dict_cache == undefined) {
-                    $log_crit!(`Cannot query cache \"dicts_cache\" for player with index ${player_index}!` +
-                        " (This means creating the cache must have failed too)")
+                    $log_crit!(`Cannot save translation for ${$get_player_string!(player_index)}. Is mod data corrupted?`, `Cache: 'dicts_cache' is undefined. Creation must have failed`)
                     continue
                 }
 

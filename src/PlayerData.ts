@@ -116,7 +116,7 @@ namespace PlayerData {
     export function get(this: void, ind_pi: indirect_player_index): undefined | player_data {
         const index = get_player_index(ind_pi)
         if (index == 0) {
-            $log_crit!(`Invalid player index ${serpent.line(ind_pi, {comment: false, nocode: true})}!`)
+            $log_crit!("Unable to find player data", `Invalid player index ${serpent.line(ind_pi, {comment: false, nocode: true})}!`)
             return undefined
         }
 

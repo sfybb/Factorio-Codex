@@ -79,7 +79,7 @@ class Migration {
     static modCompatCheck(): void {
         $log_info!("Checking for incompatible mod combinations...")
         if (Features.supports("localised_fallback") && Features.supports("dictionary")) {
-            $log_crit!(`FLib version ${game.active_mods["flib"]
+            $log_crit_raw!(`FLib version ${game.active_mods["flib"]
             } does not support Factorio versions above 1.1.74! Please update FLib to at least version 0.12.0!`)
         }
     }

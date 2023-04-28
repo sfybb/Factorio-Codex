@@ -165,7 +165,7 @@ class Categories implements Verifiable {
 
             if (res_table == undefined) return []
         } else {
-            $log_crit!(`Cannot retrieve Entity list for a subgroup '${cat_type}.${this.selected_cat.name}' (yet)!`)
+            $log_crit!(`Invalid entity category: '${this.selected_cat.name}'`, `Cannot retrieve Entity list for a subgroup '${cat_type}.${this.selected_cat.name}' (yet)!`)
         }
 
         for (let [, v] of res_table) {

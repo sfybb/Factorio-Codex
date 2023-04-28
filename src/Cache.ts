@@ -98,7 +98,7 @@ class CacheManager {
 
             for (let [pId, pCacheList] of c.playerCaches) {
                 if (pCacheList == undefined) continue
-                $log_info!(`Loading caches for player ${pId}('${game?.get_player(pId)?.name}')...`)
+                $log_info!(`Loading caches for player ${$get_player_string!(pId)}')...`)
                 for (let [id, pCache] of pCacheList) {
                     let pFactory = playerFactories.get(id)
                     if (pFactory != undefined) {
@@ -114,7 +114,7 @@ class CacheManager {
     get(cache_id: string): undefined | GlobalCache {
         let cache = this?.globalCaches?.get(cache_id)
         if (cache == undefined) {
-            $log_crit_ng!(`Global Cache with id '${cache_id}' does not exist!`)
+            $log_crit!("Is mod data corrupted?", `Global Cache with id '${cache_id}' does not exist!`)
         }
 
         return cache
@@ -129,8 +129,8 @@ class CacheManager {
         let cache = playerCacheList.get(cache_id)
 
         if (cache == undefined) {
-            $log_crit!(`Player Cache with id '${cache_id}' does not exist for player ${player}`+
-            `('${game.get_player(player)?.name}')!`)
+            let playerStr =  $get_player_string!(player)
+            $log_crit!(`Unable to find player data for ${playerStr}. Details are in the logfile`, `Player Cache with id '${cache_id}' does not exist for ${playerStr}!`)
         }
 
         return cache
@@ -139,7 +139,7 @@ class CacheManager {
     InitPlayer(player: PlayerIndex): LuaTable<string, PlayerCache> {
         let playerCacheList = new LuaTable<string, PlayerCache>();
 
-        $log_info!(`Initializing caches for player ${player}('${game.get_player(player)?.name}')...`)
+        $log_info!(`Initializing caches for player ${$get_player_string!(player)}')...`)
         for (let [id, pCacheFactory] of playerFactories ) {
             playerCacheList.set(id, <PlayerCache>pCacheFactory.Create(player))
             $log_info!(`    ${pCacheFactory.cache_name}      Done`)
@@ -162,11 +162,11 @@ class CacheManager {
             $log_info!(`Rebuilding player caches...`)
             for (let [pId, pCacheList] of this.playerCaches) {
                 if (pCacheList == undefined) {
-                    $log_warn!(`Invalid cache list for player ${pId}('${game.get_player(pId)?.name}') - deleting`)
+                    $log_warn!(`Invalid cache list for ${$get_player_string!(pId)}') - deleting`)
                     this.playerCaches.delete(pId)
                     continue
                 }
-                $log_info!(`Rebuilding caches for player ${pId}('${game.get_player(pId)?.name}')...`)
+                $log_info!(`Rebuilding caches for ${$get_player_string!(pId)}')...`)
                 for (let [id, pCache] of pCacheList) {
                     if (!playerFactories.has(id)) {
                         pCacheList.delete(id)

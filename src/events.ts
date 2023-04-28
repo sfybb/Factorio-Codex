@@ -18,8 +18,7 @@ import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 
 
 const errorHandler = (err: any) => {
-    $log_crit_ng!(`Critical error: ${err}`)
-    $log_crit!(`An unknown critical error occurred. Details are in the log file`)
+    $log_crit!("An unknown critical error occurred", `Thrown exception: ${serpent.line(err, {comment: false})}`)
 }
 
 script.on_init(() => {

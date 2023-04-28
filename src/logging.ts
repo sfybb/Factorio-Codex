@@ -31,13 +31,19 @@ function $log_err(msg: string) {
     $log!(LogLevel.ERROR,    "[ERROR]    "+msg)
 }
 
-function $log_crit(msg: string) {
-    game.print("[FACTORIO CODEX] [CRITICAL] "+ msg, {r: 0.5})
+function $log_crit(msg: string, addInfo: string) {
+    game.print("[FACTORIO CODEX] [CRITICAL] [color=orange]" + msg + ". Details are in the log file. If this persists try running [/color][color=cyan]/fc-rebuild-all[/color]", {r: 0.5})
     log("[CRITICAL] " + msg)
+    log("[INFO] " + addInfo)
     log("[TRACEBACK] " + debug.traceback())
 }
 
-function $log_crit_ng(msg: string) {
+function $log_crit_raw(msg: string) {
+    game.print("[FACTORIO CODEX] [CRITICAL] [color=orange]" + msg, {r: 0.5})
     log("[CRITICAL] " + msg)
-    log("[TRACEBACK] " + debug.traceback())
+}
+
+function $get_player_string(pID: PlayerIndex): string {
+    let player = game?.get_player(pID)
+    return player == undefined ? `player ID: ${pID}` : `player ${pID}('${game.get_player(pID)?.name}')`
 }
