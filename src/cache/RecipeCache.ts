@@ -1,5 +1,6 @@
 // @ts-ignore
 import {CacheFactory, getGlobalCache, GlobalCache, registerCache} from "Cache";
+import {getPrototypeCache} from "./PrototypeCache";
 
 let RecipeCacheFactory: CacheFactory = {
     cache_id: "recipe_cache",
@@ -33,6 +34,7 @@ export type CustomIngredient = {
 }
 
 type VirtualRecipe = {
+    localised_name: LocalisedString,
     main_product?: string
 
     category: string
@@ -40,6 +42,7 @@ type VirtualRecipe = {
 
     ingredients: (Ingredient | CustomIngredient)[]
     products: Product[]
+    object_name: "VirtualRecipe"
 }
 
 export type AnyRecipe = VirtualRecipe | LuaRecipePrototype | LuaRecipe
@@ -250,10 +253,12 @@ class RecipeCache implements GlobalCache {
                 let amount = siloData.silo.rocket_parts_required != undefined ? siloData.silo.rocket_parts_required : 1
                 if (amount == 1) {
                     new_recipe = {
+                        localised_name: ["factorio-codex.rocket-launch-recipes"],
                         category: siloData.category,
                         energy: siloData.silo.launch_wait_time != undefined ? siloData.silo.launch_wait_time : 1,
                         ingredients: [...siloData.recipe.ingredients, ingr],
-                        products: [...siloData.recipe.products, ...rlp.rocket_launch_products]
+                        products: [...siloData.recipe.products, ...rlp.rocket_launch_products],
+                        object_name: "VirtualRecipe"
                     }
                 } else {
                     let rocket_parts: Ingredient[] = siloData.recipe.products.map((p) => ({
@@ -263,10 +268,12 @@ class RecipeCache implements GlobalCache {
                     }))
 
                     new_recipe = {
+                        localised_name: ["factorio-codex.rocket-launch-recipes"],
                         category: siloData.category,
                         energy: siloData.silo.launch_wait_time != undefined ? siloData.silo.launch_wait_time : 1,
                         ingredients: [...rocket_parts, ingr],
-                        products: [...rlp.rocket_launch_products]
+                        products: [...rlp.rocket_launch_products],
+                        object_name: "VirtualRecipe"
                     }
                 }
 
@@ -286,6 +293,7 @@ class RecipeCache implements GlobalCache {
             let fluid = pump.fluid
             if (fluid != undefined) {
                 let recipe: VirtualRecipe = {
+                    localised_name: ["factorio-codex.offshore-pumping-recipes"],
                     category: `offshore-pump/${fluid.name}`,
                     energy: 1,
                     ingredients: [],
@@ -294,7 +302,8 @@ class RecipeCache implements GlobalCache {
                         name: fluid.name,
                         // @ts-ignore never undefined
                         amount: Math.round(pump.pumping_speed*60)
-                    }]
+                    }],
+                    object_name: "VirtualRecipe"
                 }
                 this.addRecipeToStorage(this.additionalRecipes.resource, recipe)
             }
@@ -308,6 +317,7 @@ class RecipeCache implements GlobalCache {
             let props = res.mineable_properties
             if (props.minable) {
                 let recipe: VirtualRecipe = {
+                    localised_name: ["factorio-codex.mining-recipes"],
                     // @ts-ignore never undefined for type "resource"
                     category: res.resource_category,
                     energy: props.mining_time,
@@ -381,7 +391,16 @@ class RecipeCache implements GlobalCache {
                 let productivity_bonus = force.mining_drill_productivity_bonus + 1
                 res = []
                 for (let recipe of tmp) {
-                    let copy: AnyRecipe = {...recipe}
+                    let copy: VirtualRecipe = {
+                        localised_name: recipe.localised_name,
+                        main_product: !("main_product" in recipe) ? undefined :
+                            typeof recipe.main_product == "string" ? recipe.main_product : recipe.main_product?.name,
+                        category: recipe.category,
+                        energy: recipe.energy,
+                        ingredients: recipe.ingredients,
+                        products: recipe.products,
+                        object_name: "VirtualRecipe"
+                    }
 
                     // @ts-ignore
                     copy.products = recipe.products.map((p) => {
@@ -405,44 +424,40 @@ class RecipeCache implements GlobalCache {
     }
 
     getMainProductionWays(itemOrFluid: ItemOfFluidId, force?: LuaForce): AnyRecipe[] {
-        let force_recipes = force?.recipes
+        let force_recipes: Record<string, LuaRecipe> | undefined = force?.recipes
         let type = itemOrFluid.type
         let expectedId = itemOrFluid.name
 
         if (type == "resource") return []
 
         let cachedRecipes = this.mainProductionWays[type].get(expectedId)
-        if (cachedRecipes != undefined) {
-            if (force_recipes != undefined) {
-                let filteredResult = []
-                for (let recipe of cachedRecipes) {
-                    // @ts-ignore
-                    if (recipe.name == undefined) {
-                        continue
-                    }
+        if (cachedRecipes == undefined) {
+            cachedRecipes = []
 
-                    // @ts-ignore
-                    if (force_recipes[recipe.name]?.enabled) {
-                        filteredResult.push(recipe)
+            // Prefer to show mining recipes
+            let prototypeCache = getPrototypeCache()
+            if (prototypeCache != undefined) {
+                let prototype = type == "fluid" ? prototypeCache.getFluid().get(expectedId) : prototypeCache.getItems().get(expectedId)
+
+                if (prototype != undefined && prototype.valid) {
+                    if (force != undefined) {
+                        cachedRecipes = this.getMinerRecipesFor(prototype, force)
+                    } else {
+                        cachedRecipes = this.getRocketLaunchRecipes(prototype)
                     }
                 }
-
-                if (filteredResult.length > 0) return filteredResult
             }
 
-            return cachedRecipes
-        }
+            // Find other ways to produce said item without mining or shooting something into space
+            const filter: RecipePrototypeFilterWrite[] = [{
+                filter: type == "item" ? "has-product-item" : "has-product-fluid",
+                elem_filters: [{filter: "name", name: expectedId}]
+            }]
 
-        cachedRecipes = []
-        const filter: RecipePrototypeFilterWrite[] = [{
-            filter: type == "item" ? "has-product-item" : "has-product-fluid",
-            elem_filters: [{ filter: "name", name: expectedId}]
-        }]
-        let filteredProtos = game.get_filtered_recipe_prototypes(filter)
+            let filteredProtos = game.get_filtered_recipe_prototypes(filter)
 
-        if (filteredProtos.length() > 0) {
             let hasItemAsMainProd = false
-            for (let [recipeId, recipe] of filteredProtos) {
+            for (let [_, recipe] of filteredProtos) {
                 let main_prod = recipe.main_product
                 if (main_prod != undefined && main_prod.name == expectedId && main_prod.type == type) {
                     hasItemAsMainProd = true
@@ -450,7 +465,7 @@ class RecipeCache implements GlobalCache {
                 }
             }
 
-            for (let [recipeId, recipe] of filteredProtos) {
+            for (let [_, recipe] of filteredProtos) {
                 let main_prod = recipe.main_product
 
                 // include this recipe if it has the item / fluid we are searching for as main product
@@ -462,38 +477,25 @@ class RecipeCache implements GlobalCache {
                     cachedRecipes.push(recipe)
                 }
             }
-        } else {
-            /*if (force != undefined) {
-                cachedRecipes = this.getMinerRecipesFor(itemOrFluid, force)
-            } else {
-                cachedRecipes = this.getRocketLaunchRecipes(itemOrFluid)
-            }*/
-        }
 
-        const maxRecipesToCache = 50
-        if (cachedRecipes.length > maxRecipesToCache) {
-            cachedRecipes = cachedRecipes.slice(0, maxRecipesToCache)
-        }
-
-        this.mainProductionWays[type].set(expectedId, cachedRecipes)
-
-        if (force_recipes != undefined) {
-            let filteredResult = []
-            for (let recipe of cachedRecipes) {
-                // @ts-ignore
-                if (recipe.name == undefined) {
-                    continue
-                }
-
-                // @ts-ignore
-                if (force_recipes[recipe.name]?.enabled) {
-                    filteredResult.push(recipe)
-                }
+            // Limit the results to 50 (mining or rocket launch recipes are at the front)
+            const maxRecipesToCache = 50
+            if (cachedRecipes.length > maxRecipesToCache) {
+                cachedRecipes = cachedRecipes.slice(0, maxRecipesToCache)
             }
 
-            if (filteredResult.length > 0) return filteredResult
+            this.mainProductionWays[type].set(expectedId, cachedRecipes)
         }
 
+        if (force_recipes != undefined) {
+            // only includes enabled recipes and virtual recipes
+            return cachedRecipes.filter(
+                (val: AnyRecipe) =>
+                    val.object_name == "VirtualRecipe" ||
+                        // @ts-ignore
+                        (val.name != undefined && force_recipes[val.name]?.enabled)
+            )
+        }
         return cachedRecipes
     }
 
