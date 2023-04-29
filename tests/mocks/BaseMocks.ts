@@ -8,7 +8,7 @@ global.$log_info = jest.fn((m) => savedConsoleMsgs.push("[INFO] "+m))
 global.$log_warn = jest.fn((m) => savedConsoleMsgs.push("[WARN] "+m))
 global.$log_err = jest.fn((m) => savedConsoleMsgs.push("[ERR] "+m))
 global.$log_crit = jest.fn((m) => savedConsoleMsgs.push("[CRIT] "+m))
-global.$log_crit_ng = jest.fn((m) => savedConsoleMsgs.push("[CRIT (no game)] "+m))
+global.$log_crit_raw = jest.fn((m) => savedConsoleMsgs.push("[CRIT (raw)] "+m))
 
 export function printConsoleMessages() {
     console.log("[LOG] " + savedConsoleMsgs.join("\n[LOG] "))
@@ -24,6 +24,15 @@ export function clearConsoleMessages() {
 // @ts-ignore
 global.script = {
 
+}
+
+// @ts-ignore
+global.game = {
+    item_prototypes: {},
+    fluid_prototypes: {},
+    technology_prototypes: {},
+
+    get_player: jest.fn()
 }
 
 

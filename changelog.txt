@@ -7,6 +7,7 @@ Date: 99.99.2023
     - Positioning now respects interface scale settings
   Bugfixes:
     - Fixed a bug where invalid prototypes remained in the codex causing a crash everytime it is opened.
+BUG: Oil has "Produced by" recipes in "Mined from"!!!!!!!!!!!!
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.19
 Date: 15.04.2023

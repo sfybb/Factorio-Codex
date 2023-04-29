@@ -1,5 +1,6 @@
 // @ts-nocheck
 import "./StringMock"
+import {jest} from "@jest/globals";
 class LuaTableMock {
     constructor() {
     }
@@ -36,7 +37,7 @@ function rangeMock(start: number, limit: number, step?: number): Iterable<number
 global.$range = rangeMock
 global.LuaSet = Set
 global.LuaTable = LuaTableMock
-global.setmetatable = () => {}
+global.setmetatable = jest.fn()
 global.table = {
     concat(list: (string | number)[], sep?: string, i?: number, j?: number): string {
         // TODO invalid implementation

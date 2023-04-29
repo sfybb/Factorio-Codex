@@ -403,6 +403,7 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
 
         if (this.refs.entity_desc_frame != undefined) this.refs.entity_desc_frame.caption = entity_prototype.localised_name
         if (this.refs.entity_color != undefined) this.refs.entity_color.visible = false
+        this.refs.entity_usage?.scroll_to_top()
         this.refs.entity_usage?.clear()
 
         this.categories.select_by_name(type)
