@@ -7,7 +7,8 @@ Date: 99.99.2023
     - Positioning now respects interface scale settings
   Bugfixes:
     - Fixed a bug where invalid prototypes remained in the codex causing a crash everytime it is opened.
-BUG: Oil has "Produced by" recipes in "Mined from"!!!!!!!!!!!!
+    - Fixed a bug where fluids didn't receive mining productivity.
+    - Fixed a bug where fluids had non-mining / non-pumping recipes in "Mined from" section.
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.19
 Date: 15.04.2023

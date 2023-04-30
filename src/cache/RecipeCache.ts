@@ -41,7 +41,8 @@ type VirtualRecipe = {
     energy: double
 
     ingredients: (Ingredient | CustomIngredient)[]
-    products: Product[]
+    products: Product[],
+    hasMiningProductivity: boolean,
     object_name: "VirtualRecipe"
 }
 
@@ -49,12 +50,12 @@ export type AnyRecipe = VirtualRecipe | LuaRecipePrototype | LuaRecipe
 
 export type ItemOfFluidId = { name: string, type: "item" | "fluid" | "resource" }
 
-type RecipeStorage = {
+type RecipeStorage<T> = {
     type: "item" | "fluid" | "resource"
-    products: LuaTable<string, AnyRecipe[]>
-    ingredients: LuaTable<string, AnyRecipe[]>
+    products: LuaTable<string, T[]>
+    ingredients: LuaTable<string, T[]>
 
-    list: AnyRecipe[]
+    list: T[]
 }
 
 class RecipeCache implements GlobalCache {
@@ -63,9 +64,9 @@ class RecipeCache implements GlobalCache {
     readonly is_global: true = true;
 
     additionalRecipes : {
-        fluid: RecipeStorage,
-        item: RecipeStorage,
-        resource: RecipeStorage
+        fluid: RecipeStorage<AnyRecipe>,
+        item: RecipeStorage<AnyRecipe>,
+        resource: RecipeStorage<VirtualRecipe>
     }
 
     category_machines: {
@@ -171,10 +172,10 @@ class RecipeCache implements GlobalCache {
         }
     }
 
-    addRecipeToStorage(storage: RecipeStorage, recipe: AnyRecipe): void {
+    addRecipeToStorage<T extends AnyRecipe | VirtualRecipe>(storage: RecipeStorage<T>, recipe: T): void {
         storage.list.push(recipe)
 
-        let tmp: AnyRecipe[]
+        let tmp: T[]
         if (recipe.ingredients.length > 0) {
             for (let ingr of recipe.ingredients) {
                 tmp = storage.ingredients.get(ingr.name)
@@ -258,6 +259,7 @@ class RecipeCache implements GlobalCache {
                         energy: siloData.silo.launch_wait_time != undefined ? siloData.silo.launch_wait_time : 1,
                         ingredients: [...siloData.recipe.ingredients, ingr],
                         products: [...siloData.recipe.products, ...rlp.rocket_launch_products],
+                        hasMiningProductivity: false,
                         object_name: "VirtualRecipe"
                     }
                 } else {
@@ -273,6 +275,7 @@ class RecipeCache implements GlobalCache {
                         energy: siloData.silo.launch_wait_time != undefined ? siloData.silo.launch_wait_time : 1,
                         ingredients: [...rocket_parts, ingr],
                         products: [...rlp.rocket_launch_products],
+                        hasMiningProductivity: false,
                         object_name: "VirtualRecipe"
                     }
                 }
@@ -303,6 +306,7 @@ class RecipeCache implements GlobalCache {
                         // @ts-ignore never undefined
                         amount: Math.round(pump.pumping_speed*60)
                     }],
+                    hasMiningProductivity: false,
                     object_name: "VirtualRecipe"
                 }
                 this.addRecipeToStorage(this.additionalRecipes.resource, recipe)
@@ -329,7 +333,8 @@ class RecipeCache implements GlobalCache {
                         amount: 1,
                         sprite: "entity/" + res.name,
                         localised_name: res.localised_name
-                    }]
+                    }],
+                    hasMiningProductivity: true
                 }
 
                 if (props.required_fluid != undefined) {
@@ -387,42 +392,52 @@ class RecipeCache implements GlobalCache {
     }
 
     getMinerRecipesFor(itemOrFluid: LuaItemPrototype | LuaFluidPrototype, force: LuaForce): AnyRecipe[] {
-        let res: AnyRecipe[] | undefined
+        let res: VirtualRecipe[] | undefined
         if (itemOrFluid.object_name == "LuaFluidPrototype") {
             res = this.additionalRecipes.resource.products.get(itemOrFluid.name)
         } else {
-            let tmp = this.additionalRecipes.resource.products.get(itemOrFluid.name)
+            res = this.additionalRecipes.resource.products.get(itemOrFluid.name)
+        }
+
+        if (res != undefined) {
             // Add mining productivity
-            if (tmp != undefined) {
-                let productivity_bonus = force.mining_drill_productivity_bonus + 1
-                res = []
-                for (let recipe of tmp) {
-                    let copy: VirtualRecipe = {
+            let productivity_bonus = force.mining_drill_productivity_bonus + 1
+
+            let tmp = res
+            res = []
+            for (let recipe of tmp) {
+                let copy: VirtualRecipe
+                if (recipe.hasMiningProductivity) {
+                    copy = {
                         localised_name: recipe.localised_name,
-                        main_product: !("main_product" in recipe) ? undefined :
-                            typeof recipe.main_product == "string" ? recipe.main_product : recipe.main_product?.name,
+                        main_product: recipe.main_product,
+
                         category: recipe.category,
                         energy: recipe.energy,
+
                         ingredients: recipe.ingredients,
-                        products: recipe.products,
+                        products: [],
+                        hasMiningProductivity: recipe.hasMiningProductivity,
                         object_name: "VirtualRecipe"
                     }
 
                     // @ts-ignore
                     copy.products = recipe.products.map((p) => {
                         if (p.amount != undefined) return {...p, amount: p.amount * productivity_bonus}
-                        // @ts-ignore
-                        return {...p, amount_min: p.amount_min * productivity_bonus,
-                        // @ts-ignore
-                                      amount_max: p.amount_max * productivity_bonus}
+                        return { ...p,
+                            // @ts-ignore
+                            amount_min: p.amount_min * productivity_bonus,
+                            // @ts-ignore
+                            amount_max: p.amount_max * productivity_bonus
+                        }
                     })
-
-                    res.push(copy)
+                } else {
+                    copy = recipe
                 }
-            }
-        }
 
-        if (res == undefined) {
+                res.push(copy)
+            }
+        } else {
             res = []
         }
 
