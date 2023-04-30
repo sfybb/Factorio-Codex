@@ -23,7 +23,7 @@ export function clearConsoleMessages() {
 // TODO
 // @ts-ignore
 global.script = {
-
+    active_mods: {}
 }
 
 // @ts-ignore

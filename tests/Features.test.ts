@@ -1,5 +1,6 @@
 import {describe, expect, test, jest} from '@jest/globals';
 
+import "./mocks/LuaMocks"
 import "./mocks/BaseMocks";
 // @ts-ignore
 global.script.active_mods = {

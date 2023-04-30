@@ -1,4 +1,11 @@
 # Changelog
+  - Version: 0.0.20
+    - Codex Features:
+        - When hovering over any item or fluid in a recipe a short list (max 2 entries) of relevant recipes (mining / rocket launch recipes are prioritized) of how to produce that item / fluid is shown. Exception: Fluids with a temperature won't show anything.
+    - Quick Search Features:
+        - Positioning now respects interface scale settings
+    - Bugfixes:
+        - Fixed a bug where invalid prototypes remained in the codex causing a crash everytime it is opened.
   - Version: 0.0.19
     - Codex Features:
         - When viewing recipes the "Produced by" tab prioritizes recipes that mainly produce the currently viewed item.
