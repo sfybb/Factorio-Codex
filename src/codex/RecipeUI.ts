@@ -1,4 +1,5 @@
 import {getRecipeCache, AnyRecipe, CustomIngredient} from "cache/RecipeCache";
+import Features, {Feature_ids} from "../Features";
 
 interface ColorPallet {
     default: string,
@@ -194,7 +195,11 @@ namespace RecipeUI {
 
             if (recipe.localised_name != undefined) {
                 localisedString.push("\n[color=yellow]")
-                localisedString.push(recipe.localised_name)
+                if (Features.supports("localised_fallback")) {
+                    localisedString.push(["?", recipe.localised_name, ["factorio-codex.tooltip_no_recipe_name"]])
+                } else {
+                    localisedString.push(recipe.localised_name)
+                }
             }
             else recipeString.unshift("\n[color=yellow]Recipe")
             localisedString.push(recipeString.join(""))

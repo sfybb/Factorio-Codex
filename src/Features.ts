@@ -28,18 +28,18 @@ const compare_versions : {
 const Feature_ids = {
     dictionary: "! flib >= 0.12.0",
     dictionary_lite: "flib >= 0.12.0",
-    localised_fallback: "base >= 1.1.74",
+    localised_fallback: "base >= 1.1.76",
     gvv: "gvv"
 }
 
 namespace Features {
-    let feature_list: { [key: string]: feature };
+    let feature_list: LuaTable<string, feature>;
 
     export function Init() {
-        feature_list = {}
+        feature_list = new LuaTable()
         for (let [feat, check] of Object.entries(Feature_ids)) {
             let tmp = create_feature(check)
-            feature_list[feat] = tmp
+            feature_list.set(feat, tmp)
             $log_info!(`Feature "${feat}" ("${check}") is ${tmp.supported ? "" : "not " }supported (current version: ${tmp.check.avail_version})`)
         }
 
@@ -47,7 +47,7 @@ namespace Features {
     }
 
     export function supports(feat_id: string) {
-        return feature_list[feat_id]?.supported == true
+        return feature_list.get(feat_id)?.supported == true
     }
 
     function create_feature(check: string): feature {
@@ -83,7 +83,7 @@ namespace Features {
 
         res.check.avail_version = avail_version
 
-        $log_info!(`Check: ${serpent.line(res, {comment: false})}`)
+        //$log_info!(`Check: ${serpent.line(res, {comment: false})}`)
 
         if (res.check.comparator != undefined) {
             // unreachable but makes typescript happy
