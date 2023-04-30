@@ -85,8 +85,8 @@ namespace RecipeUI {
     }
 
     function getTooltip(itemOrFluid: ProdOrIngr, force?: LuaForce): LuaMultiReturn<[LocalisedString,string]> {
-        let sprite = getSprite(itemOrFluid)
-        let tooltip: [string, ...LocalisedString[]] = ["", `[font=default-semibold][img=${sprite}][/font][font=default-large-semibold][color=255,230,192] `]
+        let icon = `[img=${getSprite(itemOrFluid)}]`
+        let tooltip: [string, ...LocalisedString[]] = ["", `[font=default-semibold]${icon}[/font][font=default-large-semibold][color=255,230,192] `]
         let localised_name = itemOrFluid.localised_name
 
         if (localised_name == undefined) {
@@ -118,7 +118,7 @@ namespace RecipeUI {
                 let avgAmount = prob*itemOrFluid.amount
                 tooltip.push(["factorio-codex.tooltip-amount_avg", avgAmount],
                     ["factorio-codex.tooltip-amount", itemOrFluid.amount],
-                    ["factorio-codex.tooltip-amount_probability", itemOrFluid.probability])
+                    ["factorio-codex.tooltip-amount_probability", itemOrFluid.probability*100])
             } else {
                 tooltip.push(["factorio-codex.tooltip-amount", itemOrFluid.amount])
             }
@@ -142,23 +142,31 @@ namespace RecipeUI {
             }
         }
 
+
         if (itemOrFluid.temperature == undefined && itemOrFluid.minimum_temperature == undefined && itemOrFluid.maximum_temperature == undefined) {
-            let prodRecipes = getMainProductionWays(itemOrFluid, force)
+            let [prodRecipes, hasAny] = getMainProductionWays(itemOrFluid, force)
             if (prodRecipes != undefined) {
-                tooltip.push(["factorio-codex.tooltip_main_production_ways", `[img=${getSprite(itemOrFluid)}]`, prodRecipes])
+                if (prodRecipes.length > 0) {
+                    tooltip.push(["factorio-codex.tooltip_main_production_ways", icon, prodRecipes])
+                } else {
+                    tooltip.push([hasAny ? "factorio-codex.tooltip_not_unlocked_main_production_ways" :
+                        "factorio-codex.tooltip_has_no_main_production_ways", icon])
+                }
             }
+        } else {
+            tooltip.push(["factorio-codex.tooltip_unsupported_main_production_ways", icon])
         }
 
         return $multi(tooltip, roundedAmountStr)
     }
 
-    function getMainProductionWays(itemOrFluid: ProdOrIngr, force?: LuaForce) : LocalisedString | undefined {
+    function getMainProductionWays(itemOrFluid: ProdOrIngr, force?: LuaForce) : LuaMultiReturn<[["", ...string[]] | undefined, boolean]> {
         let recipeCache = getRecipeCache()
         if (recipeCache == undefined) {
-            return undefined
+            return $multi(undefined, false)
         }
 
-        let mainRecipes = recipeCache.getMainProductionWays(itemOrFluid, force)
+        let [mainRecipes, hasAny] = recipeCache.getMainProductionWays(itemOrFluid, force)
         let localisedString: any[] = [""]
 
         let recipeString: string[]
@@ -193,8 +201,11 @@ namespace RecipeUI {
             maxRecipes -= 1
             if (maxRecipes <= 0) break
         }
+
+        if (mainRecipes.length == 0) localisedString = []
+
         // @ts-ignore
-        return localisedString as LocalisedString
+        return $multi(localisedString, hasAny)
     }
 
     function getSlot(itemOrFluid: ProdOrIngr, style: string, is_clickable?: boolean, force?: LuaForce): FLIBGuiBuildStructure {

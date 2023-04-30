@@ -17,7 +17,7 @@ let SettingsCacheFactory: CacheFactory = {
     }
 }
 
-registerCache(SettingsCacheFactory)
+//registerCache(SettingsCacheFactory)
 
 function getSettingsCache(player: PlayerIndex): undefined | SettingsCache {
     return getPlayerCache(SettingsCacheFactory.cache_id, player) as SettingsCache

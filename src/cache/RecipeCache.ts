@@ -354,21 +354,27 @@ class RecipeCache implements GlobalCache {
         return []
     }
 
-    getRocketLaunchRecipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype): AnyRecipe[] {
+    getRocketLaunchRecipes(itemOrFluid: LuaItemPrototype | LuaFluidPrototype, requiredPosition?: "ingredient" | "product"): AnyRecipe[] {
         let res: AnyRecipe[]
+        let addIngr = requiredPosition == undefined || requiredPosition == "ingredient"
+        let addProds = requiredPosition == undefined || requiredPosition == "product"
 
         if (itemOrFluid.object_name == "LuaItemPrototype") {
-            let prod = this.additionalRecipes.item.products.get(itemOrFluid.name)
-            let ingr = this.additionalRecipes.item.ingredients.get(itemOrFluid.name)
-            prod = prod != undefined ? prod : []
+            let ingr: AnyRecipe[] = []
+            let prod: AnyRecipe[] = []
+            if (addIngr) ingr = this.additionalRecipes.item.ingredients.get(itemOrFluid.name)
+            if (addProds) prod = this.additionalRecipes.item.products.get(itemOrFluid.name)
             ingr = ingr != undefined ? ingr : []
+            prod = prod != undefined ? prod : []
             res = [
                 ...ingr,
                 ...prod,
             ]
         } else {
-            let prod = this.additionalRecipes.fluid.products.get(itemOrFluid.name)
-            let ingr = this.additionalRecipes.fluid.ingredients.get(itemOrFluid.name)
+            let ingr: AnyRecipe[] = []
+            let prod: AnyRecipe[] = []
+            if (addIngr) ingr = this.additionalRecipes.fluid.ingredients.get(itemOrFluid.name)
+            if (addProds) prod = this.additionalRecipes.fluid.products.get(itemOrFluid.name)
             prod = prod != undefined ? prod : []
             ingr = ingr != undefined ? ingr : []
             res = [
@@ -423,12 +429,12 @@ class RecipeCache implements GlobalCache {
         return res
     }
 
-    getMainProductionWays(itemOrFluid: ItemOfFluidId, force?: LuaForce): AnyRecipe[] {
+    getMainProductionWays(itemOrFluid: ItemOfFluidId, force?: LuaForce): LuaMultiReturn<[AnyRecipe[], boolean]> {
         let force_recipes: Record<string, LuaRecipe> | undefined = force?.recipes
         let type = itemOrFluid.type
         let expectedId = itemOrFluid.name
 
-        if (type == "resource") return []
+        if (type == "resource") return $multi([], false)
 
         let cachedRecipes = this.mainProductionWays[type].get(expectedId)
         if (cachedRecipes == undefined) {
@@ -442,9 +448,8 @@ class RecipeCache implements GlobalCache {
                 if (prototype != undefined && prototype.valid) {
                     if (force != undefined) {
                         cachedRecipes = this.getMinerRecipesFor(prototype, force)
-                    } else {
-                        cachedRecipes = this.getRocketLaunchRecipes(prototype)
                     }
+                    cachedRecipes.push(...this.getRocketLaunchRecipes(prototype, "product"))
                 }
             }
 
@@ -487,16 +492,17 @@ class RecipeCache implements GlobalCache {
             this.mainProductionWays[type].set(expectedId, cachedRecipes)
         }
 
+        let hasRecipes = cachedRecipes.length > 0
         if (force_recipes != undefined) {
             // only includes enabled recipes and virtual recipes
-            return cachedRecipes.filter(
+            return $multi(cachedRecipes.filter(
                 (val: AnyRecipe) =>
                     val.object_name == "VirtualRecipe" ||
                         // @ts-ignore
                         (val.name != undefined && force_recipes[val.name]?.enabled)
-            )
+            ), hasRecipes)
         }
-        return cachedRecipes
+        return $multi(cachedRecipes, hasRecipes)
     }
 
     validate(): void {

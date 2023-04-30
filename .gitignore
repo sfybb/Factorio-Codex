@@ -4,3 +4,4 @@
 node_modules
 /factorio-codex_*.zip
 build/
+/coverage/

@@ -88,7 +88,7 @@ class CacheManager {
                     gFactory.Load(gCache)
                     $log_info!(`    ${gFactory.cache_name}      LOADED`)
                 } else {
-                    $log_info!(`    Unknown cache ${gCache.id} "${gCache.name}"      ERROR`)
+                    $log_warn!(`    Unknown cache ${gCache.id} "${gCache.name}"      ERROR`)
                 }
             }
         }
@@ -105,7 +105,7 @@ class CacheManager {
                         pFactory.Load(pCache)
                         $log_info!(`    ${pFactory.cache_name}      LOADED`)
                     } else {
-                        $log_info!(`    Unknown cache ${pCache.id} "${pCache.name}"      ERROR`)
+                        $log_warn!(`    Unknown cache ${pCache.id} "${pCache.name}"      ERROR`)
                     }
                 }
             }
