@@ -127,7 +127,7 @@ namespace SearchUtils {
             A.sort(orderCompositeFunc)
         } else {
             $log_info!("Partial quicksort")*/
-            maxResults = maxResults == undefined ? A.length : maxResults
+            maxResults = maxResults ?? A.length
             partial_quicksort(A, orderCompositeFunc, maxResults, undefined, undefined, ...orderArgs)
 
         /*prof.stop()
@@ -144,8 +144,8 @@ namespace SearchUtils {
 
     export function partial_quicksort<T>(A: T[], order: orderFunction<T>, k: number,
                                          i?: number, j?: number, ...args: any[]) {
-        i = i == undefined ? 0 : i
-        j = j == undefined ? A.length-1 : j
+        i = i ?? 0
+        j = j ?? A.length-1
 
         if ( i < j ) {
             let pI = Math.floor((i+j)/2) //pivot(A, i, j)

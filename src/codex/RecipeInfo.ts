@@ -10,7 +10,7 @@ import SearchUtils, {SortOrderDefault} from "SearchUtils";
 
 namespace RecipeInfo {
     function sortRawResults(raw: LuaCustomTable<string, LuaRecipePrototype>, mainProd?: string): LuaRecipePrototype[] {
-        mainProd = mainProd != undefined ? mainProd : ""
+        mainProd = mainProd ?? ""
         let res: LuaRecipePrototype[] = []
         let mainProdArr: LuaRecipePrototype[] = []
         for (let [, recipe] of raw) {

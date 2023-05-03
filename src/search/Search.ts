@@ -18,7 +18,7 @@ namespace Search {
         //$log_info!(`Args: prompt: "${prompt} player: ${player} ... maxRes: ${maxRes}"`)
         //if (prompt == undefined || prompt.length == 0) return []
 
-        maxRes = maxRes == undefined ? 100 : maxRes
+        maxRes = maxRes ?? 100
 
         let searchRes: SearchResult[] = getSearchResultsOld(prompt, player)
         SearchUtils.sort(searchRes, order, maxRes)

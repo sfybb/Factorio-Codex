@@ -123,7 +123,7 @@ namespace PlayerData {
         $log_trace!(`Retrieving data for player with index ${index}`)
         const data = global.players?.get(index)
 
-        return data != undefined ? data : PlayerData.InitPlayer(index)
+        return data ?? PlayerData.InitPlayer(index)
     }
 
     export function getCodex(this: void, ind_pi: indirect_player_index): undefined | Codex {

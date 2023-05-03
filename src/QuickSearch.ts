@@ -365,7 +365,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             if (this.refs.debug == undefined) return;
 
             let  is_debug = getSettingsCache(this.player_index)?.is_debug()
-            is_debug = is_debug == undefined ? false : is_debug
+            is_debug = is_debug ?? false
 
             for (let [id, debugElem] of this.refs.debug) {
                 if (debugElem != undefined) {

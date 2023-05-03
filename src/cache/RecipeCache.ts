@@ -251,7 +251,7 @@ class RecipeCache implements GlobalCache {
 
             for (let siloData of possibleLaunchSilos) {
                 let new_recipe: VirtualRecipe
-                let amount = siloData.silo.rocket_parts_required != undefined ? siloData.silo.rocket_parts_required : 1
+                let amount = siloData.silo.rocket_parts_required ?? 1
                 if (amount == 1) {
                     new_recipe = {
                         localised_name: ["factorio-codex.rocket-launch-recipes"],
@@ -272,7 +272,7 @@ class RecipeCache implements GlobalCache {
                     new_recipe = {
                         localised_name: ["factorio-codex.rocket-launch-recipes"],
                         category: siloData.category,
-                        energy: siloData.silo.launch_wait_time != undefined ? siloData.silo.launch_wait_time : 1,
+                        energy: siloData.silo.launch_wait_time ?? 1,
                         ingredients: [...rocket_parts, ingr],
                         products: [...rlp.rocket_launch_products],
                         hasMiningProductivity: false,
@@ -369,8 +369,8 @@ class RecipeCache implements GlobalCache {
             let prod: AnyRecipe[] = []
             if (addIngr) ingr = this.additionalRecipes.item.ingredients.get(itemOrFluid.name)
             if (addProds) prod = this.additionalRecipes.item.products.get(itemOrFluid.name)
-            ingr = ingr != undefined ? ingr : []
-            prod = prod != undefined ? prod : []
+            ingr = ingr ?? []
+            prod = prod ?? []
             res = [
                 ...ingr,
                 ...prod,
@@ -380,8 +380,8 @@ class RecipeCache implements GlobalCache {
             let prod: AnyRecipe[] = []
             if (addIngr) ingr = this.additionalRecipes.fluid.ingredients.get(itemOrFluid.name)
             if (addProds) prod = this.additionalRecipes.fluid.products.get(itemOrFluid.name)
-            prod = prod != undefined ? prod : []
-            ingr = ingr != undefined ? ingr : []
+            prod = prod ?? []
+            ingr = ingr ?? []
             res = [
                 ...ingr,
                 ...prod,

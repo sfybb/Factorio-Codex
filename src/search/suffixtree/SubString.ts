@@ -42,7 +42,7 @@ class SubString {
     }
 
     startsWith(searchString: string | SubString, position?: number): boolean {
-        position = position == undefined ? 0 : position
+        position = position ?? 0
 
         let actStr = typeof searchString == "string" ? searchString : searchString.toString()
         if (this.length-position < searchString.length) return false

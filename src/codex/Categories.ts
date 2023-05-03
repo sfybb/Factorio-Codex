@@ -184,14 +184,14 @@ class Categories implements Verifiable {
     select_by_name(name: string): void {
         let categoriesList = getPrototypeCache()?.getCategories()
         let catIndx = categoriesList?.findIndex((c) => c.name  == name)
-        catIndx = catIndx == undefined ? -1 : catIndx
+        catIndx = catIndx ?? -1
 
         this.select_by_index(catIndx)
     }
 
     select_by_index(index: uint): void {
         let categoriesList = getPrototypeCache()?.getCategories()
-        categoriesList = categoriesList == undefined ? [] : categoriesList
+        categoriesList = categoriesList ?? []
 
         let cat = index >= 0 ? categoriesList[index] : undefined;
 
@@ -209,7 +209,7 @@ class Categories implements Verifiable {
     }
 
     scroll_to(entityId: string) {
-        let cat_name = this.selected_cat?.name != undefined ? this.selected_cat.name : ""
+        let cat_name = this.selected_cat?.name ?? ""
         let entities = this.entity_lists.get(cat_name)
         let entitiesUI = this.refs.available_entities.get(cat_name)
 

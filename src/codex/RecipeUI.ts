@@ -68,7 +68,7 @@ namespace RecipeUI {
     }
 
     function getSprite(itemOrFluid: ProdOrIngr): string {
-        return itemOrFluid.sprite != undefined ? itemOrFluid.sprite : (itemOrFluid.type + "/" + itemOrFluid.name)
+        return itemOrFluid.sprite ?? (itemOrFluid.type + "/" + itemOrFluid.name)
     }
 
     function getStyle(recipe: AnyRecipe, itemOrFluid: ProdOrIngr,
@@ -100,7 +100,7 @@ namespace RecipeUI {
         let roundedAmountStr
         if ( itemOrFluid.amount == undefined ) {
             // itemOrFluid has to be a Product and therefore amount_min and amount_max are always defined at this point
-            let prob = itemOrFluid.probability != undefined ? itemOrFluid.probability : 1
+            let prob = itemOrFluid.probability ?? 1
             // @ts-ignore
             let avgAmount = prob*((itemOrFluid.amount_max - itemOrFluid.amount_min)*0.5 + itemOrFluid.amount_min)
             tooltip.push(["factorio-codex.tooltip-amount_avg", avgAmount], ["factorio-codex.tooltip-amount_detailed"],
@@ -188,7 +188,7 @@ namespace RecipeUI {
                     // @ts-ignore
                     amount = (prod.amount_max - prod.amount_min)*0.5 + prod.amount_min
                 }
-                amount *= prod.probability != undefined ? prod.probability : 1
+                amount *= prod.probability ?? 1
 
                 recipeString.push(`${roundAmount(amount)}`, " [img=", getSprite(prod), "] ")
             }
@@ -249,7 +249,7 @@ namespace RecipeUI {
                         type: "sprite", sprite: "entity." + m.name,
                         style: "fcodex_produced_in_sprite",
                         tooltip: ["", `[entity=${m.name}]`, m.localised_name,
-                            ["factorio-codex.machine-crafting-speed", m.crafting_speed != undefined ? m.crafting_speed : m.mining_speed]]
+                            ["factorio-codex.machine-crafting-speed", m.crafting_speed ?? m.mining_speed]]
                     })
                 }
             }

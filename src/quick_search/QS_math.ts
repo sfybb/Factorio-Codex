@@ -26,7 +26,7 @@ namespace QSMath {
         // This is a list of all the parts in our expression.
         let parts:(string | number)[]  = []
         // If expectEndParentheses is not specified, make it default to false.
-        expectEndParentheses = expectEndParentheses == undefined ? false : expectEndParentheses
+        expectEndParentheses = expectEndParentheses ?? false
 
 
         // We want to parse the expression until we have broken it up into all of its parts and there is nothing left to parse:

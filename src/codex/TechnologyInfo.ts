@@ -40,7 +40,7 @@ namespace TechnologyInfo {
                     }
                     break
                 case "give-item":
-                    let count = effect.count == undefined ? 1 : effect.count
+                    let count = effect.count ?? 1
                     let item_proto = game.item_prototypes[effect.item]
                     mod = {
                         effect: [""],

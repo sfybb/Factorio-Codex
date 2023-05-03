@@ -64,7 +64,7 @@ class Node<T extends AnyNotNil> {
         let tmp = this.getEdge(str)
         if (tmp != undefined && tmp.dest == otherNode) return tmp
 
-        otherNode = otherNode == undefined ? new Node<T>() : otherNode
+        otherNode = otherNode ?? new Node<T>()
         let char = str.charCodeAt(0)
         if (Number.isNaN(char)) {
             $log_err!(`Adding Nan?!?!?! "${str.originalString}" -- part: "${str.toString()}" (S: ${str.start} L: ${str.length})`)

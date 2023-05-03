@@ -387,12 +387,9 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
             let tooltip = entity_prototype.localised_description
             if ( type == "item" && tooltip == undefined ) {
                 const item_prototype = entity_prototype as LuaItemPrototype
-                tooltip = item_prototype.place_result != undefined ?
-                      item_prototype.place_result.localised_description :
-                    item_prototype.place_as_equipment_result != undefined ?
-                      item_prototype.place_as_equipment_result.localised_description :
-                    item_prototype.place_as_tile_result != undefined ?
-                      item_prototype.place_as_tile_result.result.localised_description : undefined
+                tooltip = item_prototype.place_result?.localised_description ??
+                          item_prototype.place_as_equipment_result?.localised_description ??
+                          item_prototype.place_as_tile_result?.result.localised_description
             }
             if ( tooltip == undefined ) {
                 tooltip = ["codex-no-description"]
@@ -425,10 +422,10 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
         if ( this.refs.entity_color != undefined && (color.r != undefined ||
                 color.g != undefined || color.b != undefined) ) {
             const color_int = {
-                a: color.a != undefined ? Math.round(color.a*255) : 0,
-                r: color.r != undefined ? Math.round(color.r*255) : 0,
-                g: color.g != undefined ? Math.round(color.g*255) : 0,
-                b: color.b != undefined ? Math.round(color.b*255) : 0
+                a: Math.round((color.a ?? 0)*255),
+                r: Math.round((color.r ?? 0)*255),
+                g: Math.round((color.g ?? 0)*255),
+                b: Math.round((color.b ?? 0)*255)
             }
 
             this.refs.entity_color.style.color = color
