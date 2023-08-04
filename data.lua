@@ -1,43 +1,93 @@
 local styles = data.raw["gui-style"].default
 
+local prefix = "fcodex_"
+
 -- Quick search
-styles.fcodex_quick_search = {
+styles[prefix .. "quick_search"] = {
     type = "vertical_flow_style",
     vertical_align = "top",
     horizontal_align = "center",
     width = 400,
-    minimal_height = 20
+    minimal_height = 20,
+    vertical_spacing = 0
 }
 
-styles.fcodex_quick_search_input = {
+styles[prefix .. "quick_search_input"] = {
     type = "textbox_style",
     parent = "textbox",
     size = {400, 30},
-    font = "fcodex_quic_search_inp_font"
+    top_padding = 5,
+    bottom_padding = 5,
+    left_padding = 10,
+    right_padding = 10,
+    font = "fcodex_quic_search_inp_font",
+    font_color = {1, 1, 1},
+    active_background = { base = {
+        center = { position = { 336, 0 }, size = { 1, 1 } },
+        opacity = 0.5,
+        background_blur = true
+    }},
+    default_background = { base = {
+        center = { position = { 336, 0 }, size = { 1, 1 } },
+        opacity = 0.5,
+        background_blur = true
+    }}
 }
 
-styles.fcodex_quick_search_results = {
+styles[prefix .. "quick_search_results"] = {
     type = "list_box_style",
     parent = "list_box",
-    maxmimal_height = 400
+    maxmimal_height = 400,
+
+    item_style = {
+        type = "button_style",
+        parent = "list_box_item",
+        bottom_padding = 2,
+        top_padding = 2,
+        font = "fcodex_quick_search_result_font",
+        --default_font_color = {1, 1, 1},
+
+        default_graphical_set = {base = {
+            center = {position = {25, 8}, size = {1, 1}, opacity = 0.5},
+            bottom_border = 1
+        }},
+        hovered_graphical_set = {base = {position = {34, 17}, corner_size = 8, opacity = 0.5}},
+    },
+
+    scroll_pane_style = {
+        type = "scroll_pane_style",
+        extra_padding_when_activated = 0,
+        --[[vertical_scrollbar_style = {
+
+        },]]
+        graphical_set = { base = {
+            center = { position = { 336, 0 }, size = { 1, 1 } },
+            opacity = 0.75,
+            background_blur = true
+        }}
+    }
 }
 
 
-styles.fcodex_quick_search_label = {
+styles[prefix .. "quick_search_label"] = {
     type = "label_style",
-    parent = "label"
+    parent = "label",
+    font = "fcodex_quick_search_label_font",
+    --horizontal_align = "left",
 }
+
+
 
 
 -- Codex
 
-styles.fcodex_desc_image = {
+styles[prefix .. "desc_image"] = {
     type = "image_style",
     stretch_image_to_widget_size = true,
     size = 80
 }
 
-styles.fcodex_codex_main = {
+styles[prefix .. "codex_main"] = {
     type = "frame_style",
     -- 24 is the padding size for the window
     natural_width = 1224,
@@ -45,88 +95,93 @@ styles.fcodex_codex_main = {
     height = 650
 }
 
-styles.fcodex_codex_frame_no_border = {
+styles[prefix .. "codex_frame_no_border"] = {
     type = "frame_style",
     border = nil,
     padding = 0,
-    margin = 0
+    margin = 0,
+    --[[graphical_set = { base = {
+        center = { position = { 336, 0 }, size = { 1, 1 } },
+        opacity = 0.75,
+        background_blur = true
+    }}]]
 }
 
-styles.fcodex_codex_vflow_no_border = {
+styles[prefix .. "codex_vflow_no_border"] = {
     type = "vertical_flow_style",
     padding = 0
 }
 
-styles.fcodex_filler_widget = {
+styles[prefix .. "filler_widget"] = {
     type="empty_widget_style",
     horizontally_stretchable="stretch_and_expand"
 }
 
-styles.fcodex_codex_search_box = {
+styles[prefix .. "codex_search_box"] = {
     type="textbox_style",
     horizontally_stretchable="stretch_and_expand",
 }
 
-styles.fcodex_codex_info_section = {
+styles[prefix .. "codex_info_section"] = {
     type = "frame_style",
     natural_width = 590,
     minimal_width = 590
 }
 
-styles.fcodex_codex_info_flow = {
+styles[prefix .. "codex_info_flow"] = {
     type = "vertical_flow_style",
     natural_width = 590,
     minimal_width = 590,
 }
 
 
-styles.fcodex_codex_recipe_header = {
+styles[prefix .. "codex_recipe_header"] = {
     type = "label_style",
     parent = "label",
     font = "fcodex_quic_search_inp_font"
 }
 
-styles.fcodex_codex_desc = {
+styles[prefix .. "codex_desc"] = {
     type = "label_style",
     parent = "label",
     width = 510,
     single_line = false
 }
 
-styles.fcodex_codex_type_section = {
+styles[prefix .. "codex_type_section"] = {
     type = "list_box_style",
     parent = "list_box",
     natural_width = 198,
     minimal_width = 198
 }
 
-styles.fcodex_codex_info_scroll = {
+styles[prefix .. "codex_info_scroll"] = {
     type="scroll_pane_style",
     horizontally_stretchable="stretch_and_expand",
     extra_padding_when_activated = 0
 }
 
-styles.fcodex_codex_entity_list = {
+styles[prefix .. "codex_entity_list"] = {
     type = "list_box_style",
     parent = "list_box",
     width = 390,
     horizontally_stretchable="off"
 }
 
-styles.fcodex_produces_sprite = {
+styles[prefix .. "produces_sprite"] = {
     type = "image_style",
     stretch_image_to_widget_size = true,
     size = 50
 }
 
-styles.fcodex_produced_in_sprite = {
+styles[prefix .. "produced_in_sprite"] = {
     type = "image_style",
     stretch_image_to_widget_size = true,
     size = 20
 }
 
 
-styles.fcodex_recipe_label_top = {
+styles[prefix .. "recipe_label_top"] = {
     type = "label_style",
     parent = "count_label",
     height = 36,
@@ -136,14 +191,14 @@ styles.fcodex_recipe_label_top = {
     right_padding = 2
 }
 
-styles.fcodex_recipe_info_borderless_table = {
+styles[prefix .. "recipe_info_borderless_table"] = {
     type = "table_style",
     cell_padding = 4,
     horizontally_stretchable="stretch_and_expand",
     border = nil
 }
 
-styles.fcodex_codex_color_indicator = {
+styles[prefix .. "codex_color_indicator"] = {
     type="progressbar_style",
     horizontally_stretchable = "on",
     bar_width = 40,
@@ -182,6 +237,16 @@ data:extend({{
         name = "fcodex_quic_search_inp_font",
         from = "default",
         size = 20
+    }, {
+        type = "font",
+        name = "fcodex_quick_search_label_font",
+        from = "default-bold",
+        size = 25
+    }, {
+        type = "font",
+        name = "fcodex_quick_search_result_font",
+        from = "default",
+        size = 18
     }, {
         type = "sprite",
         name = "fcodex_produces",
