@@ -7,31 +7,31 @@ styles[prefix .. "quick_search"] = {
     type = "vertical_flow_style",
     vertical_align = "top",
     horizontal_align = "center",
-    width = 400,
-    minimal_height = 20,
+    width = 600,
+    --minimal_height = 48,
     vertical_spacing = 0
 }
 
 styles[prefix .. "quick_search_input"] = {
     type = "textbox_style",
     parent = "textbox",
-    size = {400, 30},
-    top_padding = 5,
-    bottom_padding = 5,
+    size = {600, 48},
+    top_padding = 8,
+    bottom_padding = 8,
     left_padding = 10,
     right_padding = 10,
     font = "fcodex_quic_search_inp_font",
     font_color = {1, 1, 1},
     active_background = { base = {
-        center = { position = { 336, 0 }, size = { 1, 1 } },
-        opacity = 0.5,
-        background_blur = true
-    }},
+        center = {
+            filename = "__core__/graphics/gui-new.png",
+            position = {40, 766}, size = {1, 1}
+    }}},
     default_background = { base = {
-        center = { position = { 336, 0 }, size = { 1, 1 } },
-        opacity = 0.5,
-        background_blur = true
-    }}
+        center = {
+            filename = "__core__/graphics/gui-new.png",
+            position = { 40, 766 }, size = { 1, 1 }
+    }}}
 }
 
 styles[prefix .. "quick_search_results"] = {
@@ -44,14 +44,18 @@ styles[prefix .. "quick_search_results"] = {
         parent = "list_box_item",
         bottom_padding = 2,
         top_padding = 2,
-        font = "fcodex_quick_search_result_font",
+        font = "fcodex_quic_search_inp_font",
+        default_font_color = {1, 1, 1},
+        hovered_font_color = {1, 1, 1},
+        clicked_font_color = {1, 1, 1},
         --default_font_color = {1, 1, 1},
-
+-- #e59344
         default_graphical_set = {base = {
             center = {position = {25, 8}, size = {1, 1}, opacity = 0.5},
             bottom_border = 1
         }},
-        hovered_graphical_set = {base = {position = {34, 17}, corner_size = 8, opacity = 0.5}},
+        hovered_graphical_set = {base = {filename = "__core__/graphics/gui-new.png", position = {70, 146}, size = {1, 1}}},
+        clicked_graphical_set = {base = {filename = "__core__/graphics/gui-new.png", position = {70, 146}, size = {1, 1}}},
     },
 
     scroll_pane_style = {
@@ -63,6 +67,7 @@ styles[prefix .. "quick_search_results"] = {
         graphical_set = { base = {
             center = { position = { 336, 0 }, size = { 1, 1 } },
             opacity = 0.75,
+            background_blur_sigma = 2,
             background_blur = true
         }}
     }
@@ -72,8 +77,10 @@ styles[prefix .. "quick_search_results"] = {
 styles[prefix .. "quick_search_label"] = {
     type = "label_style",
     parent = "label",
-    font = "fcodex_quick_search_label_font",
-    --horizontal_align = "left",
+    font = "fcodex_quic_search_inp_font",
+    horizontal_align = "left",
+    width = 600,
+    left_padding = 8
 }
 
 
@@ -236,17 +243,7 @@ data:extend({{
         type = "font",
         name = "fcodex_quic_search_inp_font",
         from = "default",
-        size = 20
-    }, {
-        type = "font",
-        name = "fcodex_quick_search_label_font",
-        from = "default-bold",
-        size = 25
-    }, {
-        type = "font",
-        name = "fcodex_quick_search_result_font",
-        from = "default",
-        size = 18
+        size = 24
     }, {
         type = "sprite",
         name = "fcodex_produces",
