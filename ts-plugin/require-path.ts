@@ -8,9 +8,7 @@ const REQUIRE_PREFIX = "build"
 function RAW_IMPORT_PATHS (path: string): boolean {
     if (path === "util") return true;
 
-    if (path.search(/^__\w+__/g) >= 0) return true;
-
-    return false;
+    return path.search(/^__\w+__/g) >= 0;
 }
 
 const plugin: tstl.Plugin = {

@@ -1,4 +1,4 @@
-import Util, {validate_print_info, validate_status} from "Util";
+import Util, {validate_print_info, validate_status, $format_validate_msg} from "Util";
 
 interface VerifyinfoBase {
     readonly type: "string" | "number" | "object" | "boolean" | "function" | "array"| "Verifiable",
@@ -170,7 +170,7 @@ function verify_internal<T extends Verifiable>(obj: T, infoList: Verifyinfo[], p
             status = validate_status.FIXED
         }
 
-        $log_info!(Util.format_validate_msg(pi, info.field, status))
+        $log_info!($format_validate_msg!(pi, info.field, status))
         if (status > overallStatus) overallStatus = status
 
         // $log_err!(`Expected field ${info.field} to have type ${info.type}${info.optional ? " (optional)" : ""
@@ -198,7 +198,7 @@ function verify_internal_array(arr: any[], info: Verifyinfo, pi: validate_print_
             status = validate_status.FIXED
         }
 
-        $log_info!(Util.format_validate_msg(pi, `[${i}]`, status))
+        $log_info!($format_validate_msg!(pi, `[${i}]`, status))
         if (status > overallStatus) overallStatus = status
     }
 

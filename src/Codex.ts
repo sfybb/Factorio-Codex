@@ -467,7 +467,7 @@ class Codex implements TaskExecutor, Verifiable, IGuiRoot {
             let selected: {id?: string, type?: string} = {}
             const selected_index = event.element?.selected_index
 
-            if ( selected_index != undefined && selected_index > 0 ) {
+            if ( typeof selected_index == "number" && selected_index > 0 ) {
                 selected = this.categories.get_selected_entity_info(event)
             } else if (event.element?.type == "sprite-button" &&  event.element?.sprite != undefined) {
                 let [entity_type, id] = string.match(event.element.sprite, "^(%S+)[/.]([%S]+)")
