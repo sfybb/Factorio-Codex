@@ -1,4 +1,4 @@
-import Node, {Edge} from 'search/suffixtree/Node'
+import {default as Node, Edge} from 'search/suffixtree/Node'
 import SubString from 'search/suffixtree/SubString'
 import ISearchable from "search/Searchable";
 

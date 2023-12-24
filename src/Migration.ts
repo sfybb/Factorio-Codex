@@ -1,5 +1,4 @@
-import PlayerData from "PlayerData";
-import {player_table} from "PlayerData";
+import {default as PlayerData, player_table} from "PlayerData";
 import CacheManager from "Cache";
 import Dict from "Dictionary";
 

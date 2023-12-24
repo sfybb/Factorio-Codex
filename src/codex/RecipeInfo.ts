@@ -4,7 +4,7 @@ import CodexCommonUI from "codex/CodexCommonUI";
 
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
-import SearchUtils, {SortOrderDefault} from "SearchUtils";
+import {default as SearchUtils, SortOrderDefault} from "SearchUtils";
 
 
 

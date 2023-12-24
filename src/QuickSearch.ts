@@ -1,10 +1,10 @@
-import {$format_validate_msg, default as Util, validate_print_info, validate_status} from "Util";
+import {default as Util, validate_print_info, validate_status} from "Util";
 import {getDictionaryCache} from "cache/DictionaryCache";
-import Search, {SortOrderQS} from "search/Search";
+import {default as Search, SortOrderQS} from "search/Search";
 import QSMath from "quick_search/QS_math";
 import {Task, TaskExecutor} from "Task";
 import PlayerData from "PlayerData";
-import IGuiRoot, {GuiAction} from "IGuiRoot";
+import {default as IGuiRoot, GuiAction} from "IGuiRoot";
 
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n";
@@ -387,7 +387,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.player_index = indx
             curStatus = validate_status.FIXED
         }
-        $log_info!($format_validate_msg!(print_info, "player_index", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "player_index", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 
@@ -396,7 +396,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         if ( this.visible == undefined ) {
             curStatus = validate_status.ERROR
         }
-        $log_info!($format_validate_msg!(print_info, "visible", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "visible", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 
@@ -405,7 +405,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.refs = {}
             curStatus = validate_status.FIXED
         }
-        $log_info!($format_validate_msg!(print_info, "refs", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "refs", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 
@@ -414,7 +414,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.rebuild_gui = true
             curStatus = validate_status.FIXED
         }
-        $log_info!($format_validate_msg!(print_info, "rebuild_gui", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "rebuild_gui", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 
@@ -423,7 +423,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.search_results = []
             curStatus = validate_status.FIXED
         }
-        $log_info!($format_validate_msg!(print_info, "search_results", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "search_results", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 
@@ -431,7 +431,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         if ( this.search_has_math == undefined ) {
             curStatus = validate_status.ERROR
         }
-        $log_info!($format_validate_msg!(print_info, "search_has_math", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "search_has_math", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 
@@ -440,7 +440,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.search_results = []
             curStatus = validate_status.ERROR
         }
-        $log_info!($format_validate_msg!(print_info, "math_result", curStatus))
+        $log_info!(Util.format_validate_msg(print_info, "math_result", curStatus))
         if (status == validate_status.OK) status = curStatus;
         else if(status == validate_status.FIXED) status = curStatus != validate_status.OK ? curStatus : status;
 

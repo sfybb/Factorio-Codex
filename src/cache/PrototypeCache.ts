@@ -1,5 +1,5 @@
 // @ts-ignore
-import CacheManager, {getGlobalCache, registerCache, CacheFactory, GlobalCache} from "Cache";
+import {default as CacheManager, getGlobalCache, registerCache, CacheFactory, GlobalCache} from "Cache";
 
 /** @noResolution */
 import * as FLIB_table from "__flib__.table"

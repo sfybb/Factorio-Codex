@@ -1,5 +1,5 @@
 import {getRecipeCache, AnyRecipe, CustomIngredient} from "cache/RecipeCache";
-import Features, {Feature_ids} from "../Features";
+import {default as Features, Feature_ids} from "../Features";
 
 interface ColorPallet {
     default: string,

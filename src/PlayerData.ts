@@ -1,4 +1,4 @@
-import {default as Util, validate_status, validate_print_info, $format_validate_msg} from "Util";
+import {default as Util, validate_status, validate_print_info} from "Util";
 import QuickSearch from "QuickSearch";
 import Codex from "Codex";
 
@@ -182,11 +182,11 @@ namespace PlayerData {
         }
 
         let status = global.cache == undefined ? validate_status.ERROR : validate_status.OK
-        $log_info!($format_validate_msg!(print_info, "cache", status))
+        $log_info!(Util.format_validate_msg(print_info, "cache", status))
 
 
         status = global.players == undefined ? validate_status.FIXED : validate_status.OK
-        $log_info!($format_validate_msg!(print_info, "players", status))
+        $log_info!(Util.format_validate_msg(print_info, "players", status))
         if (status == validate_status.FIXED) {
             global.players = new LuaTable()
         } else {
@@ -206,7 +206,7 @@ namespace PlayerData {
                 }
 
                 status = player_data == undefined ? validate_status.FIXABLE : validate_status.OK
-                $log_info!($format_validate_msg!(array_pi, `[${i}]`, status))
+                $log_info!(Util.format_validate_msg(array_pi, `[${i}]`, status))
                 if (status == validate_status.FIXABLE) {
                     // @ts-ignore
                     global.players.delete(i)
@@ -214,7 +214,7 @@ namespace PlayerData {
                 }
 
                 status = player_data.codex == undefined ? validate_status.FIXABLE : validate_status.OK
-                $log_info!($format_validate_msg!(array_pi, "codex", status))
+                $log_info!(Util.format_validate_msg(array_pi, "codex", status))
                 if (status == validate_status.OK) {
                     status = verify(player_data.codex, player_obj_pi, i)
                 }
@@ -225,7 +225,7 @@ namespace PlayerData {
                 }
 
                 status = player_data.quick_search == undefined ? validate_status.FIXABLE : validate_status.OK
-                $log_info!($format_validate_msg!(array_pi, "quick_search", status))
+                $log_info!(Util.format_validate_msg(array_pi, "quick_search", status))
                 if (status == validate_status.OK) {
                     status = player_data.quick_search.validate(player_obj_pi, i)
                 }

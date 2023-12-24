@@ -1,6 +1,6 @@
 import {getPlayerCache, registerCache, CacheFactory, PlayerCache} from "Cache";
 import PlayerData from "PlayerData";
-import SearchOptions, {getDefaultSearchOptions} from "search/SearchOptions";
+import {default as SearchOptions, getDefaultSearchOptions} from "search/SearchOptions";
 
 let SettingsCacheFactory: CacheFactory = {
     cache_id: "settings_cache",

@@ -3,7 +3,7 @@ import {Verifiable, Verifyinfo} from "Validate";
 import RecipeInfo from "codex/RecipeInfo";
 import Categories from "codex/Categories"
 import {Task, TaskExecutor} from "Task";
-import IGuiRoot, {GuiAction} from "IGuiRoot";
+import {default as IGuiRoot, GuiAction} from "IGuiRoot";
 import MigratablePrototype from "PrototypeHelper";
 
 /** @noResolution */

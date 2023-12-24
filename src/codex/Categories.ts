@@ -1,5 +1,5 @@
 import {Category_type, getPrototypeCache} from "cache/PrototypeCache";
-import SearchUtils, {SortOrderDefault} from "SearchUtils";
+import {default as SearchUtils, SortOrderDefault} from "SearchUtils";
 import {Verifiable, Verifyinfo} from "Validate";
 
 /** @noResolution */
