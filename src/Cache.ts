@@ -98,7 +98,7 @@ class CacheManager {
 
             for (let [pId, pCacheList] of c.playerCaches) {
                 if (pCacheList == undefined) continue
-                $log_info!(`Loading caches for player ${$get_player_string!(pId)}')...`)
+                $log_info!(`Loading caches for player ${$get_player_string!(pId)}...`)
                 for (let [id, pCache] of pCacheList) {
                     let pFactory = playerFactories.get(id)
                     if (pFactory != undefined) {
@@ -139,7 +139,7 @@ class CacheManager {
     InitPlayer(player: PlayerIndex): LuaTable<string, PlayerCache> {
         let playerCacheList = new LuaTable<string, PlayerCache>();
 
-        $log_info!(`Initializing caches for player ${$get_player_string!(player)}')...`)
+        $log_info!(`Initializing caches for player ${$get_player_string!(player)}...`)
         for (let [id, pCacheFactory] of playerFactories ) {
             playerCacheList.set(id, <PlayerCache>pCacheFactory.Create(player))
             $log_info!(`    ${pCacheFactory.cache_name}      Done`)
@@ -162,11 +162,11 @@ class CacheManager {
             $log_info!(`Rebuilding player caches...`)
             for (let [pId, pCacheList] of this.playerCaches) {
                 if (pCacheList == undefined) {
-                    $log_warn!(`Invalid cache list for ${$get_player_string!(pId)}') - deleting`)
+                    $log_warn!(`Invalid cache list for ${$get_player_string!(pId)} - deleting`)
                     this.playerCaches.delete(pId)
                     continue
                 }
-                $log_info!(`Rebuilding caches for ${$get_player_string!(pId)}')...`)
+                $log_info!(`Rebuilding caches for ${$get_player_string!(pId)}...`)
                 for (let [id, pCache] of pCacheList) {
                     if (!playerFactories.has(id)) {
                         pCacheList.delete(id)

@@ -3,6 +3,10 @@ import GeneralizedSuffixTree from "search/suffixtree/GeneralizedSuffixTree";
 import ISearchable from "search/Searchable";
 import {getPrototypeCache} from "./PrototypeCache";
 import MigratablePrototype from "../PrototypeHelper";
+/** @noResolution */
+import * as ModGui from "__core__.lualib.mod-gui";
+/** @noResolution */
+import * as FLIB_on_tick_n from "__flib__.on-tick-n";
 
 export type DictionaryEntry = {
     type: string,
@@ -25,15 +29,19 @@ let DictionaryCacheFactory: CacheFactory = {
     Load(cache: PlayerCache): void {
         // @ts-ignore
         setmetatable(cache, DictionaryCache.prototype)
+        (<DictionaryCache>cache).Load()
     }
 }
 
 registerCache(DictionaryCacheFactory)
 
-
+// TODO move to global cache and have a GST only once per language
 function getDictionaryCache(player: PlayerIndex): undefined | DictionaryCache {
     return getPlayerCache(DictionaryCacheFactory.cache_id, player) as DictionaryCache
 }
+
+//
+const NUM_SUFFIXTREE_INSERTIONS = 10
 
 class DictionaryCache implements PlayerCache {
     readonly id: string = DictionaryCacheFactory.cache_id;
@@ -55,6 +63,18 @@ class DictionaryCache implements PlayerCache {
         this.names_translation = new LuaTable()
         this.names_suffixtree = new LuaTable()
         this.searchables = []
+    }
+
+    Load() {
+        if (this.names_suffixtree != undefined && table_size(this.names_suffixtree) > 0) {
+            for (let [_, stree] of this.names_suffixtree) {
+                if (stree != undefined) {
+                    // @ts-ignore
+                    setmetatable(stree, GeneralizedSuffixTree.prototype)
+                    stree.Load()
+                }
+            }
+        }
     }
 
     getNamesTranslation(type: string): undefined | LuaTable<string,string> {
@@ -91,7 +111,7 @@ class DictionaryCache implements PlayerCache {
         let relevantProtos: LuaTable<string, MigratablePrototype<LuaItemPrototype>> = protoCache != undefined ? protoCache.getAll()[name] : game[`${name}_prototypes`]
 
 
-        $log_info!(`Building suffix tree for  "${name}"`)
+        $log_debug!(`Building suffix tree for "${name}" (${table_size(data)} entries)`)
         let prof = game.create_profiler(false)
 
 
@@ -112,10 +132,64 @@ class DictionaryCache implements PlayerCache {
             stree.add(translated.toLowerCase(), dictEntry)
         }
         prof.stop()
-        game.print(["", `Build suffix tree for  "${name}" in `, prof])
+        game.print(["", `Completed build suffix tree for "${name}" in `, prof])
 
         this.names_suffixtree.set(name, stree)
         this.searchables.push(stree)
+    }
+
+    buildPartialSuffixtree(name: string, data: LuaTable<string, string>, start_index: number, last: boolean): number | undefined {
+        let stree: GeneralizedSuffixTree<DictionaryEntry> = this.names_suffixtree.get(name)
+
+        if (stree == undefined /*||  getmetatable(stree) != GeneralizedSuffixTree.prototype*/) {
+            $log_debug!(`Created suffix tree for "${name}"`)
+            stree = new GeneralizedSuffixTree<DictionaryEntry>()
+            this.names_suffixtree.set(name, stree)
+        }
+
+        let protoCache = getPrototypeCache()
+        // @ts-ignore
+        let relevantProtos: LuaTable<string, MigratablePrototype<LuaItemPrototype>> = protoCache != undefined ? protoCache.getAll()[name] : game[`${name}_prototypes`]
+
+        $log_debug!(`Building suffix tree for "${name}" ${start_index}/${table_size(data)} entries`)
+
+        let i = 0
+        for (let [id, translated] of data) {
+            i++
+            if (i < start_index) {
+                continue;
+            }
+
+            if (i > start_index + NUM_SUFFIXTREE_INSERTIONS) {
+                $log_debug!(`Completed build of suffix tree for "${name}"`)
+                this.searchables.push(stree)
+                break;
+            }
+
+            let proto = relevantProtos.get(id)
+            if (proto == undefined || !proto.valid) continue // skip invalid prototypes
+
+            let dictEntry: DictionaryEntry = {
+                type: name,
+                id: id,
+                name: translated,
+                order: proto?.order,
+                hidden: proto.object_name == "LuaItemPrototype" || proto.object_name == "LuaEntityPrototype"  ? proto.has_flag("hidden") :
+                    // @ts-ignore
+                    proto.object_name != "LuaTilePrototype" ? proto.hidden : false
+            }
+
+            stree.add(translated.toLowerCase(), dictEntry)
+        }
+
+        if (i < table_size(data)) {
+            return i;
+        }
+
+        if (last) {
+            this.translated = true
+        }
+        return undefined;
     }
 
     getSearchables(): ISearchable<DictionaryEntry>[] {

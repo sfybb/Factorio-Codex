@@ -21,6 +21,20 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
         this.activeLeaf = this.root
     }
 
+    Load() {
+        if (this.root != undefined) {
+            // @ts-ignore
+            setmetatable(this.root, Node.prototype)
+            this.root.Load()
+        }
+
+        if (this.activeLeaf != undefined) {
+            // @ts-ignore
+            setmetatable(this.activeLeaf, Node.prototype)
+            this.activeLeaf.Load()
+        }
+    }
+
     add(key: string, val: T) {
         this.activeLeaf = this.root
 

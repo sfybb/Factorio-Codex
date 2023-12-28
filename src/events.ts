@@ -12,82 +12,101 @@ import {GuiAction} from "IGuiRoot";
 import Migration from "Migration";
 
 /** @noResolution */
+import * as EventHandler from "__core__.lualib.event_handler"
+/** @noResolution */
 import * as FLIB_gui from "__flib__.gui"
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
+/** @noResolution */
+import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
 
 
 const errorHandler = (err: any) => {
     $log_crit!("An unknown critical error occurred", `Thrown exception: ${serpent.line(err, {comment: false})}`)
 }
 
-script.on_init(() => {
-    FLIB_on_tick_n.init()
-    PlayerData.Init()
-})
+namespace Events {
+    export function on_init() {
+        FLIB_on_tick_n.init()
+        PlayerData.Init()
+    }
 
-script.on_load(() => {
-    PlayerData.Load()
-})
+    export function on_load() {
+        PlayerData.Load()
+    }
 
-script.on_configuration_changed(Migration.migrate)
+    export const on_configuration_changed = Migration.migrate
 
-script.on_event("fcodex_toggle_quick_search", (e) => {
-    $log_debug!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
-    PlayerData.getQuickSearch(e)?.toggle()
-})
 
-script.on_event(defines.events.on_player_created, (e: OnPlayerCreatedEvent) => {
-    Dictionary.translate(e.player_index)
-    PlayerData.get(e)
-})
+    export function on_player_created(e: OnPlayerCreatedEvent) {
+        PlayerData.get(e)
+    }
 
-script.on_event(defines.events.on_player_joined_game, (e: OnPlayerJoinedGameEvent) => {
-    Dictionary.translate(e.player_index)
-})
-script.on_event(defines.events.on_player_left_game, (e: OnPlayerLeftGameEvent) => {
-    Dictionary.cancel_translate(e.player_index)
-})
-
-script.on_event(defines.events.on_string_translated, (e: OnStringTranslatedEvent) => {
-    Dictionary.string_translated(e)
-})
-
-script.on_event(defines.events.on_tick, (e) => {
-    Dictionary.check_skipped()
-
-    let tasks = FLIB_on_tick_n.retrieve(e.tick)
-    if (tasks != undefined) {
-        for (let taskData of tasks) {
-            if (typeof taskData != "object" || typeof taskData.type != "string" || typeof taskData.player_index != "number") {
-                $log_warn!(`Unknown task type: ${typeof taskData}! Contents: ${serpent.line(taskData)}`)
-                continue
-            }
-            let task = taskData as Task
-
-            if (task.type == "gui") {
-                let taskExecutor: undefined | TaskExecutor;
-                if (task.gui == "qs") {
-                    taskExecutor = PlayerData.getQuickSearch(task.player_index)
-                } else if (task.gui == "codex") {
-                    taskExecutor = PlayerData.getCodex(task.player_index)
+    export function on_tick(e: OnTickEvent) {
+        let tasks = FLIB_on_tick_n.retrieve(e.tick)
+        if (tasks != undefined) {
+            for (let taskData of tasks) {
+                if (typeof taskData != "object" || typeof taskData.type != "string" || typeof taskData.player_index != "number") {
+                    $log_warn!(`Unknown task type: ${typeof taskData}! Contents: ${serpent.line(taskData)}`)
+                    continue
                 }
+                let task = taskData as Task
 
-                if (taskExecutor != undefined) {
-                    xpcall(taskExecutor.execute_task, errorHandler, taskExecutor, task)
-                }
-            } else if (task.type == "command") {
-                if (task.command == "fc-rebuild-all") {
-                    PlayerData.Rebuild()
-                    Dictionary.Rebuild()
-                    game.print("[color=green]Rebuild complete. Waiting for translation to finish...[/color]")
+                if (task.type == "gui") {
+                    let taskExecutor: undefined | TaskExecutor;
+                    if (task.gui == "qs") {
+                        taskExecutor = PlayerData.getQuickSearch(task.player_index)
+                    } else if (task.gui == "codex") {
+                        taskExecutor = PlayerData.getCodex(task.player_index)
+                    }
+
+                    if (taskExecutor != undefined) {
+                        xpcall(taskExecutor.execute_task, errorHandler, taskExecutor, task)
+                    }
+                } else if (task.type == "command") {
+                    if (task.command == "fc-rebuild-all") {
+                        PlayerData.Rebuild()
+
+                        //Dictionary.Rebuild()
+                        game.print("[color=green]Rebuild complete.[/color] Note: Rebuilding dictionaries is currently not supported")
+                    }
+                } else if (task.type == "dictionary") {
+                    Dictionary.execute_task(task)
                 }
             }
         }
     }
-})
 
-FLIB_gui.hook_events((e) => {
+
+    // custom events
+    export function on_toggle_quick_search(e: CustomInputEvent) {
+        $log_debug!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
+        PlayerData.getQuickSearch(e)?.toggle()
+    }
+}
+
+const FactorioCodexEvents: EventHandler.LuaLibrary = {
+    on_init: Events.on_init,
+    on_load: Events.on_load,
+    on_configuration_changed: Events.on_configuration_changed,
+
+    events: {
+        [defines.events.on_player_created]: Events.on_player_created,
+
+        [defines.events.on_tick]: Events.on_tick,
+
+        [FLIB_dictionary_lite.on_player_dictionaries_ready]: Dictionary.on_player_dictionaries_ready,
+
+        // custom events
+        "fcodex_toggle_quick_search": Events.on_toggle_quick_search,
+    }
+}
+
+
+EventHandler.add_lib(FactorioCodexEvents)
+EventHandler.add_lib({events: FLIB_dictionary_lite.events})
+
+FLIB_gui.hook_events((e: GuiEventData) => {
     xpcall(PlayerData.handleUIEvents, errorHandler, undefined, FLIB_gui.read_action(e), e)
 })
 

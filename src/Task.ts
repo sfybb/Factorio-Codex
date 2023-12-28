@@ -16,8 +16,16 @@ interface CommandTask extends BaseTask {
     command: string
 }
 
+interface DictionaryTask extends BaseTask {
+    type: "dictionary"
+    dictionary_name: string,
+    dictionary_data: LuaTable<string, string>,
+    start_index: number,
+    notify_on_complete: boolean
+}
 
-export type Task = GuiTask | CommandTask
+
+export type Task = GuiTask | CommandTask | DictionaryTask
 export interface TaskExecutor {
     execute_task(task: Task): void;
 }

@@ -20,7 +20,7 @@ namespace Search {
 
         maxRes = maxRes ?? 100
 
-        let searchRes: SearchResult[] = getSearchResultsOld(prompt, player)
+        let searchRes: SearchResult[] = getSearchResults(prompt, player)
         SearchUtils.sort(searchRes, order, maxRes)
 
         return searchRes
@@ -75,7 +75,7 @@ namespace Search {
         }
 
         prof.stop()
-        game.print(["", "Tree Search: ", prof, " (Search: ", profSearch, "; Merge: ", profMerge, `; #${res.length})`])
+        //game.print(["", "Tree Search: ", prof, " (Search: ", profSearch, "; Merge: ", profMerge, `; #${res.length})`])
 
         return res
     }

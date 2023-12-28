@@ -12,7 +12,7 @@ export type anyPrototype = LuaTechnologyPrototype |
 export type SearchResult = {
     hidden: boolean,
     order: string,
-    match_count: number
+    match_count?: number
     type: string,
     id: string,
     name: string
@@ -67,7 +67,15 @@ const SortOrderQS = {
         return a.hidden == b.hidden ? 0 : (a.hidden ? 1 : -1)
     },
     match_count(this: any, a: SearchResult, b: SearchResult): number {
-        return b.match_count - a.match_count
+        if (a.match_count != undefined && b.match_count != undefined) {
+            return b.match_count - a.match_count
+        }
+
+        if (a.match_count == undefined) {
+            return b.match_count == undefined ? 0 : -1
+        } else {
+            return 1
+        }
     }
 }
 

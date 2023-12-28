@@ -45,9 +45,6 @@ namespace PlayerData {
         } else {
             $log_warn!("Unable to load Cache! Cache has not been created yet!")
         }
-
-        Dictionary.Load()
-        Dictionary.Build()
     }
 
     export function Rebuild() {

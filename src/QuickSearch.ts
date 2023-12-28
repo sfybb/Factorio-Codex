@@ -21,7 +21,7 @@ type QSResult = {
     name: string
     id: string
 
-    match_count: number
+    match_count?: number
     hidden: boolean,
     order: string
 }

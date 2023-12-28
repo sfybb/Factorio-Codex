@@ -32,6 +32,24 @@ class Node<T extends AnyNotNil> {
         this.suffix = undefined
     }
 
+    Load() {
+        if (this.suffix != undefined) {
+            // @ts-ignore
+            setmetatable(this.suffix, Node.prototype)
+            // Don't call load for suffix since it can cause loops
+        }
+
+        if (this.edges != undefined) {
+            for (let [_, edge] of this.edges) {
+                if (edge != undefined) {
+                    // @ts-ignore
+                    setmetatable(edge, Edge.prototype)
+                    edge.Load()
+                }
+            }
+        }
+    }
+
     collect(set: LuaSet<T>) {
         for (let e of this.data) {
             set.add(e)
@@ -148,6 +166,18 @@ export class Edge<T extends AnyNotNil> {
     constructor(dest: Node<T>, label: SubString) {
         this.dest = dest
         this.label = label
+    }
+
+    Load() {
+        if (this.dest != undefined) {
+            // @ts-ignore
+            setmetatable(this.dest, Node.prototype)
+            this.dest.Load()
+        }
+        if (this.label != undefined) {
+            // @ts-ignore
+            setmetatable(this.label, SubString.prototype)
+        }
     }
 }
 

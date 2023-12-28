@@ -1,11 +1,15 @@
 /** @noResolution */
-import * as FLIB_dictionary from "__flib__.dictionary"
-FLIB_dictionary.set_use_local_storage(true)
+import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
 
 import {getDictionaryCache} from "cache/DictionaryCache";
 import {getPrototypeCache} from "cache/PrototypeCache"
 import PlayerData from "PlayerData";
 import MigratablePrototype from "./PrototypeHelper";
+import {Task} from "./Task";
+
+/** @noResolution */
+import * as FLIB_on_tick_n from "__flib__.on-tick-n"
+
 
 declare const global: {
     playerData: typeof PlayerData
@@ -17,38 +21,9 @@ namespace Dictionary {
     let tmp = 0
 
     let build_done: boolean = false;
-    let dict_list: {
-        names: LuaTable<string, FLIBRawDictionary>,
-        descs: LuaTable<string, FLIBRawDictionary>,
-    } = {
-        names: new LuaTable(),
-        descs: new LuaTable()
-    }
     export function Init(): void {
-        FLIB_dictionary.init()
-
+        FLIB_dictionary_lite.on_init()
         Dictionary.Build()
-    }
-
-    export function Load(): void {
-        FLIB_dictionary.load()
-    }
-
-    export function translate(player_index: PlayerIndex): void {
-        let player = game.get_player(player_index)
-
-        // Only translate if they're connected - if they're not, then it will not work!
-        if (player?.connected == true) {
-            FLIB_dictionary.translate(player)
-        }
-    }
-
-    export function cancel_translate(player_index: PlayerIndex): void {
-        FLIB_dictionary.cancel_translation(player_index)
-    }
-
-    export function check_skipped(): void {
-        FLIB_dictionary.check_skipped()
     }
 
     export function Build(): void {
@@ -91,8 +66,8 @@ namespace Dictionary {
         //protoTable.set("tile", prototypes.tile)
 
         for (let [type, list] of protoTable) {
-            let names = FLIB_dictionary.new(type + "_names")
-            //let desc  = FLIB_dictionary.new(type + "_descriptions")
+            const dict_name = type + "_names"
+            FLIB_dictionary_lite.new(dict_name)
 
             let invalidProtos = []
 
@@ -103,22 +78,30 @@ namespace Dictionary {
                     continue
                 }
 
-                names.add(name, proto.localised_name)
+                FLIB_dictionary_lite.add(dict_name, name, proto.localised_name)
                 //desc.add( name, proto.localised_description)
             }
             if (invalidProtos.length > 0) {
                 $log_warn!(`Skipped ${invalidProtos.length} invalid ${type} prototypes!${
                     serpent.line(invalidProtos, {comment: false, maxnum: 10})}`)
             }
-
-            dict_list.names.set(type, names)
-            //dict_list.descs.set(type, desc)
         }
         build_done = true
+
+        // Request translation for all connected players
+        for (let [player_index, player] of game.players) {
+            if (player.connected){
+                FLIB_dictionary_lite.on_player_joined_game({
+                    name: defines.events.on_player_joined_game,
+                    tick: 0,
+                    player_index: player_index
+                })
+            }
+        }
     }
 
     export function Rebuild(): void {
-        $log_info!("Rebuilding dictionaries...")
+        /*$log_info!("Rebuilding dictionaries...")
         build_done = false
         Dictionary.Init()
 
@@ -132,42 +115,79 @@ namespace Dictionary {
             }
         }
 
-        $log_info!(`Kicking off translation for ${players_to_translate.join(", ")}...`)
+        $log_info!(`Kicking off translation for ${players_to_translate.join(", ")}...`)*/
     }
 
-    export function string_translated(this: void, e: OnStringTranslatedEvent): void {
-        if (empty_prototypes) return
+    export function execute_task(dictTask: Task) {
+        let dict_cache = getDictionaryCache(dictTask.player_index)
 
-        let lang_data = FLIB_dictionary.process_translation(e)
+        if (dict_cache == undefined) {
+            $log_crit!(`Cannot save translation for ${$get_player_string!(dictTask.player_index)}. Is mod data corrupted?`, `Cache: 'dicts_cache' is undefined. Creation must have failed`)
+            return
+        }
 
-        // @ts-ignore
-        /*if (tmp < 5 && e.translated && e.localised_string[2].indexOf("factorio-codex") != 0) {
-            tmp++
 
-            $log_info!(`=============== [${tmp}] ===============`)
-            $log_info!(`${serpent.line(e.localised_string, {comment: false})}`)
-            for (let [n, dict] of dict_list.names) {
-                $log_info!(`${n}:    I ${dict.dict_i} / Total ${dict.total}  Batch ${dict.batch_i}`)
+        if (dictTask.type == "dictionary") {
+            //dict_cache.addTranslations()
+            const end_index = dict_cache.buildPartialSuffixtree(
+                dictTask.dictionary_name,
+                dictTask.dictionary_data,
+                dictTask.start_index,
+                dictTask.notify_on_complete)
+            if (end_index != undefined) {
+                dictTask.start_index = end_index
+                FLIB_on_tick_n.add(game.tick + 1, dictTask)
+            } else if (dictTask.notify_on_complete) {
+                game.get_player(dictTask.player_index)?.print("Factorio Codex: Quick search is now ready to be used!")
+                global.playerData?.getQuickSearch(dictTask.player_index)?.update_input()
             }
-        }*/
+        }
+    }
 
-        if ( lang_data != undefined ) {
-            for (let player_index of lang_data.players) {
-                let dict_cache = getDictionaryCache(player_index)
-                if (dict_cache == undefined) {
-                    $log_crit!(`Cannot save translation for ${$get_player_string!(player_index)}. Is mod data corrupted?`, `Cache: 'dicts_cache' is undefined. Creation must have failed`)
-                    continue
+    export function on_player_dictionaries_ready(e: FLIB_dictionary_lite.OnDictionaryReadyEvent, lang_data?: FLIBTranslationFinishedOutput) {
+        const dictionaries = lang_data?.dictionaries ?? FLIB_dictionary_lite.get_all(e.player_index)
+        const player_index = e.player_index
+
+        if (dictionaries == undefined) {
+            $log_crit!(`Translation failed`, `No dictionaries were found for player ${$get_player_string!(player_index)}`)
+            return
+        } else {
+            $log_info!(`Completed translation for ${$get_player_string!(player_index)}`)
+        }
+
+        const tasks: Task[] = []
+
+        let dictMaxLen = 0, dictIndx = 0, i = 0
+
+        for (let [dictName, dictData] of dictionaries) {
+            if (dictName.endsWith("_names")) {
+                const name = dictName.substring(0, dictName.indexOf("_names"))
+
+                $log_debug!(`Starting build for suffix tree "${name}"`)
+                tasks.push({
+                    type: "dictionary",
+                    player_index: player_index,
+
+                    dictionary_name: name,
+                    dictionary_data: dictData,
+                    start_index: 0,
+                    notify_on_complete: false
+                })
+
+                if (dictMaxLen < table_size(dictData)) {
+                    dictMaxLen = table_size(dictData)
+                    dictIndx = i
                 }
 
-                let was_translated = dict_cache.isTranslated()
-                dict_cache.loadLanguageData(lang_data)
-
-                if (!was_translated) {
-                    game.get_player(player_index)?.print("Factorio Codex: Quick search is now ready to be used!")
-                }
-
-                global.playerData?.getQuickSearch(player_index)?.update_input()
+                i++;
             }
+        }
+
+        let t = tasks[dictIndx]
+        if (t.type == "dictionary") t.notify_on_complete = true
+
+        for (let dictTask of tasks) {
+            FLIB_on_tick_n.add(game.tick + 1, dictTask)
         }
     }
 }

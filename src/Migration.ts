@@ -11,7 +11,8 @@ const migrations = {
     ["0.0.12"]: require("migrations/migrate_0_0_12"),
     ["0.0.15"]: require("migrations/migrate_0_0_15"),
     ["0.0.17"]: require("migrations/migrate_0_0_17"),
-    ["0.0.19"]: require("migrations/migrate_0_0_19")
+    ["0.0.19"]: require("migrations/migrate_0_0_19"),
+    ["0.0.20"]: require("migrations/migrate_0_0_20")
 }
 
 declare const global: {
@@ -22,7 +23,6 @@ declare const global: {
 class Migration {
     static migrate(this: void, e: ConfigurationChangedData): void {
         $log_info!("Checking for migration")
-        $log_info!(`Inventory bonus: ${game.forces["player"].character_inventory_slots_bonus}`)
 
         if ( FLIB_migration.on_config_changed(e, migrations, undefined) ) {
             $log_info!("Migration scripts done")
