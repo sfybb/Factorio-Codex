@@ -7,9 +7,45 @@ enum LogLevel {
     CRITICAL
 }
 
+function $compileTimeLogLvl(): LogLevel | undefined {
+    //const config = $$readFile!<{node_env?: string, logLevel?: string}>("./config.json", true)
+    // @ts-ignore
+    const config: {node_env?: string, logLevel?: string} | undefined = null
+
+    if (config != undefined) {
+        if (config.logLevel != undefined) {
+            switch (config.logLevel.toLowerCase()) {
+                case "trace":
+                    return LogLevel.TRACE
+                case "debug":
+                    return LogLevel.DEBUG
+                case "info":
+                    return LogLevel.INFO
+                case "warning":
+                    return LogLevel.WARNING
+                case "error":
+                    return LogLevel.ERROR
+                case "critical":
+                    return LogLevel.CRITICAL
+            }
+        }
+
+        if (config.node_env != undefined) {
+            switch (config.node_env.toLowerCase()) {
+                case "release":
+                    return LogLevel.WARNING
+                case "debug":
+                    return LogLevel.DEBUG
+            }
+        }
+    }
+
+    return undefined
+}
+
 function $log(log_lvl: LogLevel, msg: string) {
-    const $compileTimeLogLvl: LogLevel = LogLevel.INFO
-    if ($compileTimeLogLvl <= log_lvl) {
+    //const compileTimeLogLvl: LogLevel = /*$compileTimeLogLvl!() ??*/ LogLevel.INFO
+    if (LogLevel.DEBUG <= log_lvl) {
         log(msg)
     }
 }
@@ -45,5 +81,5 @@ function $log_crit_raw(msg: string) {
 
 function $get_player_string(pID: PlayerIndex): string {
     let ____temp_player = game?.get_player(pID)
-    return ____temp_player == undefined ? `player ID: ${pID}` : `player ${pID}('${____temp_player.name}')`
+    return ____temp_player == undefined ? `player ID: ${pID}` : `player ${pID} ('${____temp_player.name}')`
 }
