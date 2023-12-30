@@ -21,21 +21,35 @@ import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
 
 
-const errorHandler = (err: any) => {
+const errorHandler = (err: any): void => {
     $log_crit!("An unknown critical error occurred", `Thrown exception: ${serpent.line(err, {comment: false})}`)
+}
+
+function $safe_call<This, Args extends any[], R>(
+    f: ((this: This, ...args: Args) => R) | ((...args: Args) => R) | undefined,
+    context: This,
+    ...args: Args
+): LuaMultiReturn<[true, R] | [false, void]> {
+    if (f != undefined) {
+        return xpcall(f, errorHandler, context, ...args)
+    } else {
+        return $multi<[false, void]>(false)
+    }
 }
 
 namespace Events {
     export function on_init() {
         FLIB_on_tick_n.init()
-        PlayerData.Init()
+        $safe_call!(PlayerData.Init, undefined)
     }
 
     export function on_load() {
-        PlayerData.Load()
+        $safe_call!(PlayerData.Load, undefined)
     }
 
-    export const on_configuration_changed = Migration.migrate
+    export function on_configuration_changed(e: ConfigurationChangedData) {
+        $safe_call!(Migration.migrate, undefined, e)
+    }
 
 
     export function on_player_created(e: OnPlayerCreatedEvent) {
@@ -60,9 +74,7 @@ namespace Events {
                         taskExecutor = PlayerData.getCodex(task.player_index)
                     }
 
-                    if (taskExecutor != undefined) {
-                        xpcall(taskExecutor.execute_task, errorHandler, taskExecutor, task)
-                    }
+                    $safe_call!(taskExecutor?.execute_task, taskExecutor, task)
                 } else if (task.type == "command") {
                     if (task.command == "fc-rebuild-all") {
                         PlayerData.Rebuild()
@@ -107,7 +119,7 @@ EventHandler.add_lib(FactorioCodexEvents)
 EventHandler.add_lib({events: FLIB_dictionary_lite.events})
 
 FLIB_gui.hook_events((e: GuiEventData) => {
-    xpcall(PlayerData.handleUIEvents, errorHandler, undefined, FLIB_gui.read_action(e), e)
+    $safe_call!(PlayerData?.handleUIEvents, undefined, FLIB_gui.read_action(e), e)
 })
 
 commands.add_command("fc-rebuild-all", [ "command-help.fc-rebuild-all" ], (e) => {

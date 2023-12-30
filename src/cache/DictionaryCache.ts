@@ -27,9 +27,7 @@ let DictionaryCacheFactory: CacheFactory = {
     },
 
     Load(cache: PlayerCache): void {
-        // @ts-ignore
-        setmetatable(cache, DictionaryCache.prototype)
-        (<DictionaryCache>cache).Load()
+        DictionaryCache.Load((<DictionaryCache>cache))
     }
 }
 
@@ -65,14 +63,15 @@ class DictionaryCache implements PlayerCache {
         this.searchables = []
     }
 
-    Load() {
-        if (this.names_suffixtree != undefined && table_size(this.names_suffixtree) > 0) {
-            for (let [_, stree] of this.names_suffixtree) {
-                if (stree != undefined) {
-                    // @ts-ignore
-                    setmetatable(stree, GeneralizedSuffixTree.prototype)
-                    stree.Load()
-                }
+    static Load(this: void, cache?: DictionaryCache) {
+        if (cache == undefined) return
+
+        // @ts-ignore
+        setmetatable(cache, DictionaryCache.prototype)
+
+        if (cache.names_suffixtree != undefined && table_size(cache.names_suffixtree) > 0) {
+            for (let [_, stree] of cache.names_suffixtree) {
+                GeneralizedSuffixTree.Load(stree)
             }
         }
     }

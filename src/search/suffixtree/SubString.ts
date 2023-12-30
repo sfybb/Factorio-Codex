@@ -10,6 +10,12 @@ class SubString {
         this.length = end - start
     }
 
+    static Load(this: void, substr?: SubString) {
+        if (substr == undefined) return
+        // @ts-ignore
+        setmetatable(substr, SubString.prototype)
+    }
+
     copy() {
         return new SubString(this.originalString, this.start, this.start+this.length)
     }

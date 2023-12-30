@@ -32,20 +32,21 @@ class Node<T extends AnyNotNil> {
         this.suffix = undefined
     }
 
-    Load() {
-        if (this.suffix != undefined) {
+    static Load<T extends AnyNotNil>(this: void, node?: Node<T>) {
+        if (node == undefined) return
+
+        // @ts-ignore
+        setmetatable(node, Node.prototype)
+
+        if (node.suffix != undefined) {
             // @ts-ignore
-            setmetatable(this.suffix, Node.prototype)
+            setmetatable(node.suffix, Node.prototype)
             // Don't call load for suffix since it can cause loops
         }
 
-        if (this.edges != undefined) {
-            for (let [_, edge] of this.edges) {
-                if (edge != undefined) {
-                    // @ts-ignore
-                    setmetatable(edge, Edge.prototype)
-                    edge.Load()
-                }
+        if (node.edges != undefined) {
+            for (let [_, edge] of node.edges) {
+                Edge.Load(edge)
             }
         }
     }
@@ -168,16 +169,14 @@ export class Edge<T extends AnyNotNil> {
         this.label = label
     }
 
-    Load() {
-        if (this.dest != undefined) {
-            // @ts-ignore
-            setmetatable(this.dest, Node.prototype)
-            this.dest.Load()
-        }
-        if (this.label != undefined) {
-            // @ts-ignore
-            setmetatable(this.label, SubString.prototype)
-        }
+    static Load<T extends AnyNotNil>(this: void, edge?: Edge<T>) {
+        if (edge == undefined) return
+
+        // @ts-ignore
+        setmetatable(edge, Edge.prototype)
+
+        Node.Load(edge.dest)
+        SubString.Load(edge.label)
     }
 }
 

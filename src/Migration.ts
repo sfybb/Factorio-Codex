@@ -21,7 +21,7 @@ declare const global: {
 }
 
 class Migration {
-    static migrate(this: void, e: ConfigurationChangedData): void {
+    static migrate(this: any, e: ConfigurationChangedData): void {
         $log_info!("Checking for migration")
 
         if ( FLIB_migration.on_config_changed(e, migrations, undefined) ) {
