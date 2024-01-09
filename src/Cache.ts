@@ -114,7 +114,14 @@ class CacheManager {
     get(cache_id: string): undefined | GlobalCache {
         let cache = this?.globalCaches?.get(cache_id)
         if (cache == undefined) {
-            $log_crit!("Is mod data corrupted?", `Global Cache with id '${cache_id}' does not exist!`)
+            // try to find a factory for this cache id
+            let gCacheFactory = globalFactories.get(cache_id)
+            if (gCacheFactory != undefined) {
+                cache = <GlobalCache>gCacheFactory.Create()
+                this.globalCaches.set(cache_id, cache)
+            } else {
+                $log_crit!("Is mod data corrupted?", `Global Cache with id '${cache_id}' does not exist!`)
+            }
         }
 
         return cache

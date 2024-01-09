@@ -6,22 +6,27 @@ interface BaseTask {
     args?: LuaTable<string, any>
 }
 
-interface GuiTask extends BaseTask {
+export interface GuiTask extends BaseTask {
     type: "gui"
     gui: string
 }
 
-interface CommandTask extends BaseTask {
+export interface CommandTask extends BaseTask {
     type: "command"
     command: string
 }
 
-interface DictionaryTask extends BaseTask {
+export interface DictionaryTask extends BaseTask {
     type: "dictionary"
-    dictionary_name: string,
-    dictionary_data: LuaTable<string, string>,
+    language: string,
+    dictionaries: {
+        name: string,
+        num_entries: number,
+        data: LuaTable<string, string>
+    }[],
     start_index: number,
-    notify_on_complete: boolean
+    num_indexed_entries: number,
+    num_all_entries: number
 }
 
 

@@ -292,12 +292,12 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
     execute_task(task: Task) {
         if (task.args?.get("name") == "update_search") {
-            let dictsCache = getDictionaryCache(this.player_index)
+            let dictsCache = getDictionaryCache()
             if (dictsCache == undefined) {
                 $log_warn!("Could not retrieve Dictionary cache!")
                 return
             }
-            if ( !dictsCache.isTranslated() ) {
+            if ( !dictsCache.isTranslated(this.player_index) ) {
                 this.remove_search_results()
                 this.refs.results?.add_item([ "factorio-codex.waiting-for-translation" ])
                 return;
@@ -356,8 +356,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
                 return;
             }
 
-            // @ts-ignore
-            if (event.element?.selected_index != undefined) event.element.selected_index = 0
+            if (event.element?.selected_index != undefined) (<DropDownGuiElement>event.element).selected_index = 0
 
 
             global.playerData.getCodex(event.player_index)?.show_info(selectedResult.id, selectedResult.type)

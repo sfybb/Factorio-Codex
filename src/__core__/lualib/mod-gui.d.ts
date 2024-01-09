@@ -19,7 +19,11 @@ Any other questions please feel free to ask on the modding help forum.
 
 /** @noResolution */
 declare module "__core__.lualib.mod-gui" {
-    export function get_button_flow(player: LuaPlayer): FrameGuiElement;
+    export function get_frame_flow(player: LuaPlayer): FrameGuiElement;
 
     export function get_button_flow(player: LuaPlayer): FlowGuiElement;
+
+    export const frame_style: string;
+
+    export const button_style: string;
 }

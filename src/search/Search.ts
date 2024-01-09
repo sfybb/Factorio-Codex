@@ -32,10 +32,10 @@ namespace Search {
         let searchedTokens = new LuaSet<string>()
 
 
-        let dictCache = getDictionaryCache(player)
+        let dictCache = getDictionaryCache()
         if (dictCache == undefined) return []
 
-        let searchables: ISearchable<DictionaryEntry>[] = dictCache.getSearchables()
+        let searchables: ISearchable<DictionaryEntry>[] = dictCache.getSearchables(player)
 
         let profSearch = game.create_profiler(true)
         let profMerge = game.create_profiler(true)
@@ -78,81 +78,6 @@ namespace Search {
         //game.print(["", "Tree Search: ", prof, " (Search: ", profSearch, "; Merge: ", profMerge, `; #${res.length})`])
 
         return res
-    }
-
-    function getSearchResultsOld(prompt: string, player: PlayerIndex): SearchResult[] {
-        //$log_debug!(`Searching for '${prompt}'`)
-
-        let dictCache = getDictionaryCache(player)
-        let protoCache = getPrototypeCache()
-        if (dictCache == undefined || protoCache == undefined) return []
-
-        let dicts: Dict[] = [
-            {
-                type: "item",
-                data: dictCache.getNamesTranslation("item"),
-                prototype_list: protoCache.getItems(),
-            }, {
-                type: "fluid",
-                data: dictCache.getNamesTranslation("fluid"),
-                prototype_list: protoCache.getFluid(),
-            }, {
-                type: "technology",
-                data: dictCache.getNamesTranslation("technology"),
-                prototype_list: protoCache.getTech(),
-            }
-        ]
-
-        // let prof = game.create_profiler(false)
-
-        prompt = prompt.toLowerCase()
-        let tokens = prompt.split(" ")
-        let quoted_tokens = tokens.map(SearchUtils.quote_str)
-
-        // remove duplicate tokens
-        let searchedTokens = new LuaSet<string>()
-        for (let token of quoted_tokens) if (token.length != 0) searchedTokens.add(token)
-
-        let matchingResults: SearchResult[] = []
-        for (let dict of dicts) {
-            if (dict == undefined || dict.data == undefined) continue
-
-            for (let [key, val] of dict.data) {
-                let val_lower = val.toLowerCase()
-
-                let match_count = 0
-
-                for (let token of searchedTokens) {
-
-
-                    let [, count] = string.gsub(val_lower, token, "")
-                    if (count == 0) {
-                        match_count = 0
-                        break
-                    }
-                    /*let [, sowc] = string.gsub(val_lower, "%s+" + token, "")
-                    let [, sonc] = string.gsub(val_lower, "^" + token, "")*/
-                    match_count += count /*+ sowc + sonc*/
-                }
-                if (match_count > 0) {
-                    let proto = dict.prototype_list.get(key)
-                    if (proto == undefined || !proto.valid) continue // skip invalid prototypes
-
-                    matchingResults.push({
-                        type: dict.type,
-                        id: key,
-                        name: val,
-                        match_count: match_count,
-                        order: proto.order,
-                        hidden: SearchUtils.isPrototypeHidden(proto)
-                    })
-                }
-            }
-        }
-        /*prof.stop()
-        game.print(["", "Factorio Codex: Old Search: ", prof])*/
-
-        return matchingResults
     }
 
     function SetIntersection<T extends AnyNotNil>(A: LuaSet<T>, B: LuaSet<T>): LuaSet<T> {

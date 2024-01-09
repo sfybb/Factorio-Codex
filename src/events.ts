@@ -19,6 +19,7 @@ import * as FLIB_gui from "__flib__.gui"
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 /** @noResolution */
 import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
+import {getDictionaryCache} from "./cache/DictionaryCache";
 
 
 const errorHandler = (err: any): void => {
@@ -78,12 +79,18 @@ namespace Events {
                 } else if (task.type == "command") {
                     if (task.command == "fc-rebuild-all") {
                         PlayerData.Rebuild()
-
-                        //Dictionary.Rebuild()
-                        game.print("[color=green]Rebuild complete.[/color] Note: Rebuilding dictionaries is currently not supported")
+                        Dictionary.Rebuild()
+                        game.print("[color=green]Rebuild complete. Waiting for translation to finish...[/color]")
                     }
                 } else if (task.type == "dictionary") {
-                    Dictionary.execute_task(task)
+                    let dict_cache = getDictionaryCache()
+
+                    if (dict_cache == undefined) {
+                        // @ts-ignore
+                        $log_crit!(`Cannot save translation for ${dictTask.language}. Is mod data corrupted?`, `Cache: 'dicts_cache' is undefined. Creation must have failed`)
+                        return
+                    }
+                    dict_cache.execute_task(task)
                 }
             }
         }
@@ -108,6 +115,7 @@ const FactorioCodexEvents: EventHandler.LuaLibrary = {
         [defines.events.on_tick]: Events.on_tick,
 
         [FLIB_dictionary_lite.on_player_dictionaries_ready]: Dictionary.on_player_dictionaries_ready,
+        [FLIB_dictionary_lite.on_player_language_changed]: Dictionary.on_player_language_changed,
 
         // custom events
         "fcodex_toggle_quick_search": Events.on_toggle_quick_search,
