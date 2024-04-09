@@ -45,7 +45,7 @@ function $compileTimeLogLvl(): LogLevel | undefined {
 
 function $log(log_lvl: LogLevel, msg: string) {
     //const compileTimeLogLvl: LogLevel = /*$compileTimeLogLvl!() ??*/ LogLevel.INFO
-    if (LogLevel.DEBUG <= log_lvl) {
+    if (LogLevel.INFO <= log_lvl) {
         log(msg)
     }
 }
