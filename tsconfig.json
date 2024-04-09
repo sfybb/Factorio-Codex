@@ -41,7 +41,7 @@
     //"tstlVerbose": true,
     "noHeader": true,
     "noImplicitSelf": true,
-    "luaLibImport": "require",
+    "luaLibImport": "require-minimal",
     "sourceMapTraceback": true,
     "luaPlugins": [
       { "name":  "./ts-plugin/require-path.ts" }

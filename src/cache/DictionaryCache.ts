@@ -54,7 +54,7 @@ function getDictionaryCache(): undefined | DictionaryCache {
 }
 
 
-const NUM_SUFFIXTREE_INSERTIONS = 1
+const NUM_SUFFIXTREE_INSERTIONS = 10
 
 type TranslationData = {
     dictionary_suffix_tree: LuaTable<string, GeneralizedSuffixTree<DictionaryEntry>>;
@@ -270,6 +270,7 @@ class DictionaryCache implements GlobalCache {
         return this.translation_data.get(language_id).searchables ?? []
     }
 
+    // inspired by flib's dictionary-lite::update_gui
     private updateProgressUI(dictTask: DictionaryTask) {
         const in_progress = dictTask.dictionaries.length > 0
         //$log_debug!(`Indexing progress for language '${dictTask.language}': ${dictTask.num_indexed_entries}/${dictTask.num_all_entries}`)

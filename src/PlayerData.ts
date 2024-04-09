@@ -25,7 +25,7 @@ declare const global: {
 type indirect_player_index = PlayerIndex | { player_index: PlayerIndex }
 
 namespace PlayerData {
-    export function Init() {
+    export function Init(this: any) {
         global.players = new LuaTable()
         global.cache = new Cache()
 
@@ -37,7 +37,7 @@ namespace PlayerData {
         Dictionary.Init()
     }
 
-    export function  Load() {
+    export function Load(this: any) {
         PlayerData.LoadMetatables()
 
         if (global.cache != undefined) {
@@ -134,30 +134,30 @@ namespace PlayerData {
     }
 
     export function handleUIEvents(this: any, action: FLIBGuiAction | null, e: GuiEventData) {
-        if ( action != undefined ) {
-            if ( typeof action == "object" && typeof action.gui == "string" && typeof action.action == "string") {
-                let guiAction: GuiAction
-                guiAction = action as GuiAction
+        if (action == undefined) {
+            return;
+        }
+        if (typeof action == "object" && typeof action.gui == "string" && typeof action.action == "string") {
+            let guiAction: GuiAction = action as GuiAction
 
-                switch (guiAction.gui) {
-                    case "quick_search":
-                        PlayerData.getQuickSearch(e)?.gui_action(guiAction, e)
-                        break
-                    case "codex":
-                        PlayerData.getCodex(e)?.gui_action(guiAction, e)
-                        break
-                    case "common":
-                        let parent_ele = e.element?.parent?.parent
-                        if (parent_ele != undefined && parent_ele["list_container"] != undefined) {
-                            parent_ele["list_container"].visible = !parent_ele["list_container"].visible
-                        }
-                        break
-                    default:
-                        $log_warn!(`Unknown gui identifier "${guiAction.gui}" cannot assign action "${guiAction.action}" to gui!`)
-                }
-            } else {
-                $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
+            switch (guiAction.gui) {
+                case "quick_search":
+                    PlayerData.getQuickSearch(e)?.gui_action(guiAction, e)
+                    break
+                case "codex":
+                    PlayerData.getCodex(e)?.gui_action(guiAction, e)
+                    break
+                case "common":
+                    let parent_ele = e.element?.parent?.parent
+                    if (parent_ele != undefined && parent_ele["list_container"] != undefined) {
+                        parent_ele["list_container"].visible = !parent_ele["list_container"].visible
+                    }
+                    break
+                default:
+                    $log_warn!(`Unknown gui identifier "${guiAction.gui}" cannot assign action "${guiAction.action}" to gui!`)
             }
+        } else {
+            $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
         }
     }
 

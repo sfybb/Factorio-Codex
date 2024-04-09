@@ -104,7 +104,7 @@ function do_verify(element: any | undefined, info: Verifyinfo, pi_next: validate
     let type = typeof element
     let status: validate_status
 
-    //$log_info!(`${info.field}: ${info.type};; ${serpent.line(element, {maxlevel: 1, comment: false})}`)
+    //$log_debug!(`${info.field}: ${info.type};; ${serpent.line(element, {maxlevel: 1, comment: false})}`)
 
     if (info.type == "Verifiable") {
         let verifiableObj = element as Verifiable
@@ -144,7 +144,7 @@ function do_verify(element: any | undefined, info: Verifyinfo, pi_next: validate
     }
 
     if (status != validate_status.OK) {
-        $log_info!(`${info.field}: ${info.type};; ${serpent.line(element, {maxlevel: 1, comment: false})}`)
+        $log_debug!(`${info.field}: ${info.type};; ${serpent.line(element, {maxlevel: 1, comment: false})}`)
     }
 
     return status
@@ -170,7 +170,7 @@ function verify_internal<T extends Verifiable>(obj: T, infoList: Verifyinfo[], p
             status = validate_status.FIXED
         }
 
-        $log_info!(Util.format_validate_msg(pi, info.field, status))
+        $log_debug!(Util.format_validate_msg(pi, info.field, status))
         if (status > overallStatus) overallStatus = status
 
         // $log_err!(`Expected field ${info.field} to have type ${info.type}${info.optional ? " (optional)" : ""
@@ -198,7 +198,7 @@ function verify_internal_array(arr: any[], info: Verifyinfo, pi: validate_print_
             status = validate_status.FIXED
         }
 
-        $log_info!(Util.format_validate_msg(pi, `[${i}]`, status))
+        $log_debug!(Util.format_validate_msg(pi, `[${i}]`, status))
         if (status > overallStatus) overallStatus = status
     }
 
