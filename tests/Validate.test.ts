@@ -3,7 +3,7 @@ import {describe, expect, test, jest} from '@jest/globals';
 import verify, {Verifiable, Verifyinfo} from "../src/Validate";
 import {validate_status} from "../src/Util";
 
-global.$log_info = jest.fn()
+global.$log_debug = jest.fn()
 
 // @ts-ignore
 global.serpent = { line: jest.fn() }

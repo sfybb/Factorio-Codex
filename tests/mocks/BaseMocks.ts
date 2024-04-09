@@ -32,7 +32,9 @@ global.game = {
     fluid_prototypes: {},
     technology_prototypes: {},
 
-    get_player: jest.fn()
+    get_player: jest.fn(),
+
+    players: []
 }
 
 
@@ -49,3 +51,11 @@ global.serpent = {
     // @ts-ignore
     load: (str: string, options?: { safe?: boolean }) => $multi([false, "Mock Load"])
 }
+
+jest.mock('__core__.lualib.mod-gui', () => ({
+    __esModule: true,
+    get_frame_flow: jest.fn(),
+    get_button_flow: jest.fn()
+}), {
+    virtual: true
+});

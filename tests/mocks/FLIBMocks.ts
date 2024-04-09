@@ -38,6 +38,23 @@ jest.mock('__flib__.dictionary', () => ({
     virtual: true
 });
 
+jest.mock('__flib__.dictionary-lite', () => ({
+    __esModule: true,
+    set_use_local_storage: jest.fn(),
+    on_init: jest.fn(),
+    on_configuration_changed: jest.fn(),
+    on_tick: jest.fn(),
+    on_string_translated: jest.fn(),
+    on_player_joined_game: jest.fn(),
+    handle_events: jest.fn(),
+    new: jest.fn(),
+    add: jest.fn(),
+    get_all: jest.fn(),
+    get: jest.fn(),
+}), {
+    virtual: true
+});
+
 jest.mock('__flib__.table', () => ({
     __esModule: true,
     shallow_copy: jest.fn()

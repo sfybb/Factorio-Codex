@@ -30,7 +30,8 @@ global.game = {
     get_filtered_entity_prototypes: () => new Map<string, any>(),
     get_filtered_item_prototypes: () => new Map<string, any>(),
     recipe_category_prototypes: new Map<string, {name: string}>([[ "test", {name: "Test recipe cat. Meow!"}]]),
-    resource_category_prototypes: new Map<string, {name: string}>([[ "test", {name: "Test cat. Meow!"}]])
+    resource_category_prototypes: new Map<string, {name: string}>([[ "test", {name: "Test cat. Meow!"}]]),
+    players: []
 }
 
 import playerData from "../src/PlayerData"
