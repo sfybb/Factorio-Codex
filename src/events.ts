@@ -66,32 +66,33 @@ namespace Events {
                     continue
                 }
                 let task = taskData as Task
+                let taskExecutor: undefined | TaskExecutor;
 
                 if (task.type == "gui") {
-                    let taskExecutor: undefined | TaskExecutor;
                     if (task.gui == "qs") {
                         taskExecutor = PlayerData.getQuickSearch(task.player_index)
                     } else if (task.gui == "codex") {
                         taskExecutor = PlayerData.getCodex(task.player_index)
                     }
-
-                    $safe_call!(taskExecutor?.execute_task, taskExecutor, task)
+                } else if (task.type == "dictionary") {
+                    let dict_cache = getDictionaryCache()
+                    if (dict_cache == undefined) {
+                        // @ts-ignore
+                        $log_crit!(`Cannot save translation for ${dictTask.language}. Is mod data corrupted?`, `Cache: 'dicts_cache' is undefined. Creation must have failed`)
+                        continue
+                    }
+                    taskExecutor = dict_cache;
                 } else if (task.type == "command") {
                     if (task.command == "fc-rebuild-all") {
                         PlayerData.Rebuild()
                         Dictionary.Rebuild()
                         game.print("[color=green]Rebuild complete. Waiting for translation to finish...[/color]")
                     }
-                } else if (task.type == "dictionary") {
-                    let dict_cache = getDictionaryCache()
-
-                    if (dict_cache == undefined) {
-                        // @ts-ignore
-                        $log_crit!(`Cannot save translation for ${dictTask.language}. Is mod data corrupted?`, `Cache: 'dicts_cache' is undefined. Creation must have failed`)
-                        return
-                    }
-                    dict_cache.execute_task(task)
+                    continue
                 }
+
+                // save return value otherwise macro expansion inserts returns
+                const _ = $safe_call!(taskExecutor?.execute_task, taskExecutor, task)
             }
         }
     }

@@ -1,6 +1,10 @@
 ---------------------------------------------------------------------------------------------------
-  Changes:
-    - Altered style to include more transparency, like in Satisfactory
+Version: 0.0.21
+Date: 09.04.2024
+  Quick Search Features:
+    - Performance improvements while searching at the cost of a preprocessing step
+  Bugfixes:
+    - Small bugfixes while updating libraries
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.20
 Date: 01.05.2023
