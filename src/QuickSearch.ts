@@ -11,6 +11,7 @@ import * as FLIB_on_tick_n from "__flib__.on-tick-n";
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
 import {getSettingsCache} from "./cache/SettingsCache";
+import Quantity from "./quick_search/Quantity";
 
 declare const global: {
     playerData: typeof PlayerData
@@ -47,7 +48,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
     search_results: QSResult[];
     search_has_math: boolean;
-    math_result?: number;
+    math_result?: Quantity;
 
     constructor(player_index: PlayerIndex) {
         this.player_index = player_index
@@ -228,7 +229,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         }
     }
 
-    set_math_result(result?: number, err?: string) {
+    set_math_result(result?: Quantity, err?: string) {
         if ( result == undefined && (err == undefined || err == "") ) {
             if ( this.search_has_math && this.refs.results != undefined && this.refs.results.items.length > 0 ) {
                 this.refs.results.remove_item(1)
@@ -237,7 +238,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.math_result = undefined
             this.search_has_math = false
         } else {
-            let math_text = result == undefined ? "=?" : "="+result
+            let math_text = result?.prettyPrint == undefined ? "=?" : "="+result.prettyPrint(true)
 
             if ( this.refs.results != undefined ) {
                 if ( this.search_has_math && this.refs.results.items.length > 0 ) {

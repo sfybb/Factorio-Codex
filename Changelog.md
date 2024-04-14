@@ -1,4 +1,9 @@
 # Changelog
+  - Version: 0.0.21
+    - Quick Search Features:
+        - Performance improvements while searching at the cost of a preprocessing step
+    - Bugfixes:
+        - Small bugfixes while updating libraries
   - Version: 0.0.20
     - Codex Features:
         - When hovering over any item or fluid in a recipe a short list (max 2 entries) of relevant recipes (mining / rocket launch recipes are prioritized) of how to produce that item / fluid is shown. Exception: Fluids with a temperature won't show anything.
