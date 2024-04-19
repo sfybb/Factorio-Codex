@@ -18,12 +18,28 @@ namespace SI {
 
     const si_str = ["P", "T", "G", "M", "k", "", "m", "µ", "n"]
     const si_exp = [15, 12, 9, 6, 3, 0, -3, -6, -9]
+
+    // List of derived SI-units and their representation in SI base units
+    // Some multi-letter unit SI base units may also appear in that list
     const si_derived: { [dunit: string]: Units } = {
-        Hz: makeUnit(0, {s: -1}),
-        N:  makeUnit(3, {g: 1, m: 1, s: -2}),
-        Pa: makeUnit(3, {g: 1, m: -1, s: -2}),
-        J:  makeUnit(3, {g: 1, m: 2, s: -2}),
-        W:  makeUnit(3, {g: 1, m: 2, s: -3})
+        Hz: makeUnit( 0, {s: -1}),                       // Hertz	 s^−1
+        N:  makeUnit( 3, {g:  1, m:  1, s: -2}),         // Newton  kg⋅m⋅s^−2
+        Pa: makeUnit( 3, {g:  1, m: -1, s: -2}),         // Pascal  kg⋅m^−1⋅s^−2
+        J:  makeUnit( 3, {g:  1, m:  2, s: -2}),         // Joule   kg⋅m^2⋅s^−2
+        W:  makeUnit( 3, {g:  1, m:  2, s: -3}),         // Watt    kg⋅m^2⋅s^−3
+        C:  makeUnit( 0, {              s:  1, A:  1}),  // Coulomb s⋅A
+        V:  makeUnit( 3, {g:  1, m:  2, s: -3, A: -1}),  // Volt    kg⋅m^2⋅s^−3⋅A^−1
+        F:  makeUnit(-3, {g: -1, m: -2, s:  4, A:  2}),  // Farad   kg^−1⋅m^−2⋅s^4⋅A^2
+       "Ω": makeUnit( 3, {g:  1, m:  2, s: -3, A: -2}),  // Ohm     kg⋅m^2⋅s^−3⋅A^−2
+        S:  makeUnit(-3, {g: -1, m: -2, s: -3, A:  2}),  // Siemens kg^−1⋅m^−2⋅s^3⋅A^2
+        Wb: makeUnit( 3, {g:  1, m:  2, s: -2, A: -1}),  // Weber   kg⋅m^2⋅s^−2⋅A^−1
+        T:  makeUnit( 3, {g:  1,        s: -2, A: -1}),  // Tesla   kg⋅s−2⋅A−1
+        H:  makeUnit( 3, {g:  1, m:  2, s: -2, A: -2}),  // Henry   kg⋅m^2⋅s^−2⋅A^−2
+        lm: makeUnit( 0, {cd: 1}),                       // Lumen   cd
+        lx: makeUnit( 0, {cd: 1, m: -2}),                // Lux     cd⋅m^−2
+
+        // Not derived but for since it's a multi-letter unit
+        cd: makeUnit( 0, {cd: 1}),
     }
     const si_derived_keys_largest_first = Object.keys(si_derived).sort((a, b) => b.length - a.length)
 
@@ -96,8 +112,9 @@ namespace SI {
         }
 
         let res_units: Units = {exp: si_units.exp, units: {...si_units.units}}
+        let num_units = Object.keys(si_units.units).length
 
-        if (best_match == undefined) return res_units
+        if (best_match == undefined || (best_dot == -1.0 && num_units == 1)) return res_units
         const derived_unit = si_derived[best_match]
 
 
@@ -254,13 +271,13 @@ export default class Quantity {
     }
 
     static fromNumber(val: number): Quantity {
-        console.log(`From number: ${val}`)
+        $log_trace!(`From number: ${val}`)
         return new Quantity(val)
     }
 
     static fromNumberWithUnit(val: number, unit: string): Quantity {
         if (unit.length == 0) return Quantity.fromNumber(val)
-        console.log(`From number with unit: ${val} "${unit}"`)
+        $log_trace!(`From number with unit: ${val} "${unit}"`)
 
         let exp
         if (unit.length > 1) {
@@ -273,7 +290,7 @@ export default class Quantity {
     }
 
     static fromUnit(unit: string): Quantity {
-        console.log(`From unit: "${unit}"`)
+        $log_trace!(`From unit: "${unit}"`)
         return new Quantity(1,  SI.DerivedToBaseUnits(unit))
     }
 
@@ -304,7 +321,7 @@ export default class Quantity {
     }
 
     sub(other: Quantity): Quantity {
-        console.log(`${this.prettyPrint()} - ${other.prettyPrint()}`)
+        $log_trace!(`${this.prettyPrint()} - ${other.prettyPrint()}`)
         if (!SI.CompareUnits(this.si_units, other.si_units)) throw Error("Cannot subtract values with different units")
 
         return new Quantity(this.getValue() - other.getValue(), this.si_units);
@@ -312,21 +329,21 @@ export default class Quantity {
 
     mul(other: Quantity | number): Quantity {
         if (typeof other == "number") {
-            console.log(`${this.prettyPrint()} * ${other}`)
+            $log_trace!(`${this.prettyPrint()} * ${other}`)
             return new Quantity(this.significand * other, this.si_units)
         } else {
-            console.log(`${this.prettyPrint()} * ${other.prettyPrint()}`)
+            $log_trace!(`${this.prettyPrint()} * ${other.prettyPrint()}`)
             return new Quantity(this.significand * other.significand, SI.mergeUnits(this.si_units, other.si_units));
         }
     }
 
     div(other: Quantity): Quantity {
-        console.log(`${this.prettyPrint()} / ${other.prettyPrint()}`)
+        $log_trace!(`${this.prettyPrint()} / ${other.prettyPrint()}`)
         return new Quantity(this.significand / other.significand, SI.mergeUnits(this.si_units, other.si_units, -1));
     }
 
     pow(other: Quantity): Quantity {
-        console.log(`${this.prettyPrint()} ^ ${other.prettyPrint()}`)
+        $log_trace!(`${this.prettyPrint()} ^ ${other.prettyPrint()}`)
         if (Object.keys(other.si_units.units).length !== 0) throw Error("Exponentiation with a value that has units is unsupported!")
 
         const other_val = other.getValue()
@@ -340,14 +357,14 @@ export default class Quantity {
     }
 
     mod(other: Quantity): Quantity {
-        console.log(`${this.prettyPrint()} % ${other.prettyPrint()}`)
+        $log_trace!(`${this.prettyPrint()} % ${other.prettyPrint()}`)
         if (Object.keys(other.si_units.units).length !== 0) throw Error("Modulo with a value that has units is unsupported!")
 
         return new Quantity(this.getValue() % other.getValue(), {exp: 0, units: {...this.si_units.units}})
     }
 
     factorial(): Quantity {
-        console.log(`${this.prettyPrint()}!`)
+        $log_trace!(`${this.prettyPrint()}!`)
         if (Object.keys(this.si_units.units).length !== 0) throw Error("Factorial with a value that has units is unsupported!")
 
         return new Quantity(factorial(this.getValue()))

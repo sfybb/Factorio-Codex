@@ -4,7 +4,7 @@ import Codex from "Codex";
 
 import Dictionary from "Dictionary";
 import Cache from "Cache";
-import verify from "Validate";
+import verify /*, {$verifyObject}*/ from "Validate";
 import FLIB_gui from "__flib__.gui";
 import {GuiAction} from "./IGuiRoot";
 

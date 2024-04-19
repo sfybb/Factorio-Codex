@@ -48,7 +48,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
     search_results: QSResult[];
     search_has_math: boolean;
-    math_result?: Quantity;
+    math_result?: string;
 
     constructor(player_index: PlayerIndex) {
         this.player_index = player_index
@@ -229,7 +229,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         }
     }
 
-    set_math_result(result?: Quantity, err?: string) {
+    set_math_result(result?: string, err?: string) {
         if ( result == undefined && (err == undefined || err == "") ) {
             if ( this.search_has_math && this.refs.results != undefined && this.refs.results.items.length > 0 ) {
                 this.refs.results.remove_item(1)
@@ -238,7 +238,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             this.math_result = undefined
             this.search_has_math = false
         } else {
-            let math_text = result?.prettyPrint == undefined ? "=?" : "="+result.prettyPrint(true)
+            let math_text = result == undefined ? "=?" : "="+result
 
             if ( this.refs.results != undefined ) {
                 if ( this.search_has_math && this.refs.results.items.length > 0 ) {
@@ -273,7 +273,13 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         }
 
         let math_prompt = prompt.replace(" ", "")
-        let [math_result, math_err] = QSMath.calculateString(math_prompt)
+        let [has_result, res] = QSMath.calculateString(math_prompt)
+        let math_result = undefined, math_err = undefined
+        if (has_result) {
+            math_result = (res as Quantity).prettyPrint(true)
+        } else {
+            math_err = res as string
+        }
         this.set_math_result(math_result, math_err)
 
         if (this.last_search_task != undefined) {

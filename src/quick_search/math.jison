@@ -45,8 +45,8 @@ let Quantity = require('./Quantity.ts')
 %% /* language grammar */
 
 expressions
-    : exp EOF { console.log("EOF:\t" + $1.toString()); return $1; }
-    | exp { console.log("end:\t" + $1.toString()); return $1; }
+    : AdditiveExpression EOF { console.log("EOF:\t" + $1.toString()); return $1; }
+    | AdditiveExpression { console.log("end:\t" + $1.toString()); return $1; }
     ;
 
 exp
@@ -72,4 +72,40 @@ factor
     : NUMBER IDENTIFIER -> Quantity.fromNumberWithUnit(Number($1), $2)
     | NUMBER            -> Quantity.fromNumber(Number($1))
     | IDENTIFIER        -> Quantity.fromUnit($1)
+    ;
+
+AdditiveExpression
+    : MultiplicativeExpression
+    | AdditiveExpression PLUS AdditiveExpression    -> $1.add($3)
+    | AdditiveExpression MINUS AdditiveExpression   -> $1.sub($3)
+    | AdditiveExpression PLUS EOF                         -> $1
+    | AdditiveExpression MINUS EOF                        -> $1
+    ;
+
+MultiplicativeExpression
+    : ExponentialExpression
+    | MultiplicativeExpression TIMES MultiplicativeExpression     -> $1.mul($3)
+    | MultiplicativeExpression DIVIDE MultiplicativeExpression    -> $1.div($3)
+    | MultiplicativeExpression MODULO MultiplicativeExpression    -> $1.mod($3)
+    | MultiplicativeExpression TIMES EOF                       -> $1
+    | MultiplicativeExpression DIVIDE EOF                      -> $1
+    | MultiplicativeExpression MODULO EOF                      -> $1
+    ;
+
+ExponentialExpression
+    : UnaryExpression
+    | UnaryExpression POWER UnaryExpression -> $1.pow($3)
+    | UnaryExpression POWER EOF             -> $1.pow($3)
+    ;
+
+UnaryExpression
+    : PrimaryExpression
+    | UnaryExpression FACTORIAL             -> $1.factorial()
+    | MINUS UnaryExpression %prec UMINUS    -> $2.mul(-1)
+    ;
+
+PrimaryExpression
+    : factor
+//    | LPAREN exp [RPAREN] %prec PAREN
+    | LPAREN exp RPAREN -> $exp
     ;
