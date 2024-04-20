@@ -1,5 +1,3 @@
-let console = {log: log}
-
 namespace SI {
     export type UnitList = LuaMap<string, number>
 
@@ -314,7 +312,7 @@ export default class Quantity {
     }
 
     add(other: Quantity): Quantity {
-        console.log(`${this.prettyPrint()} + ${other.prettyPrint()}`)
+        $log_trace!(`${this.prettyPrint()} + ${other.prettyPrint()}`)
         if (!SI.CompareUnits(this.si_units, other.si_units)) throw Error("Cannot add values with different units")
 
         return new Quantity(this.getValue() + other.getValue(), this.si_units);
