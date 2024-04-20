@@ -1,3 +1,11 @@
+import {
+    FlowGuiElement,
+    ListBoxGuiElement, LocalisedString,
+    LuaEntityPrototype, LuaGuiElement,
+    LuaItemPrototype,
+    LuaTechnologyPrototype,
+    uint
+} from "factorio:runtime";
 import {Category_type, getPrototypeCache} from "cache/PrototypeCache";
 import {default as SearchUtils, SortOrderDefault} from "SearchUtils";
 import {Verifiable, Verifyinfo} from "Validate";

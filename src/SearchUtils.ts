@@ -1,3 +1,6 @@
+import {LuaEntityPrototype, LuaFluidPrototype, LuaItemPrototype,
+    LuaRecipePrototype, LuaTechnologyPrototype, LuaTilePrototype} from "factorio:runtime";
+
 type orderFunction<T> = ((this: any, a: T, b: T, ...args: any[]) => number)
 export type multiOrderFunc<T> = orderFunction<T> | orderFunction<T>[]
 

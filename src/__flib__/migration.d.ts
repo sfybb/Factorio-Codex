@@ -1,10 +1,11 @@
+// @noSelfInFile
 type FLIBMigrationsTable = {
     [key: string]: (...args: any) => void;
 }
 
 /** @noResolution */
 declare module "__flib__.migration" {
-    export function on_config_changed(event: ConfigurationChangedData,
+    export function on_config_changed(event: FactorioRuntime.ConfigurationChangedData,
                                       migrations: FLIBMigrationsTable,
                                       mod_name: undefined | string,
                                       ...args: any): boolean;

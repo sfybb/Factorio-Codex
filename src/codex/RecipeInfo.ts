@@ -1,3 +1,5 @@
+import { LuaCustomTable, LuaFluidPrototype, LuaForce,
+    LuaGuiElement, LuaItemPrototype, LuaRecipe, LuaRecipePrototype, RecipePrototypeFilterWrite } from "factorio:runtime";
 import {getRecipeCache} from "cache/RecipeCache"
 import RecipeUI from "codex/RecipeUI"
 import CodexCommonUI from "codex/CodexCommonUI";

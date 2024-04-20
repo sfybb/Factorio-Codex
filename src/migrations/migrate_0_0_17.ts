@@ -1,3 +1,4 @@
+import {PlayerIndex} from "factorio:runtime";
 import CacheManager from "Cache";
 import {player_table} from "PlayerData";
 import Codex from "Codex";

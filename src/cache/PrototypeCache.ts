@@ -1,3 +1,11 @@
+import {
+    LocalisedString,
+    LuaFluidPrototype,
+    LuaItemPrototype,
+    LuaTechnologyPrototype,
+    LuaTilePrototype
+} from "factorio:runtime";
+
 // @ts-ignore
 import {default as CacheManager, getGlobalCache, registerCache, CacheFactory, GlobalCache} from "Cache";
 

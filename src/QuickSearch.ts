@@ -1,3 +1,5 @@
+import {BaseGuiElement,
+    DropDownGuiElement, FlowGuiElement, LabelGuiElement, ListBoxGuiElement, PlayerIndex, TextFieldGuiElement, uint} from "factorio:runtime";
 import {default as Util, validate_print_info, validate_status} from "Util";
 import {getDictionaryCache} from "cache/DictionaryCache";
 import {default as Search, SortOrderQS} from "search/Search";

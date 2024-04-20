@@ -1,3 +1,4 @@
+import {PlayerIndex} from "factorio:runtime";
 /** @noResolution */
 import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
 import {cache_id as dict_cache_id} from "../cache/DictionaryCache";

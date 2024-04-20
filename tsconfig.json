@@ -11,10 +11,10 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "types": [
-      "lua-types/5.2",
+      /*"lua-types/5.2",
       "typed-factorio/runtime",
-      "typed-factorio/strict-index-types",
-      "@typescript-to-lua/language-extensions"
+      "@typescript-to-lua/language-extensions"*/
+      "typed-factorio/runtime"
     ],
     "plugins": [
       { "name": "typescript-tstl-plugin" },

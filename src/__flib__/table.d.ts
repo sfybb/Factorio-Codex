@@ -1,5 +1,5 @@
-type FLIBArray<T> = T[] | LuaCustomTable<number, T>
-type FLIBObject = object | LuaCustomTable<number, any> | LuaCustomTable<string, any>
+type FLIBArray<T> = T[] | FactorioRuntime.LuaCustomTable<number, T>
+type FLIBObject = object | FactorioRuntime.LuaCustomTable<number, any> | FactorioRuntime.LuaCustomTable<string, any>
 
 /** @noResolution */
 declare module "__flib__.table" {

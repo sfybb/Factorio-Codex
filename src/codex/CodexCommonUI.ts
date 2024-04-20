@@ -1,3 +1,5 @@
+import {LocalisedString} from "factorio:runtime";
+
 namespace CodexCommonUI {
     export function get_collapsable_list(label: LocalisedString, list: FLIBGuiBuildStructure[]): FLIBGuiBuildStructure {
         return {

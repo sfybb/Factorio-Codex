@@ -1,3 +1,4 @@
+import { ConfigurationChangedData } from "factorio:runtime";
 import {default as PlayerData, player_table} from "PlayerData";
 import CacheManager from "Cache";
 import Dict from "Dictionary";

@@ -1,3 +1,4 @@
+import {FrameGuiElement, LuaGuiElement, PlayerIndex, ProgressBarGuiElement} from "factorio:runtime";
 import {registerCache, CacheFactory, GlobalCache, getGlobalCache} from "Cache";
 import GeneralizedSuffixTree from "search/suffixtree/GeneralizedSuffixTree";
 import ISearchable from "search/Searchable";
@@ -13,7 +14,7 @@ import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
 /** @noResolution */
-import * as mod_gui from "__core__.lualib.mod-gui"
+import * as mod_gui from "mod-gui";
 
 
 export type DictionaryEntry = {

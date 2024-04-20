@@ -1,3 +1,4 @@
+import {LocalisedString, LuaGuiElement, LuaTechnologyPrototype, SpritePath} from "factorio:runtime";
 import CodexCommonUI from "./CodexCommonUI";
 import RecipeUI from "./RecipeUI";
 

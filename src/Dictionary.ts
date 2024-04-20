@@ -1,3 +1,4 @@
+import {LuaFluidPrototype, LuaItemPrototype, LuaTechnologyPrototype, LuaTilePrototype} from "factorio:runtime";
 /** @noResolution */
 import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
 

@@ -1,3 +1,4 @@
+import {PlayerIndex} from "factorio:runtime";
 import {default as Util, validate_status, validate_print_info} from "Util";
 import QuickSearch from "QuickSearch";
 import Codex from "Codex";
@@ -5,7 +6,6 @@ import Codex from "Codex";
 import Dictionary from "Dictionary";
 import Cache from "Cache";
 import verify /*, {$verifyObject}*/ from "Validate";
-import FLIB_gui from "__flib__.gui";
 import {GuiAction} from "./IGuiRoot";
 
 

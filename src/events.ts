@@ -1,3 +1,4 @@
+import {ConfigurationChangedData, CustomInputEvent, OnPlayerCreatedEvent, OnTickEvent} from "factorio:runtime";
 import "logging"
 /** @noResolution */
 import Features from "Features"

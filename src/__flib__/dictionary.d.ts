@@ -6,17 +6,17 @@ declare class FLIBRawDictionary {
     total: number
 
     // internal
-    ref: LocalisedString
-    strings: LocalisedString
+    ref: FactorioRuntime.LocalisedString
+    strings: FactorioRuntime.LocalisedString
     name: string
 
-    add(internal: string, translation: LocalisedString): void;
+    add(internal: string, translation: FactorioRuntime.LocalisedString): void;
 }
 
 interface FLIBTranslationFinishedOutput {
     language: string,
     dictionaries: LuaTable<string, LuaTable<string, string>>,
-    players: PlayerIndex[]
+    players: FactorioRuntime.PlayerIndex[]
 }
 
 
@@ -25,19 +25,19 @@ interface FLIBTranslationFinishedOutput {
 declare module "__flib__.dictionary" {
     function _new(name: string,
                   keep_untranslated?: boolean,
-                  initial_contents?: LuaTable<string, LocalisedString>): FLIBRawDictionary;
+                  initial_contents?: LuaTable<string, FactorioRuntime.LocalisedString>): FLIBRawDictionary;
     export {_new as new};
 
     export function init(): void;
 
     export function load(): void;
 
-    export function translate(player: LuaPlayer): void;
+    export function translate(player: FactorioRuntime.LuaPlayer): void;
     export function check_skipped(): void;
 
-    export function process_translation(event_data: OnStringTranslatedEvent): undefined | FLIBTranslationFinishedOutput;
+    export function process_translation(event_data: FactorioRuntime.OnStringTranslatedEvent): undefined | FLIBTranslationFinishedOutput;
 
 
-    export function cancel_translation(player_index: PlayerIndex): void;
+    export function cancel_translation(player_index: FactorioRuntime.PlayerIndex): void;
     export function set_use_local_storage(value: boolean): void;
 }

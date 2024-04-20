@@ -1,3 +1,4 @@
+import {LocalisedString, double, SpritePath, Product, Ingredient, LuaForce} from "factorio:runtime";
 import {getRecipeCache, AnyRecipe, CustomIngredient} from "cache/RecipeCache";
 import {default as Features, Feature_ids} from "../Features";
 

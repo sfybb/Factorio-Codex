@@ -10,7 +10,7 @@ enum LogLevel {
 function $compileTimeLogLvl(): LogLevel | undefined {
     //const config = $$readFile!<{node_env?: string, logLevel?: string}>("./config.json", true)
     // @ts-ignore
-    const config: {node_env?: string, logLevel?: string} | undefined = null
+    const config: { node_env?: string, logLevel?: string } | undefined = null
 
     if (config != undefined) {
         if (config.logLevel != undefined) {
@@ -52,19 +52,23 @@ function $log(log_lvl: LogLevel, msg: string) {
 
 
 function $log_trace(msg: string) {
-    $log!(LogLevel.TRACE,    `[TRACE]    ${msg}`)
+    $log!(LogLevel.TRACE, `[TRACE]    ${msg}`)
 }
+
 function $log_debug(msg: string) {
-    $log!(LogLevel.DEBUG,    `[DEBUG]    ${msg}`)
+    $log!(LogLevel.DEBUG, `[DEBUG]    ${msg}`)
 }
+
 function $log_info(msg: string) {
-    $log!(LogLevel.INFO,     `[INFO]     ${msg}`)
+    $log!(LogLevel.INFO, `[INFO]     ${msg}`)
 }
+
 function $log_warn(msg: string) {
-    $log!(LogLevel.WARNING,  `[WARNING]  ${msg}`)
+    $log!(LogLevel.WARNING, `[WARNING]  ${msg}`)
 }
+
 function $log_err(msg: string) {
-    $log!(LogLevel.ERROR,    `[ERROR]    ${msg}`)
+    $log!(LogLevel.ERROR, `[ERROR]    ${msg}`)
 }
 
 function $log_crit(msg: string, addInfo: string) {
@@ -79,7 +83,7 @@ function $log_crit_raw(msg: string) {
     log(`[CRITICAL] ${msg}`)
 }
 
-function $get_player_string(pID: PlayerIndex): string {
+function $get_player_string(pID: FactorioRuntime.PlayerIndex): string {
     let ____temp_player = game?.get_player(pID)
     return ____temp_player == undefined ? `player ID: ${pID}` : `player ${pID} ('${____temp_player.name}')`
 }

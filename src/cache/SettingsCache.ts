@@ -1,3 +1,4 @@
+import {PlayerIndex} from "factorio:runtime";
 import {getPlayerCache, registerCache, CacheFactory, PlayerCache} from "Cache";
 import PlayerData from "PlayerData";
 import {default as SearchOptions, getDefaultSearchOptions} from "search/SearchOptions";

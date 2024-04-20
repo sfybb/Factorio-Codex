@@ -1,3 +1,14 @@
+import {
+    FlowGuiElement,
+    FrameGuiElement, LabelGuiElement,
+    LocalisedString,
+    LuaFluidPrototype,
+    LuaItemPrototype,
+    LuaObject,
+    LuaTechnologyPrototype,
+    PlayerIndex, ProgressBarGuiElement, ScrollPaneGuiElement, SpriteButtonGuiElement,
+    SpriteGuiElement, TextFieldGuiElement, nil
+} from "factorio:runtime";
 import TechnologyInfo from "codex/TechnologyInfo";
 import {Verifiable, Verifyinfo} from "Validate";
 import RecipeInfo from "codex/RecipeInfo";

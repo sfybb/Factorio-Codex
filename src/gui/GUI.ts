@@ -48,17 +48,17 @@ namespace GUI {
         }
     }
 
-    function addGuiElement(parent: LuaGuiElement, structure: UIBuildStructure, slots: UISlots) {
+    function addGuiElement(parent: FactorioRuntime.LuaGuiElement, structure: UIBuildStructure, slots: UISlots) {
         
     }
 
-    export function build(parent: LuaGuiElement, structure: UIBuildStructure): UIRefs {
+    export function build(parent: FactorioRuntime.LuaGuiElement, structure: UIBuildStructure): UIRefs {
         // @ts-ignore
         addGuiElement()
         return {}
     }
 
-    export function add(parent: LuaGuiElement, structure: UIBuildStructure) {
+    export function add(parent: FactorioRuntime.LuaGuiElement, structure: UIBuildStructure) {
 
     }
 }

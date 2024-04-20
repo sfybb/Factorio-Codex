@@ -1,8 +1,8 @@
 import {DictionaryEntry, getDictionaryCache} from "cache/DictionaryCache";
 import {default as SearchUtils, SearchResult, multiOrderFunc} from "SearchUtils";
-import {getPrototypeCache} from "cache/PrototypeCache";
 import ISearchable from "search/Searchable";
 import MigratablePrototype from "PrototypeHelper";
+import {LuaFluidPrototype, LuaItemPrototype, LuaTilePrototype, LuaTechnologyPrototype, PlayerIndex } from "factorio:runtime";
 
 type Dict = {
     prototype_list: LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>> |

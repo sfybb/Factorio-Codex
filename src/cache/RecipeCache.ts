@@ -1,3 +1,14 @@
+import {
+    double,
+    Ingredient,
+    LocalisedString, LuaEntityPrototype, LuaFluidPrototype, LuaForce, LuaItemPrototype,
+    LuaRecipe,
+    LuaRecipePrototype, PlayerIndex,
+    Product, RecipePrototypeFilterWrite,
+    RocketSiloEntityPrototype,
+    SpritePath,
+    uint
+} from "factorio:runtime";
 // @ts-ignore
 import {CacheFactory, getGlobalCache, GlobalCache, registerCache} from "Cache";
 import {getPrototypeCache} from "./PrototypeCache";

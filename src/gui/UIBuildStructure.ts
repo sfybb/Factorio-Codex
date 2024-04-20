@@ -30,18 +30,18 @@ interface UIBuildStructure {
     slots?: UISlots[]
 
 
-    caption?: LocalisedString
-    tooltip?: LocalisedString
+    caption?: FactorioRuntime.LocalisedString
+    tooltip?: FactorioRuntime.LocalisedString
     enabled?: boolean
     visible?: boolean
     ignored_by_interaction?: boolean
-    tags?: Tags
-    index?: uint
-    anchor?: GuiAnchor
+    tags?: FactorioRuntime.Tags
+    index?: FactorioRuntime.uint
+    anchor?: FactorioRuntime.GuiAnchor
     style?: string
     [key: string]: undefined | any
 }
 
 interface UIRefs {
-    [key: string]: LuaGuiElement | UIElement
+    [key: string]: FactorioRuntime.LuaGuiElement | UIElement
 }

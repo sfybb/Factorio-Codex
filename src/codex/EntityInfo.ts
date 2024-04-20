@@ -1,3 +1,5 @@
+import {LocalisedString, LuaEntityPrototype, LuaItemPrototype, LuaTechnologyPrototype} from "factorio:runtime";
+
 type EntityInfo = {
     id: string,
     localised_string: LocalisedString,

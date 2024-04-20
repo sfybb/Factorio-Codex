@@ -1,3 +1,5 @@
+import {PlayerIndex} from "factorio:runtime";
+
 interface BaseTask {
     readonly type: string,
 

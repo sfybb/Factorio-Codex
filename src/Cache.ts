@@ -1,3 +1,4 @@
+import { PlayerIndex } from "factorio:runtime"
 
 declare const global: {
     cache: CacheManager
