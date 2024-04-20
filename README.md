@@ -1,3 +1,4 @@
+[![CI](https://github.com/sfybb/Factorio-Codex/actions/workflows/node.js.yml/badge.svg?branch=master)](https://github.com/sfybb/Factorio-Codex/actions/workflows/node.js.yml)
 # Factorio Codex
 This mod adds a Satisfactory like codex and quick search to factorio.
 Currently, this mod is in its Alpha stages. This means this mod might not be stable and there will be a changes
