@@ -14,8 +14,7 @@ import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
 /** @noResolution */
-import * as mod_gui from "mod-gui";
-
+import * as mod_gui from "__core__.lualib.mod-gui";
 
 export type DictionaryEntry = {
     type: string,

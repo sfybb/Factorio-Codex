@@ -1,4 +1,5 @@
 import {jest} from "@jest/globals";
+import {table} from "factorio:runtime";
 
 // Mock logging
 let savedConsoleMsgs: string[] = []
@@ -39,7 +40,7 @@ global.game = {
 
 
 
-function serpentPrint(tbl: unknown, options?: Partial<SerpentOptions>): string {
+function serpentPrint(tbl: unknown, options?: Partial<serpent.Options>): string {
     return JSON.stringify(tbl)
 }
 

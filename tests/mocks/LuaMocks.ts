@@ -1,6 +1,7 @@
 // @ts-nocheck
 import "./StringMock"
 import {jest} from "@jest/globals";
+import {table} from "factorio:runtime";
 class LuaTableMock {
     constructor() {
     }
@@ -34,10 +35,21 @@ function rangeMock(start: number, limit: number, step?: number): Iterable<number
     }
 }
 
+function table_size(t: table): number {
+    if (t instanceof Map) {
+        return t.size
+    } else if (t instanceof Set) {
+        return t.size
+    }
+    return Object.keys(t).length
+}
+
 global.$range = rangeMock
 global.LuaSet = Set
+global.LuaMap = Map
 global.LuaTable = LuaTableMock
 global.setmetatable = jest.fn()
+global.table_size = table_size
 global.table = {
     concat(list: (string | number)[], sep?: string, i?: number, j?: number): string {
         // TODO invalid implementation

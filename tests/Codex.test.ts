@@ -16,6 +16,13 @@ import {validate_status} from "../src/Util";
 import Categories from "../src/codex/Categories";
 import RecipeInfo from "../src/codex/RecipeInfo";
 import TechnologyInfo from "../src/codex/TechnologyInfo";
+import {
+    FlowGuiElement,
+    LuaFluidPrototype, LuaItemPrototype, LuaTechnologyPrototype,
+    PlayerIndex,
+    ProgressBarGuiElement, ScrollPaneGuiElement,
+    SpriteGuiElement
+} from "factorio:runtime";
 
 describe("Codex module", () => {
     afterEach(() => {

@@ -1,11 +1,20 @@
-import Quantity from '../src/quick_search/Quantity';
 import {describe, expect, test} from "@jest/globals";
+
+import "./mocks/LuaMocks"
+import "./mocks/BaseMocks"
+
+import Quantity from '../src/quick_search/Quantity';
 
 describe("SI Unit module", () => {
     test("Pretty print converts to derived unit", () => {
+        let W_base_uints = new LuaMap<string, number>()
+        W_base_uints.set('s', -2)
+        W_base_uints.set('m',  2)
+        W_base_uints.set('g',  1)
+
         let u = new Quantity(1, {
             exp: 1,
-            units: {s: -2, m: 2, g: 1}
+            units: W_base_uints
         })
         expect(u.prettyPrint()).toStrictEqual("10 mJ")
     })
@@ -46,13 +55,18 @@ describe("SI Unit module", () => {
         let s = Quantity.fromUnit("m")
         let s_inv = Quantity.fromNumber(1).div(s)
         let s_inv_sq = s_inv.pow(Quantity.fromNumber(2))
-        expect(s_inv.toString()).toStrictEqual("1 Pa")
+        expect(s_inv_sq.toString()).toStrictEqual("1 m^-2")
     })
 
     test("Unit inverse units 1/J^2 => 1 J^-2", () => {
+        let J_base_uints = new LuaMap<string, number>()
+        J_base_uints.set('s', -4)
+        J_base_uints.set('m',  4)
+        J_base_uints.set('g',  2)
+
         let j = new Quantity(1, {
             exp: 6,
-            units: {s: -4, m: 4, g: 2}
+            units: J_base_uints
         })
         let j_inv = Quantity.fromNumber(1).div(j)
         expect(j_inv.toString()).toStrictEqual("1 J^-2")

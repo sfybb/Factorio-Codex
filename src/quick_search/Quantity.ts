@@ -33,11 +33,11 @@ namespace SI {
         Wb: makeUnit( 3, {g:  1, m:  2, s: -2, A: -1}),  // Weber   kg⋅m^2⋅s^−2⋅A^−1
         T:  makeUnit( 3, {g:  1,        s: -2, A: -1}),  // Tesla   kg⋅s−2⋅A−1
         H:  makeUnit( 3, {g:  1, m:  2, s: -2, A: -2}),  // Henry   kg⋅m^2⋅s^−2⋅A^−2
-        lm: makeUnit( 0, {cd: 1}),                       // Lumen   cd
+/*        lm: makeUnit( 0, {cd: 1}),                       // Lumen   cd
         lx: makeUnit( 0, {cd: 1, m: -2}),                // Lux     cd⋅m^−2
 
         // Not derived but for since it's a multi-letter unit
-        cd: makeUnit( 0, {cd: 1}),
+        cd: makeUnit( 0, {cd: 1}),*/
     }
     const si_derived_keys_largest_first = Object.keys(si_derived).sort((a, b) => b.length - a.length)
 
@@ -78,7 +78,7 @@ namespace SI {
 
     function DotProdUnits(a: UnitList, b: UnitList) {
         let res: number = 0
-        for (const key in a) {
+        for (const [key, _] of a) {
             const a_val = a.get(key)
             const b_val = b.get(key)
             if (b_val != undefined && a_val != undefined) res += a_val * b_val
@@ -86,16 +86,23 @@ namespace SI {
         return res
     }
 
-    export function BaseUnitsToDerived(si_units: Units): Units {
+    export function BaseUnitsToDerived(si_units: Units, blacklisted_units?: LuaSet<string>): Units {
+        blacklisted_units = blacklisted_units ?? new LuaSet<string>()
         let best_match = undefined
         let best_dot = 0
         let best_dot_abs = 0
         const len_si_sq = DotProdUnits(si_units.units, si_units.units)
         const len_si = Math.sqrt(len_si_sq)
-        if (len_si_sq == 0) return {exp: si_units.exp, units: {...si_units.units}}
 
-        for (let key in si_derived) {
-            const derived_unit = si_derived[key]
+        let unit_copy = {exp: si_units.exp, units: new LuaMap<string, number>()}
+        for (let [key, val] of si_units.units) {
+            unit_copy.units.set(key, val)
+        }
+
+        if (len_si_sq == 0) return unit_copy
+
+        for (let [key, derived_unit] of Object.entries(si_derived)) {
+            if (blacklisted_units.has(key)) continue
             const len_derived = Math.sqrt(DotProdUnits(derived_unit.units, derived_unit.units))
 
             const dot = DotProdUnits(derived_unit.units, si_units.units) / (len_derived * len_si)
@@ -109,8 +116,8 @@ namespace SI {
             }
         }
 
-        let res_units: Units = {exp: si_units.exp, units: {...si_units.units}}
-        let num_units = Object.keys(si_units.units).length
+        let res_units: Units = unit_copy
+        let num_units = table_size(si_units.units)
 
         if (best_match == undefined || (best_dot == -1.0 && num_units == 1)) return res_units
         const derived_unit = si_derived[best_match]
@@ -132,12 +139,23 @@ namespace SI {
         }
 
         res_units.units.set(best_match, num_iter)
-        return res_units
+        blacklisted_units.add(best_match)
+
+        let num_base_units = 0
+        for (let [key, derived_unit] of Object.entries(res_units.units)) {
+            if (derived_unit != 0 && (key == "cd" || si_derived[key] == undefined)) num_base_units++;
+        }
+
+        return num_base_units > 0 ? BaseUnitsToDerived(res_units, blacklisted_units) : res_units
     }
 
     export function mergeUnits(a: Units, b: Units, sig?: 1 | -1): Units {
         sig = sig ?? 1
-        let result: Units = {exp: a.exp, units: {...a.units}}
+        let result: Units = {exp: a.exp, units: new LuaMap<string, number>()}
+        for (let [key, val] of a.units) {
+            result.units.set(key, val)
+        }
+
         result.exp += sig * b.exp
 
         const bunits = b.units
@@ -152,12 +170,9 @@ namespace SI {
     }
 
     export function CompareUnits(a: Units, b: Units): boolean {
-        const a_keys = Object.keys(a.units)
-        const b_keys = Object.keys(b.units)
+        if (table_size(a.units) != table_size(b.units)) return false
 
-        if (a_keys.length != b_keys.length) return false
-
-        for (let key of a_keys) {
+        for (let key of Object.keys(a.units)) {
             if (a.units.get(key) != b.units.get(key)) return false
         }
         return true
@@ -171,7 +186,7 @@ namespace SI {
         let exp = derived_units.exp
 
         // may negate the exp variable
-        if (Object.keys(derived_units.units).length != 0) {
+        if (table_size(derived_units.units) != 0) {
             let nom = []
             let denom = []
 
@@ -315,14 +330,24 @@ export default class Quantity {
         $log_trace!(`${this.prettyPrint()} + ${other.prettyPrint()}`)
         if (!SI.CompareUnits(this.si_units, other.si_units)) throw Error("Cannot add values with different units")
 
-        return new Quantity(this.getValue() + other.getValue(), this.si_units);
+        let new_units: SI.Units = {
+            exp: 0,
+            units: this.si_units.units
+        }
+
+        return new Quantity(this.getValue() + other.getValue(), new_units);
     }
 
     sub(other: Quantity): Quantity {
         $log_trace!(`${this.prettyPrint()} - ${other.prettyPrint()}`)
         if (!SI.CompareUnits(this.si_units, other.si_units)) throw Error("Cannot subtract values with different units")
 
-        return new Quantity(this.getValue() - other.getValue(), this.si_units);
+        let new_units: SI.Units = {
+            exp: 0,
+            units: this.si_units.units
+        }
+
+        return new Quantity(this.getValue() - other.getValue(), new_units);
     }
 
     mul(other: Quantity | number): Quantity {
@@ -342,12 +367,12 @@ export default class Quantity {
 
     pow(other: Quantity): Quantity {
         $log_trace!(`${this.prettyPrint()} ^ ${other.prettyPrint()}`)
-        if (Object.keys(other.si_units.units).length !== 0) throw Error("Exponentiation with a value that has units is unsupported!")
+        if (table_size(other.si_units.units) !== 0) throw Error("Exponentiation with a value that has units is unsupported!")
 
         const other_val = other.getValue()
 
-        const res_units: SI.UnitList = {...this.si_units.units}
-        for(let [key, exp] of res_units) {
+        const res_units: SI.UnitList = new LuaMap<string, number>()
+        for(let [key, exp] of this.si_units.units) {
             res_units.set(key, exp * other_val)
         }
 
@@ -356,14 +381,14 @@ export default class Quantity {
 
     mod(other: Quantity): Quantity {
         $log_trace!(`${this.prettyPrint()} % ${other.prettyPrint()}`)
-        if (Object.keys(other.si_units.units).length !== 0) throw Error("Modulo with a value that has units is unsupported!")
+        if (table_size(other.si_units.units) !== 0) throw Error("Modulo with a value that has units is unsupported!")
 
         return new Quantity(this.getValue() % other.getValue(), {exp: 0, units: {...this.si_units.units}})
     }
 
     factorial(): Quantity {
         $log_trace!(`${this.prettyPrint()}!`)
-        if (Object.keys(this.si_units.units).length !== 0) throw Error("Factorial with a value that has units is unsupported!")
+        if (table_size(this.si_units.units) !== 0) throw Error("Factorial with a value that has units is unsupported!")
 
         return new Quantity(factorial(this.getValue()))
     }

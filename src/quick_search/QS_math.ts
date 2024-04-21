@@ -11,15 +11,15 @@ namespace QSMath {
             try {
                 $log_info!(`Parsing "${expression}"`)
                 res = parse(expression)
-            } catch (err: any) {
-                let stack = err?.stack ?? debug.traceback()
-                if (err.message != undefined) {
-                    $log_info!(`${err.message}\n${stack}`)
+            } catch (exception: any) {
+                let stack = exception?.stack ?? debug.traceback()
+                if (exception.message != undefined) {
+                    $log_info!(`${exception.message}\n${stack}`)
                 } else {
                     $log_info!(`Parsing exception: ${serpent.line(err)}`)
                 }
                 res = undefined
-                err = err.message ?? "Parsing exception"
+                err = stack ?? (exception.message ?? "Parsing exception")
             }
         }
         if (res != undefined) {

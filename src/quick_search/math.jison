@@ -5,7 +5,7 @@
 %options flex
 
 {{
-let Quantity = require('./Quantity.ts')
+let Quantity = require('./Quantity.ts').default
 }}
 
 %lex
@@ -49,7 +49,7 @@ expressions
     | AdditiveExpression { console.log("end:\t" + $1.toString()); return $1; }
     ;
 
-exp
+__unused__exp
     : factor
     | exp partial_exp EOF               -> $1
     | exp PLUS exp                      -> $1.add($3)
@@ -94,8 +94,8 @@ MultiplicativeExpression
 
 ExponentialExpression
     : UnaryExpression
-    | UnaryExpression POWER UnaryExpression -> $1.pow($3)
-    | UnaryExpression POWER EOF             -> $1.pow($3)
+    | UnaryExpression POWER ExponentialExpression -> $1.pow($3)
+    | UnaryExpression POWER EOF                   -> $1
     ;
 
 UnaryExpression
@@ -106,6 +106,6 @@ UnaryExpression
 
 PrimaryExpression
     : factor
-//    | LPAREN exp [RPAREN] %prec PAREN
-    | LPAREN exp RPAREN -> $exp
+//    | LPAREN AdditiveExpression [RPAREN] %prec PAREN
+    | LPAREN AdditiveExpression RPAREN -> $2
     ;
