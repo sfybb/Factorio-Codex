@@ -1,159 +1,164 @@
 # Changelog
+  - Version: 0.1.0
+    - Quick Search Features:
+      - Math expressions now support implicit multiplications
+      - Added support for calculating with units e.g. "4 GJ / 40 MW => 100 s"
+# Changelog
   - Version: 0.0.21
     - Quick Search Features:
-        - Performance improvements while searching at the cost of a preprocessing step
+      - Performance improvements while searching at the cost of a preprocessing step
     - Bugfixes:
-        - Small bugfixes while updating libraries
+      - Small bugfixes while updating libraries
   - Version: 0.0.20
     - Codex Features:
-        - When hovering over any item or fluid in a recipe a short list (max 2 entries) of relevant recipes (mining / rocket launch recipes are prioritized) of how to produce that item / fluid is shown. Exception: Fluids with a temperature won't show anything.
+      - When hovering over any item or fluid in a recipe a short list (max 2 entries) of relevant recipes (mining / rocket launch recipes are prioritized) of how to produce that item / fluid is shown. Exception: Fluids with a temperature won't show anything.
     - Quick Search Features:
-        - Positioning now respects interface scale settings
+      - Positioning now respects interface scale settings
     - Bugfixes:
-        - Fixed a bug where invalid prototypes remained in the codex causing a crash everytime it is opened.
-        - Fixed a bug where fluids didn't receive mining productivity.
-        - Fixed a bug where fluids had non-mining / non-pumping recipes in "Mined from" section.
+      - Fixed a bug where invalid prototypes remained in the codex causing a crash everytime it is opened.
+      - Fixed a bug where fluids didn't receive mining productivity.
+      - Fixed a bug where fluids had non-mining / non-pumping recipes in "Mined from" section.
   - Version: 0.0.19
     - Codex Features:
-        - When viewing recipes the "Produced by" tab prioritizes recipes that mainly produce the currently viewed item.
+      - When viewing recipes the "Produced by" tab prioritizes recipes that mainly produce the currently viewed item.
     - Features:
-        - Added command to reset and rebuild mod data ("/fc-rebuild-all").
+      - Added command to reset and rebuild mod data ("/fc-rebuild-all").
     - Changes:
-        - Instead of crashing the game most errors will now be logged and only a notification will be shown to the player.
-        - Massive performance improvements while using quick search.
+      - Instead of crashing the game most errors will now be logged and only a notification will be shown to the player.
+      - Massive performance improvements while using quick search.
     - Bugfixes:
-        - Fixed a bug where offshore pumping recipes (pumping water) would show up as "Rocket launch crafting".
-        - Fixed a bug where the codex would show "\_\_1\_\_" instead of the miner speed
-        - Fixed a bug where the mod would crash when clicking on the quick search result "Waiting for translation...".
-        - Fixed a bug where shared player data failed to initialize correctly after a saved game was loaded.
-        - Fixed a bug where after installing/removing mods some new recipes wouldn't show up.
-        - Fixed a bug where invalid prototypes cause the translation to crash.
-        - Fixed a bug where invalid prototypes crash the codex.
-        - Fixed a bug where invalid prototypes crash quick search.
-        - Fixed a bug where the codex failed to show the entity list on first load.
+      - Fixed a bug where offshore pumping recipes (pumping water) would show up as "Rocket launch crafting".
+      - Fixed a bug where the codex would show "\_\_1\_\_" instead of the miner speed
+      - Fixed a bug where the mod would crash when clicking on the quick search result "Waiting for translation...".
+      - Fixed a bug where shared player data failed to initialize correctly after a saved game was loaded.
+      - Fixed a bug where after installing/removing mods some new recipes wouldn't show up.
+      - Fixed a bug where invalid prototypes cause the translation to crash.
+      - Fixed a bug where invalid prototypes crash the codex.
+      - Fixed a bug where invalid prototypes crash quick search.
+      - Fixed a bug where the codex failed to show the entity list on first load.
   - Version: 0.0.18
     - Codex Features:
-        - Now showing information like new recipes and modifiers for technologies.
-        - Improved tooltips for recipe ingredients and products now shows average, min and max amount as well as probability.
-        - Moved resource mining "recipes" to their own list titled "Mined from".
-        - Added tooltip which displays the machine crafting speed for each machine that can craft a given recipe.
-        - Added history feature which allows going back and forth to previously visited things (limit: 10 items).
+      - Now showing information like new recipes and modifiers for technologies.
+      - Improved tooltips for recipe ingredients and products now shows average, min and max amount as well as probability.
+      - Moved resource mining "recipes" to their own list titled "Mined from".
+      - Added tooltip which displays the machine crafting speed for each machine that can craft a given recipe.
+      - Added history feature which allows going back and forth to previously visited things (limit: 10 items).
     - Quick Search Features:
-        - Improved performance drastically for searches with a lot of results (searching for 'e' can result in up to 3.6k results in SE + K2. This previously needed ~150ms and now only requires ~75ms).
-        - Reduced the maximum number of shown results to 100 (you were not planning to look through more than that anyway right? right?).
+      - Improved performance drastically for searches with a lot of results (searching for 'e' can result in up to 3.6k results in SE + K2. This previously needed ~150ms and now only requires ~75ms).
+      - Reduced the maximum number of shown results to 100 (you were not planning to look through more than that anyway right? right?).
     - Features:
-        - Added support for the mod "Lua API global Variable Viewer (gvv)" (https://mods.factorio.com/mod/gvv).
+      - Added support for the mod "Lua API global Variable Viewer (gvv)" (https://mods.factorio.com/mod/gvv).
     - Changes:
-        - Completely new code base, it is only equal in functionally. No line was untouched.
+      - Completely new code base, it is only equal in functionally. No line was untouched.
   - Version: 0.0.17
     - Bugfixes:
-        - Fixed validation always failing.
+      - Fixed validation always failing.
   - Version: 0.0.16
     - Codex Features:
-        - Made category switching less laggy when viewing them again.
-        - Increased visibility of "Produced by" and "Ingredient in" headlines.
-        - Changed highlight color to green.
-        - Main recipe output has the color gray now, if present.
-        - Locked recipes are shown with different colors (default background = red, main recipe output = orange, highlight color = yellow).
-        - If in debug mode ingredients/products with an amount of 0 are shown again.
+      - Made category switching less laggy when viewing them again.
+      - Increased visibility of "Produced by" and "Ingredient in" headlines.
+      - Changed highlight color to green.
+      - Main recipe output has the color gray now, if present.
+      - Locked recipes are shown with different colors (default background = red, main recipe output = orange, highlight color = yellow).
+      - If in debug mode ingredients/products with an amount of 0 are shown again.
     - Quick Search Features:
-        - Now adjusts size and position when opened instead of only once when created.
-        - If in debug mode information relevant for sorting is added to each result.
+      - Now adjusts size and position when opened instead of only once when created.
+      - If in debug mode information relevant for sorting is added to each result.
     - Features:
-        - Added foundation for supporting newer factorio features while remaining compatible with older versions.
+      - Added foundation for supporting newer factorio features while remaining compatible with older versions.
     - Changes:
-        - Changelog now has different categories for quick search and codex features.
+      - Changelog now has different categories for quick search and codex features.
     - Bugfixes:
-        - Fixed a bug with the item sorting where the order would be messed up.
+      - Fixed a bug with the item sorting where the order would be messed up.
   - Version: 0.0.14
     - Codex Features:
-        - Recipes don't show any items/fluids that require/produce 0 units unless this is the only ingredient/product (the other ingredients/products are still shown. This manly affects the Arcosphere recipes in SE).
+      - Recipes don't show any items/fluids that require/produce 0 units unless this is the only ingredient/product (the other ingredients/products are still shown. This manly affects the Arcosphere recipes in SE).
     - Quick Search Features:
-        - Text input doesn't fight you in multiplayer anymore (this adds a very small delay to the search results).
+      - Text input doesn't fight you in multiplayer anymore (this adds a very small delay to the search results).
     - Features:
-        - Re-translation after changes to the mods (Anything that was translated before remains searchable while the re-translation is ongoing).
+      - Re-translation after changes to the mods (Anything that was translated before remains searchable while the re-translation is ongoing).
     - Changes:
-        - Under the hood changes to hopefully fix de-syncs once and for all (queue the next de-sync bug).
-        - Added more log messages.
+      - Under the hood changes to hopefully fix de-syncs once and for all (queue the next de-sync bug).
+      - Added more log messages.
   - Version: 0.0.13
     - Features:
-        - Deactivated validate outside of migration.
+      - Deactivated validate outside of migration.
   - Version: 0.0.12
     - Features:
-        - Added missing file to zip.
+      - Added missing file to zip.
   - Version: 0.0.11
     - Features:
-        - Codex: added color indicator for fluids.
-        - Validating saved mod data on migration to resolve some bugs. In some cases quick search and/or the codex reset, you will get notified if this happens.
+      - Codex: added color indicator for fluids.
+      - Validating saved mod data on migration to resolve some bugs. In some cases quick search and/or the codex reset, you will get notified if this happens.
     - Bugfixes:
-        - Fixed in-game changelog.
+      - Fixed in-game changelog.
   - Version: 0.0.10
     - Codex Features:
-        - Removed Item description beside the item. Hovering the big icon still displays the item description.
-        - Added rocket launch product support (only supports one rocket silo type for now - meaning this won't show the correct rocket silo for production in space exploration).
-        - Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount).
-        - Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled.
+      - Removed Item description beside the item. Hovering the big icon still displays the item description.
+      - Added rocket launch product support (only supports one rocket silo type for now - meaning this won't show the correct rocket silo for production in space exploration).
+      - Added mine-able resources and offshore-pump products to "Produced In" tab, also shows mining productivity effects (by showing increased production amount).
+      - Clicking on resource vein icons (added by for mine-able resources) or the current item/fluid is disabled.
     - Features:
-        - Migrations able to migrate properly now. This means if you had the codex open it should still be open at the same position (same item/fluid) after migration.
+      - Migrations able to migrate properly now. This means if you had the codex open it should still be open at the same position (same item/fluid) after migration.
     - Bugs:
-        - If the codex was open before migration the item/fluid list will not scroll to it (this does not affect the scrolling that happens when an ingredient/product gets clicked or the codex gets opened by quick search).
+      - If the codex was open before migration the item/fluid list will not scroll to it (this does not affect the scrolling that happens when an ingredient/product gets clicked or the codex gets opened by quick search).
     - Changes:
-        - Removed most of the old unknown bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code).
+      - Removed most of the old unknown bugs and replaced them with new unknown bugs! (This is due to a lot - I mean A LOT - of changes to the underlying code).
   - Version: 0.0.9
     - Codex Features:
-        - Change category and show item/fluid when changing viewed item/fluid.
-        - "Ingredient in" and "Produced by" can be collapsed now.
-        - Added recipe base time.
-        - Added list of machines that produce a given recipe.
-        - Style updates (this took way too long).
+      - Change category and show item/fluid when changing viewed item/fluid.
+      - "Ingredient in" and "Produced by" can be collapsed now.
+      - Added recipe base time.
+      - Added list of machines that produce a given recipe.
+      - Style updates (this took way too long).
     - Quick Search Features:
-        - keeps last searched input and results when opened again.
+      - keeps last searched input and results when opened again.
     - Features:
-        - Started with localisation.
+      - Started with localisation.
     - Bugfixes:
-        - Fixed migration bug.
+      - Fixed migration bug.
   - Version: 0.0.8
     - Codex Features:
-        - Reformatted tooltip for temperature when min and max temperature are the same.
-        - Huge max temperatures are now considered infinite.
+      - Reformatted tooltip for temperature when min and max temperature are the same.
+      - Huge max temperatures are now considered infinite.
     - Bugfixes:
-        - Fixed crash when viewing a recipe with min/max product amounts.
-        - Fixed temperature tooltip always showing the same min and max values.
+      - Fixed crash when viewing a recipe with min/max product amounts.
+      - Fixed temperature tooltip always showing the same min and max values.
     - Bugs:
-        - (fixed in a later version) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save).
-        - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync.
+      - (fixed in a later version) When loading a save where this mod was previously active it is possible that the migration script crashes. (Workaround: disable mod -> load save -> save and exit -> re-enable mod -> load save).
+      - (unable to reproduce in test environment) When looking at some recipes it is possible for players with different languages to de-sync.
   - Version: 0.0.7
     - Codex Features:
-        - Clicking on items/fluids in the recipe view now navigates you there.
-        - Recipes shown can now also show min/max, probability and temperature.
+      - Clicking on items/fluids in the recipe view now navigates you there.
+      - Recipes shown can now also show min/max, probability and temperature.
     - Quick Search Features:
-        - Clicking on the math result overwrites the search with that number.
-        - Now supports decimals for use in math formulas.
+      - Clicking on the math result overwrites the search with that number.
+      - Now supports decimals for use in math formulas.
     - Bugs:
-        - Added a bug that crashes the game when viewing some recipes with no "amount" data.
+      - Added a bug that crashes the game when viewing some recipes with no "amount" data.
   - Version: 0.0.6
     - Quick Search Features:
-        - Improved search (no longer searches for continuous match of input text, e.g. "miner ele" finds "electric miner").
-        - Sorts results by various criteria (hidden, matches, factorio order ...).
+      - Improved search (no longer searches for continuous match of input text, e.g. "miner ele" finds "electric miner").
+      - Sorts results by various criteria (hidden, matches, factorio order ...).
     - Codex Features:
-        - preparation for search.
+      - preparation for search.
   - Version: 0.0.5
     - Bugfixes:
-        - Fixed crash after closing and opening codex.
-        - Fixed crash when clicking on the "X" to close codex (damn you migration code!).
-        - Fixed de-sync for clients when selecting any entity in the codex.
+      - Fixed crash after closing and opening codex.
+      - Fixed crash when clicking on the "X" to close codex (damn you migration code!).
+      - Fixed de-sync for clients when selecting any entity in the codex.
   - Version: 0.0.4
     - Codex Features:
-        - More readable recipe/ingredient section.
-        - Improved layout.
+      - More readable recipe/ingredient section.
+      - Improved layout.
     - Features:
-        - Added bare-bones migration support for deleting/rebuilding codex ui.
+      - Added bare-bones migration support for deleting/rebuilding codex ui.
   - Version: 0.0.3
     - Codex Features:
-        - Added bare-bones recipe/ingredient section to codex.
+      - Added bare-bones recipe/ingredient section to codex.
     - Quick Search Features:
-        - Quick search layout improvements.
-        - Quick search sorting.
-        - Quick search math.
+      - Quick search layout improvements.
+      - Quick search sorting.
+      - Quick search math.
     - Bugfixes:
-        - Fixed de-sync/crash when playing in multiplayer (flib that's your fault!).
+      - Fixed de-sync/crash when playing in multiplayer (flib that's your fault!).
