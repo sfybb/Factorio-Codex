@@ -169,12 +169,20 @@ namespace SI {
         // Helper to calculate min_length based on unit exponents
         const calculateMinLength = (units: Units) => {
             let length = 0;
-            for (let exp of Object.values(units.units)) {
+
+            let negative_exp_penalty = 0
+            let has_positive_unit = false
+            for (let [, exp] of units.units) {
                 if (!(Math.abs(exp) > 0)) continue
+
                 let exp_len = Math.ceil(Math.log10(Math.abs(exp)))
-                length += 1 + exp_len + (exp < 0 ? 1 : 0);
+
+                if (exp < 0) negative_exp_penalty++
+                else has_positive_unit = true
+
+                length += 1 + exp_len;
             }
-            return length + table_size(units.units) - 1;
+            return length + table_size(units.units) - 1 + (has_positive_unit ? 0 : negative_exp_penalty);
         };
 
         let best_match: Units = unit_copy;
@@ -297,7 +305,7 @@ namespace SI {
     }
 
     export function Format(value: number, si_units: Units, si_prefix_no_unit?: boolean) {
-        si_prefix_no_unit = si_prefix_no_unit ?? true // TODO: Player setting
+        si_prefix_no_unit = si_prefix_no_unit ?? true
         let derived_units = /*BaseUnitsToDerived(si_units)*/OptimalBaseUnitsToDerived(si_units)
 
         let unit = ""

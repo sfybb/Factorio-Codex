@@ -23,9 +23,7 @@ type ParsedToken = {token: string, type: TokenType}
 type Token = [string, TokenType];
 
 const tokens: Token[] =  [
-    ["^%-?%d+%.?%d*", 'NUMBER'],
-    ["^[a-zA-Z]+", 'IDENT'],
-    ['^"[^"]+"', 'STRING'],
+    // These tokens have a higher priority
     ["^%+", '+'],
     ["^-", '-'],
     ["^%*", '*'],
@@ -34,6 +32,12 @@ const tokens: Token[] =  [
     ["^%(", '('],
     ["^%)", ')'],
     ["^,", ','],
+
+    // Only if the string contains no operator can it be anything else (e.g. "-4" should be "-" and "NUMBER (4)"
+    // not "NUMBER (-4)", the 2nd variant causes the expression "1 - 2" to cause problems)
+    ["^%-?%d+%.?%d*", 'NUMBER'],
+    ["^[a-zA-Z]+", 'IDENT'],
+    ['^"[^"]+"', 'STRING'],
 ]
 
 class Tokenizer {
@@ -194,6 +198,8 @@ class Parser {
         let left = this.EXPONENTIATION();
 
         while (this.is('(', 'NUMBER', 'IDENT')) {
+            if (this.is('NUMBER') && (this.lookahead?.token ?? "").startsWith("-")) break;
+
             left = {
                 type: 'binary',
                 left,
@@ -208,13 +214,25 @@ class Parser {
     EXPONENTIATION(): AST {
         let left = this.BASIC();
 
+        let cur = left
         while (this.is('^')) {
-            left = {
-                type: 'binary',
-                left,
-                op: this.eat('^').type ?? "^",
-                right: this.BASIC(),
-            };
+            if (cur.type != "binary" || cur.op != "^") {
+                left = {
+                    type: 'binary',
+                    left: cur,
+                    op: this.eat('^').type ?? "^",
+                    right: this.BASIC(),
+                };
+                cur = left
+            } else {
+                cur.right = {
+                    type: 'binary',
+                    left: cur.right,
+                    op: this.eat('^').type ?? "^",
+                    right: this.BASIC(),
+                }
+                cur = cur.right
+            }
         }
 
         return left;
@@ -292,6 +310,16 @@ function cleanExpression(expression: string): string {
     return expression
 }
 
+function getASTExpr(ast: AST): string {
+    switch (ast.type) {
+        case "binary": return `(${getASTExpr(ast.left)} ${ast.op == "implicit" ? "<*>" : ast.op} ${getASTExpr(ast.right)})`
+        case "call": return `${ast.fn}(${ast.args.map(arg => getASTExpr(arg)).join(", ")})`
+        case "ident":
+        case "number":
+            return ast.value
+    }
+}
+
 export function evaluateExpression(expression: string): Quantity {
     let p = new Parser()
 
@@ -300,7 +328,7 @@ export function evaluateExpression(expression: string): Quantity {
     $log_debug!(`Parsing cleaned expression "${expression}"`)
     let ast: AST = p.read(expression)
 
-    $log_debug!(`Generated AST ${serpent.block(ast)}`)
+    $log_debug!(`Generated AST "${getASTExpr(ast)}": \n${serpent.block(ast)}`)
 
     return evaluateAST(ast)
 }

@@ -94,8 +94,7 @@ global.string = {
         const regexPattern = RegExp(luaPatternToRegex(pattern), "m")
         const matches = s.match(regexPattern)
         if (matches != undefined) {
-            matches.splice(0,1)
-            return matches
+            return matches.splice(0,1)
         }
         return []
     },

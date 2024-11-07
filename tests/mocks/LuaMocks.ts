@@ -44,12 +44,19 @@ function table_size(t: table): number {
     return Object.keys(t).length
 }
 
+function tonumber(e: any, base?: number): number | undefined {
+    let res = undefined
+    if (/-?\d*(?:\.\d+)?/g.test(e)) res = base == undefined ? parseFloat(e) : parseInt(e, base)
+    return res === res ? res : undefined // Dont return NaN
+}
+
 global.$range = rangeMock
 global.LuaSet = Set
 global.LuaMap = Map
 global.LuaTable = LuaTableMock
 global.setmetatable = jest.fn()
 global.table_size = table_size
+global.tonumber = tonumber
 global.table = {
     concat(list: (string | number)[], sep?: string, i?: number, j?: number): string {
         // TODO invalid implementation

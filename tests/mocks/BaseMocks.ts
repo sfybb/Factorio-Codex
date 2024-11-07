@@ -29,9 +29,16 @@ global.script = {
 
 // @ts-ignore
 global.game = {
-    item_prototypes: {},
-    fluid_prototypes: {},
-    technology_prototypes: {},
+    get_player: jest.fn(),
+
+    players: []
+}
+
+// @ts-ignore
+global.prototypes = {
+    item: [],
+    fluid: [],
+    technology: [],
 
     get_player: jest.fn(),
 
@@ -41,7 +48,19 @@ global.game = {
 
 
 function serpentPrint(tbl: unknown, options?: Partial<serpent.Options>): string {
-    return JSON.stringify(tbl)
+    const replacer = (key: any, value: any) => {
+        if (value instanceof Map) {
+            let res: object = {}
+            for(let [k, v] of value.entries()) { // @ts-ignore
+                res[k] = v
+            }
+            return res
+        } else {
+            return value
+        }
+    }
+
+    return JSON.stringify(tbl, replacer)
 }
 
 global.serpent = {

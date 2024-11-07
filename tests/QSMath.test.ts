@@ -9,6 +9,7 @@ global.log = console.log
 import QSMath from "../src/quick_search/QS_math";
 import Quantity from "../src/quick_search/Quantity";
 import {ExpectationResult, MatcherContext} from "expect";
+import {printConsoleMessages} from "./mocks/BaseMocks";
 
 function quantityToBeCloseTo<Context extends MatcherContext = MatcherContext>(this: Context, actual: undefined | Quantity, expected:  undefined | Quantity): ExpectationResult {
     let isCloseTo: boolean = true
@@ -95,11 +96,11 @@ describe("QSMath evaluate string math formula", () => {
     })
 
     test("exponents", () => {
-        let res = QSMath.calculateString("2^3^2^") // result = 512
+        let res = QSMath.calculateString("2^3^1^2^") // result = 8
 
         expect(res[0]).toStrictEqual(true)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(512));
+        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8));
     })
 
     test("brackets simple", () => {
