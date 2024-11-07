@@ -70,7 +70,11 @@ global.string = {
 
         let replacement
         if (typeof repl == "string" ) {
-            return [s.replaceAll(regexPattern, repl), 0]
+            let num_matches = 0
+            for (const _ of s.matchAll(regexPattern)) {
+                num_matches++
+            }
+            return [s.replaceAll(regexPattern, repl), num_matches]
         } else {
             repl.replaceAll("%.", )
         }

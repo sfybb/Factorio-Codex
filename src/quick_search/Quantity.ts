@@ -1,4 +1,4 @@
-namespace SI {
+export namespace SI {
     export type UnitList = LuaMap<string, number>
 
     export type Units = {
@@ -14,14 +14,18 @@ namespace SI {
         return {exp, units: res}
     }
 
-    const superscript_num = ["0", "1", "\u{B2}", "\u{B3}", "\u{2074}", "\u{2075}", "\u{2076}", "\u{2077}", "\u{2078}", "\u{2079}"]
+    export const superscript_num = ["\u{2070}", "\u{B9}", "\u{B2}", "\u{B3}", "\u{2074}", "\u{2075}", "\u{2076}", "\u{2077}", "\u{2078}", "\u{2079}"]
 
-    const si_str = ["T", "G", "M", "k", ""/*, "m", "µ", "n"*/]
-    const si_exp = [12, 9, 6, 3, 0/*, -3, -6, -9*/]
+    const si_prefixes: { [prefix: string]: number } = {
+        T: 12,
+        G: 9,
+        M: 6,
+        k: 3
+    }
 
     // List of derived SI-units and their representation in SI base units
     // Some multi-letter unit SI base units may also appear in that list
-    const si_derived: { [dunit: string]: Units } = {
+    export const si_derived: { [dunit: string]: Units } = {
         Hz: makeUnit( 0, {s: -1}),                       // Hertz	 s^−1
         N:  makeUnit( 3, {g:  1, m:  1, s: -2}),         // Newton  kg⋅m⋅s^−2
         Pa: makeUnit( 3, {g:  1, m: -1, s: -2}),         // Pascal  kg⋅m^−1⋅s^−2
@@ -44,10 +48,7 @@ namespace SI {
     const si_derived_keys_largest_first = Object.keys(si_derived).sort((a, b) => b.length - a.length)
 
     export function PrefixToExp(si: string): number | undefined {
-        const indx = si_str.findIndex((ele) => ele.length != 0 && ele === si)
-        if (indx < 0) return undefined
-
-        return si_exp[indx]
+        return si_prefixes[si]
     }
 
     export function DerivedToBaseUnits(units: string): Units {
@@ -363,15 +364,14 @@ namespace SI {
         let si_prefix = ""
         // if there are no units respect `si_prefix_no_unit` otherwise don't add si prefix for time (seconds)
         if ((si_prefix_no_unit || unit.length != 0) && (num_derived_units > 1 || derived_units.units.get('s') == undefined)) {
-            let si_indx = si_exp.length - 1
-            for (let i = 0; i < si_exp.length; i++) {
-                if (exp >= si_exp[i]) {
-                    si_indx = i;
+            const sorted_prefixes = Object.entries(si_prefixes).sort((a, b) => b[1] - a[1])
+            for (let [si_str, si_exp] of sorted_prefixes) {
+                if (exp >= si_exp) {
+                    rem -= si_exp
+                    si_prefix = si_str
                     break;
                 }
             }
-            rem -= si_exp[si_indx]
-            si_prefix = si_str[si_indx]
         }
         let val_str = `${value * Math.pow(10, rem)}`
 

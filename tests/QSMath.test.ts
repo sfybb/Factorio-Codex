@@ -104,7 +104,7 @@ describe("QSMath evaluate string math formula", () => {
     })
 
     test("brackets simple", () => {
-        let res = QSMath.calculateString("(1+4)/5") // result = 1
+        let res = QSMath.calculateString("(1+4)/5)") // result = 1
 
         expect(res[0]).toStrictEqual(true)
         // @ts-ignore
@@ -112,10 +112,42 @@ describe("QSMath evaluate string math formula", () => {
     })
 
     test("brackets", () => {
-        let res = QSMath.calculateString("(4*(3+2))^2") // result = 400
+        let res = QSMath.calculateString("(4*(3+2))^(2") // result = 400
 
         expect(res[0]).toStrictEqual(true)
         // @ts-ignore
         expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(400));
+    })
+
+    test("implicit multiplication", () => {
+        let res = QSMath.calculateString("2 (3-1)^2") // result = 8
+
+        expect(res[0]).toStrictEqual(true)
+        // @ts-ignore
+        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8));
+    })
+
+    test("negate number", () => {
+        let res = QSMath.calculateString("2 * -1") // result = 8
+
+        expect(res[0]).toStrictEqual(true)
+        // @ts-ignore
+        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(-2));
+    })
+
+    test("superscript numbers", () => {
+        let res = QSMath.calculateString("2³ ^ 2") // result = 512
+
+        expect(res[0]).toStrictEqual(true)
+        // @ts-ignore
+        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(512));
+    })
+
+    test("superscript numbers long", () => {
+        let res = QSMath.calculateString("2²³") // result = 8388608
+
+        expect(res[0]).toStrictEqual(true)
+        // @ts-ignore
+        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8388608));
     })
 })

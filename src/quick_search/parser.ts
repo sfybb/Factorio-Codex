@@ -1,4 +1,4 @@
-import Quantity from "./Quantity";
+import Quantity, {SI} from "./Quantity";
 
 const functions: { [key: string]: (...args: Quantity[]) => Quantity } = {
     sin: (x: Quantity) => Quantity.fromNumber(Math.sin(x.getValue())),
@@ -23,7 +23,6 @@ type ParsedToken = {token: string, type: TokenType}
 type Token = [string, TokenType];
 
 const tokens: Token[] =  [
-    // These tokens have a higher priority
     ["^%+", '+'],
     ["^-", '-'],
     ["^%*", '*'],
@@ -32,10 +31,7 @@ const tokens: Token[] =  [
     ["^%(", '('],
     ["^%)", ')'],
     ["^,", ','],
-
-    // Only if the string contains no operator can it be anything else (e.g. "-4" should be "-" and "NUMBER (4)"
-    // not "NUMBER (-4)", the 2nd variant causes the expression "1 - 2" to cause problems)
-    ["^%-?%d+%.?%d*", 'NUMBER'],
+    ["^%d+%.?%d*", 'NUMBER'],
     ["^[a-zA-Z]+", 'IDENT'],
     ['^"[^"]+"', 'STRING'],
 ]
@@ -96,20 +92,21 @@ class Tokenizer {
 
 class Parser {
     tokenizer: Tokenizer;
-    lookahead: ParsedToken | undefined;
+    lookahead: (ParsedToken | undefined)[];
 
     constructor(tokenizer?: Tokenizer) {
         this.tokenizer = tokenizer ?? new Tokenizer(tokens);
+        this.lookahead = []
     }
 
     read(string: string): AST {
         this.tokenizer.read(string);
-        this.lookahead = this.tokenizer.next();
+        this.lookahead = [this.tokenizer.next(), this.tokenizer.next()];
         return this.EXPRESSION();
     }
 
     eat(...tokenTypes: TokenType[]): ParsedToken {
-        const token = this.lookahead;
+        const token = this.lookahead.shift();
 
         if (token == undefined) {
             throw new Error(
@@ -123,13 +120,18 @@ class Parser {
             );
         }
 
-        this.lookahead = this.tokenizer.next();
+        this.lookahead.push(this.tokenizer.next());
 
         return token;
     }
 
     is(...tokenTypes: TokenType[]): boolean {
-        return tokenTypes.includes(this.lookahead?.type);
+        return tokenTypes.includes(this.lookahead[0]?.type);
+    }
+
+    next_is(...tokenTypes: TokenType[]): boolean {
+        let type = this.lookahead.length > 1 ? this.lookahead[1]?.type : undefined
+        return  tokenTypes.includes(type);
     }
 
     EXPRESSION(): AST {
@@ -198,7 +200,7 @@ class Parser {
         let left = this.EXPONENTIATION();
 
         while (this.is('(', 'NUMBER', 'IDENT')) {
-            if (this.is('NUMBER') && (this.lookahead?.token ?? "").startsWith("-")) break;
+            if (this.is('NUMBER') && (this.lookahead[0]?.token ?? "").startsWith("-")) break;
 
             left = {
                 type: 'binary',
@@ -247,15 +249,18 @@ class Parser {
             return expr;
         }
 
-        if (this.is('NUMBER')) {
-            return { type: 'number', value: this.eat('NUMBER').token };
+        if (this.is('NUMBER') || (this.is('-') && this.next_is('NUMBER'))) {
+            let prefix = ""
+            if (this.is('-')) prefix = this.eat('-').token
+
+            return { type: 'number', value: prefix + this.eat('NUMBER').token };
         }
 
         if (this.is('IDENT')) {
             return { type: 'ident', value: this.eat('IDENT').token };
         }
 
-        throw new Error(`Malformed expression. Expected '(', 'NUMBER', 'IDENT' got '${this.lookahead}'`);
+        throw new Error(`Malformed expression. Expected '(', 'NUMBER', 'IDENT' got '${serpent.line(this.lookahead)}'`);
     }
 }
 
@@ -292,8 +297,8 @@ function evaluateAST(node: AST): Quantity {
 }
 
 function cleanExpression(expression: string): string {
-    // remove spaces
-    [expression, ] = string.gsub(expression, "%s+", "");
+    // remove spaces or underscores
+    [expression, ] = string.gsub(expression, "[%s_]+", "");
 
     // remove trailing operators or parenthesis
     [expression, ] = string.gsub(expression, "[%+%-%*%/%%%^%(%)]*$", "");
@@ -305,6 +310,17 @@ function cleanExpression(expression: string): string {
         expression += ")".repeat(open_parens - close_parens)
     } else if (open_parens < close_parens) {
         expression = "(".repeat(close_parens - open_parens) + expression
+    }
+
+    let superscript_map: {[key: string]: number} = SI.superscript_num.reduce((prev, cur, idx) => ({...prev, [cur]: idx}), {})
+
+    for (let [[match]] of string.gmatch(expression, `[${SI.superscript_num.join("|")}]+`)) {
+        let new_val = "^"
+        for (let c of match) {
+            new_val += superscript_map[c]
+        }
+
+        [expression, ] = string.gsub(expression, match, new_val)
     }
 
     return expression
