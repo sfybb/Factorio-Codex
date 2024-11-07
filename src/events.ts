@@ -19,7 +19,7 @@ import * as FLIB_gui from "__flib__.gui"
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 /** @noResolution */
-import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
+import * as FLIB_dictionary_lite from "__flib__.dictionary";
 import {getDictionaryCache} from "./cache/DictionaryCache";
 
 
@@ -42,6 +42,7 @@ function $safe_call<This, Args extends any[], R>(
 namespace Events {
     export function on_init() {
         FLIB_on_tick_n.init()
+        FLIB_dictionary_lite.on_init()
         $safe_call!(PlayerData.Init, undefined)
     }
 
@@ -59,6 +60,7 @@ namespace Events {
     }
 
     export function on_tick(e: OnTickEvent) {
+        FLIB_dictionary_lite.on_tick()
         let tasks = FLIB_on_tick_n.retrieve(e.tick)
         if (tasks != undefined) {
             for (let taskData of tasks) {
@@ -72,8 +74,6 @@ namespace Events {
                 if (task.type == "gui") {
                     if (task.gui == "qs") {
                         taskExecutor = PlayerData.getQuickSearch(task.player_index)
-                    } else if (task.gui == "codex") {
-                        taskExecutor = PlayerData.getCodex(task.player_index)
                     }
                 } else if (task.type == "dictionary") {
                     let dict_cache = getDictionaryCache()
@@ -98,10 +98,13 @@ namespace Events {
         }
     }
 
+    export function on_gui_event(e: GuiEventData) {
+        PlayerData.handleUIEvents(e)
+    }
 
     // custom events
     export function on_toggle_quick_search(e: CustomInputEvent) {
-        $log_debug!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
+        $log_info!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
         PlayerData.getQuickSearch(e)?.toggle()
     }
 }
@@ -116,21 +119,21 @@ const FactorioCodexEvents: EventHandler.LuaLibrary = {
 
         [defines.events.on_tick]: Events.on_tick,
 
+        // all gui events call Events.on_gui_event
+        ...Object.keys(defines.events).filter(value => value.startsWith("on_gui_"))
+            .reduce((acc: object, key: string) => ({...acc, [key]: Events.on_gui_event}), {}),
+
         [FLIB_dictionary_lite.on_player_dictionaries_ready]: Dictionary.on_player_dictionaries_ready,
-        [FLIB_dictionary_lite.on_player_language_changed]: Dictionary.on_player_language_changed,
 
         // custom events
         "fcodex_toggle_quick_search": Events.on_toggle_quick_search,
     }
 }
 
+script.on_event("fcodex_toggle_quick_search", Events.on_toggle_quick_search)
 
 EventHandler.add_lib(FactorioCodexEvents)
 EventHandler.add_lib({events: FLIB_dictionary_lite.events})
-
-FLIB_gui.hook_events((e: GuiEventData) => {
-    $safe_call!(PlayerData?.handleUIEvents, undefined, FLIB_gui.read_action(e), e)
-})
 
 commands.add_command("fc-rebuild-all", [ "command-help.fc-rebuild-all" ], (e) => {
     if (e.player_index == undefined) {

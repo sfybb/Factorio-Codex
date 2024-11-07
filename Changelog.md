@@ -1,8 +1,12 @@
 # Changelog
   - Version: 0.1.0
+    - Changes:
+      - Changed Factorio api to 2.0
     - Quick Search Features:
       - Math expressions now support implicit multiplications
       - Added support for calculating with units e.g. "4 GJ / 40 MW => 100 s"
+    - Codex Features:
+      - Gone. use Factoriopedia instead. Support for opening an entity in Factoriopedia will be added once possible
 # Changelog
   - Version: 0.0.21
     - Quick Search Features:

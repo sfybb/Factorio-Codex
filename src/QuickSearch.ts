@@ -12,8 +12,8 @@ import {default as IGuiRoot, GuiAction} from "IGuiRoot";
 import * as FLIB_on_tick_n from "__flib__.on-tick-n";
 /** @noResolution */
 import * as FLIB_gui from "__flib__.gui";
-import {getSettingsCache} from "./cache/SettingsCache";
 import Quantity from "./quick_search/Quantity";
+import {format_handlers} from "__flib__.gui";
 
 declare const global: {
     playerData: typeof PlayerData
@@ -37,7 +37,6 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     visible: boolean;
     refs: {
         frame?: FlowGuiElement
-        caption?: LabelGuiElement
         search_field?: TextFieldGuiElement
         results?: ListBoxGuiElement,
         debug?: LuaTable<string, BaseGuiElement>
@@ -76,6 +75,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     }
 
     build_gui() {
+        $log_info!(`Build ${serpent.line(this.refs)}`)
         if (this.rebuild_gui) {
             this.destroy()
         }
@@ -89,32 +89,30 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         if ( this.refs?.frame?.valid != true ) {
             this.rebuild_gui = false
 
-            this.refs = FLIB_gui.build(player.gui.screen, [{
+            $log_info!("Create")
+            // @ts-ignore
+            let new_refs = FLIB_gui.add(player.gui.screen, [{
                 type: "flow",
                 direction: "vertical",
                 style: "fcodex_quick_search",
-                ref: ["frame"],
-                actions: {
-                    on_closed: { gui: gui_name, action: "close" }
-                },
+                caption: "Quick Search",
+                name: "frame",
+                tags: { gui: gui_name, action: "close" },
 
-                1: {type: "label"    , style: "fcodex_quick_search_label", ref: ["caption"]     , caption: "QUICK SEARCH"},
-                2: {type: "textfield", style: "fcodex_quick_search_input", ref: ["search_field"],
-                    actions: {
-                        on_text_changed: { gui: gui_name, action: "update_search" },
-                        on_confirmed: { gui: gui_name, action: "test_debug" }
-                    }},
-                3: {type: "list-box" , style: "fcodex_quick_search_results", ref: ["results"],
-                    actions: {
-                        on_selection_state_changed: { gui: gui_name, action: "try_open_codex" }
-                    }
+                1: {type: "label"    , style: "fcodex_quick_search_label", caption: "QUICK SEARCH"},
+                2: {type: "textfield", style: "fcodex_quick_search_input", name: "search_field",
+                    tags: { gui: gui_name, action: "update_search"}
+                },
+                3: {type: "list-box" , style: "fcodex_quick_search_results", name: "results",
+                    tags: { gui: gui_name, action: "try_open_codex"},
                 }
             }])
+            this.refs = new_refs[0] as typeof this.refs
 
             if ( this.refs.frame != undefined ) this.refs.frame.visible = this.visible
         }
 
-        if ( this.refs.search_field != undefined ) this.refs.search_field.clear_and_focus_on_right_click = true
+        //if ( this.refs.search_field != undefined ) this.refs.search_field.clear_and_focus_on_right_click = true
         this.adjust_size_and_position()
     }
 
@@ -146,9 +144,10 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         this.build_gui()
         if( this.refs.frame != undefined && this.refs.results != undefined && this.refs.search_field != undefined) {
             this.refs.frame.visible = true
-            player.opened = this.refs.frame
+            // FIXME: when assigning `this.refs.frame` to `player.opened` the quick search GUI disappears
+            //player.opened = this.refs.frame
+            $log_info!(`Opening ${serpent.line(player.opened)} ${player.opened === this.refs.frame} ${this.refs.frame.valid} ${this.refs.frame.visible} ${serpent.line(this.refs.frame.location)}`)
 
-            this.adjust_size_and_position()
             this.refs.frame.bring_to_front()
             this.refs.search_field.focus()
             this.refs.search_field.select_all()
@@ -173,6 +172,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     }
 
     toggle() {
+        $log_info!("Toggle")
         this.visible ? this.close() : this.open();
     }
 
@@ -278,7 +278,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         let [has_result, res] = QSMath.calculateString(math_prompt)
         let math_result = undefined, math_err = undefined
         if (has_result) {
-            math_result = (res as Quantity).prettyPrint(true)
+            math_result = (res as Quantity).prettyPrint(true) // TODO: Player setting
         } else {
             math_err = res as string
         }
@@ -324,8 +324,8 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         }
     }
 
-    gui_action(guiAction: GuiAction, event: GuiEventData) {
-        let action = guiAction.action
+    gui_action(event: GuiEventData) {
+        let action = event.element?.tags["action"] ?? null
         if ( event.player_index != this.player_index ) {
             $log_err!("Something is not right. Received event for another player! "+
             `Expected player id: ${this.player_index} got: ${event.player_index}!`)
@@ -335,13 +335,15 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
 
         if (action == "update_search") {
-            this.update_input()
+            if (event.name == defines.events.on_gui_text_changed) {
+                this.update_input()
+            } else if (event.name == defines.events.on_gui_selection_state_changed) {
+                if (event.element?.text == "debug!") {
+                    //getSettingsCache(this.player_index)?.toggleDebug()
+                }
+            }
         } else if (action == "close") {
             this.close()
-        } else if ( action == "test_debug" ) {
-            if (event.element?.text == "debug!") {
-                getSettingsCache(this.player_index)?.toggleDebug()
-            }
         } else if ( action == "try_open_codex" ) {
             let selectedIndex = event.element?.selected_index as uint
             if (selectedIndex == undefined || selectedIndex == 0) return
@@ -367,12 +369,11 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
             if (event.element?.selected_index != undefined) (<DropDownGuiElement>event.element).selected_index = 0
 
-
-            global.playerData.getCodex(event.player_index)?.show_info(selectedResult.id, selectedResult.type)
+            $log_info!(`TODO: Request opening of factoriopedia for "${selectedResult.id}" of type "${selectedResult.type}"`)
         } else if ( action == "debugToggle") {
             if (this.refs.debug == undefined) return;
 
-            let  is_debug = getSettingsCache(this.player_index)?.is_debug()
+            let  is_debug = false//getSettingsCache(this.player_index)?.is_debug()
             is_debug = is_debug ?? false
 
             for (let [id, debugElem] of this.refs.debug) {

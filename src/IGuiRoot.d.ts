@@ -12,5 +12,5 @@ export default interface IGuiRoot {
     close(): void
     toggle(): void
 
-    gui_action(action: GuiAction, event: GuiEventData): void
+    gui_action(event: GuiEventData): void
 }

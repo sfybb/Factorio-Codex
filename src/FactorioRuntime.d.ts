@@ -6,6 +6,7 @@ declare namespace FactorioRuntime {
     type Tags = import("factorio:runtime").Tags;
     type table = import("factorio:runtime").table;
     type EventId<T extends object, F = unknown> = import("factorio:runtime").EventId<T, F>;
+    type BaseStyle = import("factorio:runtime").BaseStyle;
     type GuiAnchor = import("factorio:runtime").GuiAnchor;
     type EventData = import("factorio:runtime").EventData;
     type LuaPlayer = import("factorio:runtime").LuaPlayer;

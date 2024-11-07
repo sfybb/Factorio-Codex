@@ -22,6 +22,9 @@ type FLIBTabAndContent = {
     content: FLIBGuiBuildStructure
 }[]
 
+type GuiHandler = (e: GuiEventData) => void
+type GuiWrapper = (e: GuiEventData, handler: GuiHandler) => void
+
 type GuiEventData =
       FactorioRuntime.OnGuiClickEvent
     | FactorioRuntime.OnGuiClosedEvent
@@ -40,6 +43,7 @@ interface FLIBGuiBuildStructure {
     name?: string
     direction?: "horizontal" | "vertical"
     style?: string
+    style_mods?: Partial<FactorioRuntime.BaseStyle>,
     sprite?: FactorioRuntime.SpritePath
     hovered_sprite?: FactorioRuntime.SpritePath
     clicked_sprite?: FactorioRuntime.SpritePath
@@ -75,19 +79,12 @@ interface FLIBGuiBuildStructure {
 
 /** @noResolution */
 declare module "__flib__.gui" {
-    export function hook_events(callback: ((e: GuiEventData) => void)): void;
+    export function add_handler(new_handlers: LuaTable<string, GuiHandler>, wrapper?: GuiWrapper, prefix?: string): void;
 
-    export function read_action(e: GuiEventData): FLIBGuiAction | null;
-    export function set_action(elem: FactorioRuntime.LuaGuiElement, event_name: FLIBGuiActions, msg: string | null): void;
-    export function get_action(elem: FactorioRuntime.LuaGuiElement, event_name: FLIBGuiActions): string | null;
+    export function add(parent: FactorioRuntime.LuaGuiElement, structure: FLIBGuiBuildStructure | FLIBGuiBuildStructure[]):
+        LuaMultiReturn<[LuaTable<string, FactorioRuntime.LuaGuiElement>, FactorioRuntime.LuaGuiElement]>;
 
+    export function format_handlers(input: GuiHandler | LuaTable<defines.events, GuiHandler>, existing?: LuaTable<string, string>): LuaTable<string, string>;
 
-    export function build(parent: FactorioRuntime.LuaGuiElement, structures: FLIBGuiBuildStructure[]): { [key: string]: FactorioRuntime.LuaGuiElement };
-    export function add(parent: FactorioRuntime.LuaGuiElement, structure: FLIBGuiBuildStructure): FactorioRuntime.LuaGuiElement;
-    export function update(parent: FactorioRuntime.LuaGuiElement, structures: FLIBGuiBuildStructure): void;
-
-    export function get_tags(elem: FactorioRuntime.LuaGuiElement): any;
-    export function set_tags(elem: FactorioRuntime.LuaGuiElement, tags: any): void;
-    export function delete_tags(elem: FactorioRuntime.LuaGuiElement): void;
-    export function update_tags(elem: FactorioRuntime.LuaGuiElement, updates: any): void;
+    export const events: { [key: FactorioRuntime.EventId<any>]: (e: FactorioRuntime.EventData) => void };
 }

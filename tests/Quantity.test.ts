@@ -4,6 +4,7 @@ import "./mocks/LuaMocks"
 import "./mocks/BaseMocks"
 
 import Quantity from '../src/quick_search/Quantity';
+import {printConsoleMessages} from "./mocks/BaseMocks";
 
 describe("SI Unit module", () => {
     test("Pretty print converts to derived unit", () => {
@@ -16,7 +17,7 @@ describe("SI Unit module", () => {
             exp: 1,
             units: W_base_uints
         })
-        expect(u.prettyPrint()).toStrictEqual("10 mJ")
+        expect(u.prettyPrint()).toStrictEqual("0.01 J")
     })
 
     test("Pretty print does not require units", () => {

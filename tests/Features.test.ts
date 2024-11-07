@@ -15,7 +15,6 @@ describe("Feature module", () => {
     })
 
     test("Doesnt support  check", () => {
-        expect(Features.supports(Feature_ids.dictionary)).toBeFalsy()
-        expect(Features.supports(Feature_ids.dictionary_lite)).toBeFalsy()
+        // Nothing here at the moment
     })
 })

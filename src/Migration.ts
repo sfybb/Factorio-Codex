@@ -8,12 +8,7 @@ import * as FLIB_migration from "__flib__.migration"
 import Features from "Features";
 
 const migrations = {
-    ["0.0.10"]: require("migrations/migrate_0_0_10"),
-    ["0.0.12"]: require("migrations/migrate_0_0_12"),
-    ["0.0.15"]: require("migrations/migrate_0_0_15"),
-    ["0.0.17"]: require("migrations/migrate_0_0_17"),
-    ["0.0.19"]: require("migrations/migrate_0_0_19"),
-    ["0.0.20"]: require("migrations/migrate_0_0_20")
+    ["0.0.21"]: require("migrations/migrate_0_0_21")
 }
 
 declare const global: {
@@ -54,21 +49,7 @@ class Migration {
                 player_data.quick_search.set_rebuild_gui()
             }
 
-            if (player_data.codex != undefined) {
-                player_data.codex.set_rebuild_gui()
-            }
-
             let quick_search_open = player_data.quick_search?.is_open()
-
-            if ( player_data.codex?.is_open() == true ) {
-                player_data.codex.close()
-                player_data.codex.open()
-
-                if ( player_data.codex.entity_view != undefined ) {
-                    let entity_view = player_data.codex.entity_view
-                    player_data.codex.show_info(entity_view.id, entity_view.type)
-                }
-            }
 
             if ( quick_search_open == true ) {
                 player_data.quick_search.close()

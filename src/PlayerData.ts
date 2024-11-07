@@ -1,7 +1,6 @@
 import {PlayerIndex} from "factorio:runtime";
 import {default as Util, validate_status, validate_print_info} from "Util";
 import QuickSearch from "QuickSearch";
-import Codex from "Codex";
 
 import Dictionary from "Dictionary";
 import Cache from "Cache";
@@ -10,13 +9,12 @@ import {GuiAction} from "./IGuiRoot";
 
 
 export interface player_data {
-    codex: Codex,
     quick_search: QuickSearch
 }
 
 export type player_table = LuaMap<PlayerIndex, player_data>
 
-declare const global: {
+declare let global: {
     playerData: typeof PlayerData
     cache: Cache
     players?: player_table
@@ -26,6 +24,7 @@ type indirect_player_index = PlayerIndex | { player_index: PlayerIndex }
 
 namespace PlayerData {
     export function Init(this: any) {
+        global = global ?? {}
         global.players = new LuaTable()
         global.cache = new Cache()
 
@@ -51,7 +50,6 @@ namespace PlayerData {
         // Destroy all guis before deleting the references to them
         if (global?.players != null) {
             for (let [i, player_data] of global.players) {
-                player_data?.codex?.destroy()
                 player_data?.quick_search?.destroy()
             }
         }
@@ -73,12 +71,6 @@ namespace PlayerData {
                 }
 
                 $log_info!(`Loading data for player with index ${i}...`)
-
-                if (player_data.codex != null) {
-                    Codex.load(player_data.codex)
-                } else {
-                    $log_warn!(`Codex is undefined for player with index ${i}!`)
-                }
 
                 if (player_data.quick_search != null) {
                     QuickSearch.load(player_data.quick_search)
@@ -102,7 +94,6 @@ namespace PlayerData {
         $log_info!(`Initializing data for player \"${player.name}\" (index: ${index})...`)
 
         const data: player_data = {
-            codex: new Codex(index),
             quick_search: new QuickSearch(index),
         }
         global.players.set(index, data)
@@ -123,29 +114,18 @@ namespace PlayerData {
         return data ?? PlayerData.InitPlayer(index)
     }
 
-    export function getCodex(this: void, ind_pi: indirect_player_index): undefined | Codex {
-        const data = PlayerData.get(ind_pi)
-        return data?.codex
-    }
-
     export function getQuickSearch(this: void, ind_pi: indirect_player_index): undefined | QuickSearch {
         const data = PlayerData.get(ind_pi)
         return data?.quick_search
     }
 
-    export function handleUIEvents(this: any, action: FLIBGuiAction | null, e: GuiEventData) {
-        if (action == undefined) {
-            return;
-        }
-        if (typeof action == "object" && typeof action.gui == "string" && typeof action.action == "string") {
-            let guiAction: GuiAction = action as GuiAction
+    export function handleUIEvents(this: any, e: GuiEventData) {
+        let gui = e.element?.tags["gui"] ?? null
 
-            switch (guiAction.gui) {
+        if (typeof gui == "string") {
+            switch (gui) {
                 case "quick_search":
-                    PlayerData.getQuickSearch(e)?.gui_action(guiAction, e)
-                    break
-                case "codex":
-                    PlayerData.getCodex(e)?.gui_action(guiAction, e)
+                    PlayerData.getQuickSearch(e)?.gui_action(e)
                     break
                 case "common":
                     let parent_ele = e.element?.parent?.parent
@@ -154,10 +134,10 @@ namespace PlayerData {
                     }
                     break
                 default:
-                    $log_warn!(`Unknown gui identifier "${guiAction.gui}" cannot assign action "${guiAction.action}" to gui!`)
+                    $log_warn!(`Unknown gui identifier "${gui}" cannot assign event!`)
             }
         } else {
-            $log_warn!(`Unknown action "${action}" cannot assign action to gui!`)
+            $log_warn!(`Unknown gui "${gui}" cannot assign event ${serpent.line(e)} to gui!`)
         }
     }
 
@@ -208,17 +188,6 @@ namespace PlayerData {
                     // @ts-ignore
                     global.players.delete(i)
                     continue
-                }
-
-                status = player_data.codex == undefined ? validate_status.FIXABLE : validate_status.OK
-                $log_info!(Util.format_validate_msg(array_pi, "codex", status))
-                if (status == validate_status.OK) {
-                    status = verify(player_data.codex, player_obj_pi, i)
-                }
-                if (status == validate_status.ERROR || status == validate_status.FIXABLE) {
-                    if (player_data.codex != undefined) player_data.codex.destroy()
-                    player_data.codex = new Codex(i)
-                    $log_info!("Rebuilt Codex")
                 }
 
                 status = player_data.quick_search == undefined ? validate_status.FIXABLE : validate_status.OK

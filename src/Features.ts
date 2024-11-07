@@ -26,9 +26,9 @@ const compare_versions : {
 
 
 const Feature_ids = {
-    dictionary: "! flib >= 0.12.0",
+   /* dictionary: "! flib >= 0.12.0",
     dictionary_lite: "flib >= 0.12.0",
-    localised_fallback: "base >= 1.1.76",
+    localised_fallback: "base >= 1.1.76",*/
     gvv: "gvv"
 }
 

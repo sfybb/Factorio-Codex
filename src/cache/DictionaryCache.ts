@@ -2,13 +2,12 @@ import {FrameGuiElement, LuaGuiElement, PlayerIndex, ProgressBarGuiElement} from
 import {registerCache, CacheFactory, GlobalCache, getGlobalCache} from "Cache";
 import GeneralizedSuffixTree from "search/suffixtree/GeneralizedSuffixTree";
 import ISearchable from "search/Searchable";
-import {getPrototypeCache} from "cache/PrototypeCache";
 import MigratablePrototype from "PrototypeHelper";
 import {DictionaryTask} from "Task";
 import PlayerData from "PlayerData";
 
 /** @noResolution */
-import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
+import * as FLIB_dictionary_lite from "__flib__.dictionary";
 /** @noResolution */
 import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 /** @noResolution */
@@ -68,14 +67,12 @@ class DictionaryCache implements GlobalCache {
 
     indexing_ongoing: LuaTable<string, FLIBTaskIdent>;
     translated_languages: LuaSet<string>;
-    player_languages: LuaTable<PlayerIndex, string>
 
     translation_data: LuaTable<string, TranslationData>
 
     constructor() {
         this.indexing_ongoing = new LuaTable()
         this.translated_languages = new LuaSet()
-        this.player_languages = new LuaTable()
         this.translation_data = new LuaTable()
     }
 
@@ -129,8 +126,9 @@ class DictionaryCache implements GlobalCache {
             this.indexing_ongoing.delete(dictTask.language)
             this.translated_languages.add(dictTask.language)
 
-            for (let [player_index, lang_id] of this.player_languages) {
-                if (lang_id == dictTask.language) {
+            for (let [player_index, player] of game.players) {
+                // @ts-ignore
+                if (player.locale == dictTask.language) {
                     game.get_player(player_index)?.print("Factorio Codex: Quick search is now ready to be used!")
                     global.playerData?.getQuickSearch(player_index)?.update_input()
                 }
@@ -139,8 +137,9 @@ class DictionaryCache implements GlobalCache {
     }
 
     indexDictionaries(player_index: PlayerIndex) {
-        const language_id = this.player_languages.get(player_index)
-        if (this.indexing_ongoing.has(language_id)) return
+        // @ts-ignore
+        const language_id = game.get_player(player_index)?.locale
+        if (this.indexing_ongoing.has(language_id) || this.translated_languages.has(language_id)) return
 
         const all_dicts = FLIB_dictionary_lite.get_all(player_index)
 
@@ -151,11 +150,11 @@ class DictionaryCache implements GlobalCache {
         } else {
             const players_for_lang: string[] = []
 
-            for (let [player_index, _] of this.player_languages) {
+            /*for (let [player_index, _] of this.player_languages) {
                 players_for_lang.push($get_player_string!(player_index))
-            }
+            }*/
 
-            $log_info!(`Completed translation for ${players_for_lang.join(', ')}`)
+            $log_info!(`Completed translation for ${$get_player_string!(player_index)} (${language_id})`)
         }
 
         const dictTask: DictionaryTask = {
@@ -192,15 +191,12 @@ class DictionaryCache implements GlobalCache {
         return undefined
     }
 
-    setPlayerLanguage(language_change: FLIB_dictionary_lite.OnPlayerLanguageChangedEvent) {
-        this.player_languages.set(language_change.player_index, language_change.language)
-    }
-
     isTranslated(arg: PlayerIndex | string): boolean {
         let language_id: string
 
         if (typeof arg != "string") {
-            language_id = this.player_languages.get(arg)
+            // @ts-ignore
+            language_id = game.get_player(arg)?.locale
         } else {
             language_id = arg
         }
@@ -226,9 +222,8 @@ class DictionaryCache implements GlobalCache {
             tl_data.dictionary_suffix_tree.set(name, stree)
         }
 
-        let protoCache = getPrototypeCache()
         // @ts-ignore
-        let relevantProtos: LuaTable<string, MigratablePrototype<LuaItemPrototype>> = protoCache != undefined ? protoCache.getAll()[name] : game[`${name}_prototypes`]
+        let relevantProtos: LuaTable<string, MigratablePrototype<LuaItemPrototype>> = prototypes[name]
 
         $log_debug!(`Building suffix tree for "${name}" ${start_index}/${table_size(data)} entries`)
 
@@ -249,9 +244,7 @@ class DictionaryCache implements GlobalCache {
                 id: id,
                 name: translated,
                 order: proto?.order,
-                hidden: proto.object_name == "LuaItemPrototype" || proto.object_name == "LuaEntityPrototype"  ? proto.has_flag("hidden") :
-                    // @ts-ignore
-                    proto.object_name != "LuaTilePrototype" ? proto.hidden : false
+                hidden: proto.hidden_in_factoriopedia
             }
 
             stree.add(translated.toLowerCase(), dictEntry)
@@ -266,7 +259,8 @@ class DictionaryCache implements GlobalCache {
     }
 
     getSearchables(player_index: PlayerIndex): ISearchable<DictionaryEntry>[] {
-        const language_id = this.player_languages.get(player_index)
+        // @ts-ignore
+        const language_id = game.get_player(player_index)?.locale
         return this.translation_data.get(language_id).searchables ?? []
     }
 
@@ -282,7 +276,7 @@ class DictionaryCache implements GlobalCache {
 
             if (in_progress) {
                 if (index_mod_frame == undefined) {
-                    index_mod_frame = FLIB_gui.add(frame_flow, {
+                    let refs = FLIB_gui.add(frame_flow, {
                         type: "frame",
                         name: "fcodex_indexing_progress",
                         style: mod_gui.frame_style,
@@ -299,16 +293,18 @@ class DictionaryCache implements GlobalCache {
                             style: "inside_shallow_frame_with_padding",
                             direction: "vertical"
                         }
-                    }) as FrameGuiElement
+                    }) as LuaMultiReturn<[LuaTable<string, FactorioRuntime.LuaGuiElement>, FrameGuiElement]>
+                    index_mod_frame = refs[0].get("fcodex_indexing_progress") as FrameGuiElement
+                    $log_info!(`Creating frame ${serpent.line(refs)}`)
                 }
                 let pane = index_mod_frame.pane as LuaGuiElement
                 let lang_flow = pane?.[dictTask.language]
 
                 if (lang_flow == undefined) {
-                    lang_flow = FLIB_gui.add(pane, {
+                    let refs = FLIB_gui.add(pane, {
                         type: "flow",
                         name: dictTask.language,
-                        style: "centering_horizontal_flow",
+                        style_mods: { vertical_align: "center", top_margin: 4 },
                         1: {
                             type: "label",
                             name: "language",
@@ -327,7 +323,8 @@ class DictionaryCache implements GlobalCache {
                             style: "bold_label",
                             ignored_by_interaction: true
                         }
-                    }) as FrameGuiElement
+                    }) as LuaMultiReturn<[LuaTable<string, FactorioRuntime.LuaGuiElement>, FrameGuiElement]>
+                    lang_flow = refs[0].get(dictTask.language)
                 }
 
                 if (lang_flow.bar != undefined) (lang_flow.bar as ProgressBarGuiElement).value = progress
@@ -343,7 +340,6 @@ class DictionaryCache implements GlobalCache {
 
     Rebuild() {
         this.translated_languages = new LuaSet()
-        this.player_languages = new LuaTable()
         this.translation_data = new LuaTable()
     }
 

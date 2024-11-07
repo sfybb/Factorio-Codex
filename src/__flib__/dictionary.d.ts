@@ -1,16 +1,9 @@
 // @noSelfInFile
-
-declare class FLIBRawDictionary {
-    batch_i: number
-    dict_i: number
-    total: number
-
-    // internal
-    ref: FactorioRuntime.LocalisedString
-    strings: FactorioRuntime.LocalisedString
-    name: string
-
-    add(internal: string, translation: FactorioRuntime.LocalisedString): void;
+declare module "factorio:common" {
+    export interface DictionaryLiteEvents {
+        "on_player_dictionaries_ready": import("__flib__.dictionary").OnDictionaryReadyEvent
+        "on_player_language_changed": import("__flib__.dictionary").OnPlayerLanguageChangedEvent
+    }
 }
 
 interface FLIBTranslationFinishedOutput {
@@ -20,24 +13,64 @@ interface FLIBTranslationFinishedOutput {
 }
 
 
+// Translations are identified by their internal key. If the translation failed, then it will not be present. Locale
+// fallback groups can be used if every key needs a guaranteed translation.
+type FLIBTranslatedDictionary = LuaTable<string, string>
+
+// Localised strings identified by an internal key. Keys must be unique and language-agnostic.
+type FLIBDictionary = LuaTable<string, FactorioRuntime.LocalisedString>
 
 /** @noResolution */
 declare module "__flib__.dictionary" {
-    function _new(name: string,
-                  keep_untranslated?: boolean,
-                  initial_contents?: LuaTable<string, FactorioRuntime.LocalisedString>): FLIBRawDictionary;
+    export interface OnDictionaryReadyEvent extends FactorioRuntime.EventData {
+        readonly player_index: FactorioRuntime.PlayerIndex;
+    }
+
+    export interface OnPlayerLanguageChangedEvent extends FactorioRuntime.EventData {
+        readonly player_index: FactorioRuntime.PlayerIndex;
+        readonly language: string;
+    }
+
+    // Called when a player's dictionaries are ready to be used. Handling this event is not required.
+    export const on_player_dictionaries_ready: FactorioRuntime.CustomEventId<LuaTable>;
+
+    // Called when a player's language changes. Handling this event is not required.
+    export const on_player_language_changed: FactorioRuntime.CustomEventId<LuaTable>;
+
+    export const events: { [key: FactorioRuntime.EventId<any>]: (e: FactorioRuntime.EventData) => void };
+
+
+    // Lifecycle handlers
+
+    export function on_init(): void;
+
+    export function on_configuration_changed(): void;
+
+    export function on_tick(): void;
+
+    export function on_string_translated(eventData: FactorioRuntime.OnStringTranslatedEvent): void;
+
+    export function on_player_joined_game(eventData: FactorioRuntime.OnPlayerJoinedGameEvent): void;
+
+
+    // Handle all non-bootstrap events with default event handlers. Will not overwrite any existing handlers. If you have
+    // custom handlers for on_tick, on_string_translated, or on_player_joined_game, ensure that you call the corresponding
+    // module lifecycle handler..
+    export function handle_events(): void;
+
+
+    // Dictionary functions
+
+    // Create a new dictionary. The name must be unique.
+    function _new(name: string, initial_strings?: FLIBDictionary): void;
     export {_new as new};
 
-    export function init(): void;
+    // Add the given string to the dictionary.
+    export function add(dict_name: string, key: string, localised: FactorioRuntime.LocalisedString): void;
 
-    export function load(): void;
+    // Get all dictionaries for the player. Will return `nil` if the player's language has not finished translating.
+    export function get_all(player_index: FactorioRuntime.PlayerIndex): undefined | LuaTable<string, FLIBTranslatedDictionary>;
 
-    export function translate(player: FactorioRuntime.LuaPlayer): void;
-    export function check_skipped(): void;
-
-    export function process_translation(event_data: FactorioRuntime.OnStringTranslatedEvent): undefined | FLIBTranslationFinishedOutput;
-
-
-    export function cancel_translation(player_index: FactorioRuntime.PlayerIndex): void;
-    export function set_use_local_storage(value: boolean): void;
+    // Get the specified dictionary for the player. Will return `nil` if the dictionary has not finished translating.
+    export function get(player_index: FactorioRuntime.PlayerIndex, dict_name: string): undefined | FLIBTranslatedDictionary;
 }

@@ -27,8 +27,6 @@ jest.mock("QuickSearch")*/
 
 global.game = {
     get_player: jest.fn(),
-    get_filtered_entity_prototypes: () => new Map<string, any>(),
-    get_filtered_item_prototypes: () => new Map<string, any>(),
     recipe_category_prototypes: new Map<string, {name: string}>([[ "test", {name: "Test recipe cat. Meow!"}]]),
     resource_category_prototypes: new Map<string, {name: string}>([[ "test", {name: "Test cat. Meow!"}]]),
     players: []
@@ -58,29 +56,6 @@ describe("PlayerData module", () => {
 
         playerData.InitPlayer(69 as PlayerIndex)
         expect(global.players).toEqual({69: {
-                codex: {
-                    player_index: 69,
-
-                    categories: {
-                        selected_index: -1,
-                        selected_cat: undefined,
-
-                        rebuild_gui: false,
-                        refs: {
-                            available_entities: {}
-                        },
-                        entity_lists: {},
-                    },
-
-                    visible: false,
-                    keep_open: false,
-                    refs: {},
-                    rebuild_gui: false,
-                    entity_view: undefined,
-
-                    historyList: [],
-                    historyPosition: -1
-                },
                 quick_search: {
                     player_index: 69,
                     visible: false,

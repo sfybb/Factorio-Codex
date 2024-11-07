@@ -1,4 +1,5 @@
 import {default as Util, validate_print_info, validate_status} from "Util";
+//import {$$define, $$ident, $$includes, $$typeMetadata, TypeMetadataProperty} from "ts-macros";
 
 interface VerifyinfoBase {
     readonly type: "string" | "number" | "object" | "boolean" | "function" | "array"| "Verifiable",
@@ -75,6 +76,28 @@ export type Verifyinfo =
 export interface Verifiable {
     get_verify_info(args?: any): Verifyinfo[];
 }
+/*
+function $verifyObject<T extends Verifiable>(obj: T, print_info?: validate_print_info, args?: any): validate_status {
+    const meta = $$typeMetadata!<T>(true, true);
+
+    if (obj == null) {
+        return validate_status.ERROR
+    }
+
+    let status: validate_status = validate_status.OK;
+
+    +[";", [$$typeMetadata!<T>(true, false).properties], (prop: TypeMetadataProperty) => {
+        if($$includes!(["boolean", "number"], prop.type)) {
+           // @ts-ignore
+            if (typeof obj[prop.name] !== prop.type || (obj[prop.name] == null && !prop.optional)) {
+               status = validate_status.ERROR
+           }
+        }
+        typeof T.prototype
+    }]
+
+    return status;
+}*/
 
 function verify<T extends Verifiable>(obj: T, print_info?: validate_print_info, args?: any): validate_status {
     let infoList = obj.get_verify_info(args)
@@ -207,3 +230,4 @@ function verify_internal_array(arr: any[], info: Verifyinfo, pi: validate_print_
 
 
 export default verify
+//export {$verifyObject}

@@ -1,19 +1,26 @@
 import {LuaFluidPrototype, LuaItemPrototype, LuaTechnologyPrototype, LuaTilePrototype} from "factorio:runtime";
 /** @noResolution */
-import * as FLIB_dictionary_lite from "__flib__.dictionary-lite";
+import * as FLIB_dictionary_lite from "__flib__.dictionary";
+/** @noResolution */
+import * as FLIB_table from "__flib__.table";
 
 import {getDictionaryCache} from "cache/DictionaryCache";
-import {getPrototypeCache} from "cache/PrototypeCache"
 import MigratablePrototype from "./PrototypeHelper";
 
 let empty_prototypes = true
+
+declare const prototypes: {
+    fluid: LuaTable<string, MigratablePrototype<LuaFluidPrototype>>,
+    item: LuaTable<string, MigratablePrototype<LuaItemPrototype>>,
+    technology: LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>>,
+    tile: LuaTable<string, MigratablePrototype<LuaTilePrototype>>
+}
 
 namespace Dictionary {
     let tmp = 0
 
     let build_done: boolean = false;
     export function Init(): void {
-        FLIB_dictionary_lite.on_init()
         Dictionary.Build()
     }
 
@@ -24,14 +31,13 @@ namespace Dictionary {
 
         $log_info!("Building raw dictionaries...")
 
-        let prototypes = undefined
-
-        let protoCache = getPrototypeCache()
-        if (protoCache != undefined && protoCache?.getAll != undefined) {
-            prototypes = protoCache.getAll()
+        let luaPrototypes = {
+            fluid: prototypes.fluid,
+            item: prototypes.item,
+            technology: prototypes.technology
         }
 
-        if (prototypes == undefined) {
+        if (luaPrototypes == undefined) {
             $log_warn!("No prototype definitions in cache! Cannot start translation!")
             empty_prototypes = true
             return;
@@ -41,17 +47,17 @@ namespace Dictionary {
         let protoTable = new LuaTable<string, LuaTable<string, MigratablePrototype<LuaFluidPrototype | LuaItemPrototype |
             LuaTechnologyPrototype | LuaTilePrototype>>>()
 
-        if (prototypes.fluid != undefined) {
+        if (luaPrototypes.fluid != undefined) {
             // @ts-ignore
-            protoTable.set("fluid", prototypes.fluid)
+            protoTable.set("fluid", luaPrototypes.fluid)
         }
-        if (prototypes.item != undefined) {
+        if (luaPrototypes.item != undefined) {
             // @ts-ignore
-            protoTable.set("item", prototypes.item)
+            protoTable.set("item", luaPrototypes.item)
         }
-        if (prototypes.technology != undefined) {
+        if (luaPrototypes.technology != undefined) {
             // @ts-ignore
-            protoTable.set("technology", prototypes.technology)
+            protoTable.set("technology", luaPrototypes.technology)
         }
         // @ts-ignore
         //protoTable.set("tile", prototypes.tile)
@@ -96,13 +102,6 @@ namespace Dictionary {
         build_done = false
         Dictionary.Init()
         $log_info!("Kicking off translation...")
-    }
-
-    export function on_player_language_changed(language_change: FLIB_dictionary_lite.OnPlayerLanguageChangedEvent) {
-        let dict_cache = getDictionaryCache()
-        if (dict_cache != undefined) {
-            dict_cache.setPlayerLanguage(language_change)
-        }
     }
 
     export function on_player_dictionaries_ready(e: FLIB_dictionary_lite.OnDictionaryReadyEvent, lang_data?: FLIBTranslationFinishedOutput) {
