@@ -11,7 +11,7 @@ const migrations = {
     ["0.0.21"]: require("migrations/migrate_0_0_21")
 }
 
-declare const global: {
+declare const storage: {
     players?: player_table
     cache?: CacheManager
 }
@@ -28,7 +28,7 @@ class Migration {
             PlayerData.validate()
 
             $log_info!("Invalidating and rebuilding caches")
-            global.cache?.RebuildAll()
+            storage.cache?.RebuildAll()
             Dict.Rebuild()
 
             Migration.modCompatCheck()
@@ -41,10 +41,10 @@ class Migration {
     }
 
     static refresh_guis(): void {
-        if (global.players == undefined) return
+        if (storage.players == undefined) return
 
 
-        for (let [, player_data] of global.players) {
+        for (let [, player_data] of storage.players) {
             if (player_data.quick_search != undefined) {
                 player_data.quick_search.set_rebuild_gui()
             }

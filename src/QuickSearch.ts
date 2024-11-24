@@ -15,7 +15,7 @@ import * as FLIB_gui from "__flib__.gui";
 import Quantity from "./quick_search/Quantity";
 import {format_handlers} from "__flib__.gui";
 
-declare const global: {
+declare const storage: {
     playerData: typeof PlayerData
 }
 
@@ -72,10 +72,11 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     destroy() {
         this.refs?.frame?.destroy()
         this.refs = {}
+        this.visible = false
     }
 
     build_gui() {
-        $log_info!(`Build ${serpent.line(this.refs)}`)
+        $log_debug!(`Build ${serpent.line(this.refs)}`)
         if (this.rebuild_gui) {
             this.destroy()
         }
@@ -89,7 +90,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         if ( this.refs?.frame?.valid != true ) {
             this.rebuild_gui = false
 
-            $log_info!("Create")
+            $log_debug!("Create")
             // @ts-ignore
             let new_refs = FLIB_gui.add(player.gui.screen, [{
                 type: "flow",
@@ -97,7 +98,6 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
                 style: "fcodex_quick_search",
                 caption: "Quick Search",
                 name: "frame",
-                tags: { gui: gui_name, action: "close" },
 
                 1: {type: "label"    , style: "fcodex_quick_search_label", caption: "QUICK SEARCH"},
                 2: {type: "textfield", style: "fcodex_quick_search_input", name: "search_field",
@@ -144,9 +144,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         this.build_gui()
         if( this.refs.frame != undefined && this.refs.results != undefined && this.refs.search_field != undefined) {
             this.refs.frame.visible = true
-            // FIXME: when assigning `this.refs.frame` to `player.opened` the quick search GUI disappears
-            //player.opened = this.refs.frame
-            $log_info!(`Opening ${serpent.line(player.opened)} ${player.opened === this.refs.frame} ${this.refs.frame.valid} ${this.refs.frame.visible} ${serpent.line(this.refs.frame.location)}`)
+            player.opened = this.refs.frame
 
             this.refs.frame.bring_to_front()
             this.refs.search_field.focus()
@@ -258,6 +256,8 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     update_input(prompt?: string) {
         if ( !this.is_open() ) return
 
+        this?.refs?.frame?.bring_to_front()
+
         if ( prompt == undefined ) {
             prompt = this.refs?.search_field?.text
         } else if ( this.refs.search_field != undefined ) {
@@ -274,11 +274,11 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             return;
         }
 
-        let math_prompt = prompt.replace(" ", "")
-        let [has_result, res] = QSMath.calculateString(math_prompt)
+        let [has_result, res] = QSMath.calculateString(prompt)
         let math_result = undefined, math_err = undefined
         if (has_result) {
-            math_result = (res as Quantity).prettyPrint(true) // TODO: Player setting
+            let si_prefix_no_unit = (game.get_player(this.player_index)?.mod_settings["fcodex_always_si_prefix"]?.value == true) ?? true
+            math_result = (res as Quantity).prettyPrint(si_prefix_no_unit) // TODO: Player setting
         } else {
             math_err = res as string
         }
@@ -333,7 +333,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             return
         }
 
-
+        $log_debug!(`Executing gui action "${action}" for ${$get_player_string!(this.player_index)}`)
         if (action == "update_search") {
             if (event.name == defines.events.on_gui_text_changed) {
                 this.update_input()

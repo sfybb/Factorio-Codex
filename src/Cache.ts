@@ -1,6 +1,6 @@
 import { PlayerIndex } from "factorio:runtime"
 
-declare const global: {
+declare const storage: {
     cache: CacheManager
 }
 
@@ -198,11 +198,11 @@ class CacheManager {
 }
 
 function getGlobalCache(cache_id: string): undefined | GlobalCache {
-    return global?.cache?.get(cache_id)
+    return storage?.cache?.get(cache_id)
 }
 
 function getPlayerCache(cache_id: string, player: PlayerIndex): undefined | PlayerCache {
-    return global?.cache?.get_player(cache_id, player)
+    return storage?.cache?.get_player(cache_id, player)
 }
 
 export default CacheManager

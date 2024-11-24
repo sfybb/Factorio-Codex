@@ -24,7 +24,7 @@ export type DictionaryEntry = {
     hidden: boolean
 }
 
-declare const global: {
+declare const storage: {
     playerData: typeof PlayerData
 }
 
@@ -130,7 +130,7 @@ class DictionaryCache implements GlobalCache {
                 // @ts-ignore
                 if (player.locale == dictTask.language) {
                     game.get_player(player_index)?.print("Factorio Codex: Quick search is now ready to be used!")
-                    global.playerData?.getQuickSearch(player_index)?.update_input()
+                    storage.playerData?.getQuickSearch(player_index)?.update_input()
                 }
             }
         }

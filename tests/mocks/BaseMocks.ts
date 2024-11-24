@@ -45,6 +45,11 @@ global.prototypes = {
     players: []
 }
 
+// @ts-ignore
+global.storage = {
+
+}
+
 
 
 function serpentPrint(tbl: unknown, options?: Partial<serpent.Options>): string {

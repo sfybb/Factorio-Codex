@@ -14,7 +14,7 @@ export interface player_data {
 
 export type player_table = LuaMap<PlayerIndex, player_data>
 
-declare let global: {
+declare let storage: {
     playerData: typeof PlayerData
     cache: Cache
     players?: player_table
@@ -24,14 +24,15 @@ type indirect_player_index = PlayerIndex | { player_index: PlayerIndex }
 
 namespace PlayerData {
     export function Init(this: any) {
-        global = global ?? {}
-        global.players = new LuaTable()
-        global.cache = new Cache()
+        $log_debug!("Running initialization")
+        storage = storage ?? {}
+        storage.players = new LuaTable()
+        storage.cache = new Cache()
 
         // @ts-ignore
-        global.playerData = {}
+        storage.playerData = {}
         // @ts-ignore
-        setmetatable(global.playerData, {__index: PlayerData })
+        setmetatable(storage.playerData, {__index: PlayerData })
 
         Dictionary.Init()
     }
@@ -39,8 +40,8 @@ namespace PlayerData {
     export function Load(this: any) {
         PlayerData.LoadMetatables()
 
-        if (global.cache != undefined) {
-            Cache.load(global.cache)
+        if (storage?.cache != undefined) {
+            Cache.load(storage.cache)
         } else {
             $log_warn!("Unable to load Cache! Cache has not been created yet!")
         }
@@ -48,8 +49,8 @@ namespace PlayerData {
 
     export function Rebuild() {
         // Destroy all guis before deleting the references to them
-        if (global?.players != null) {
-            for (let [i, player_data] of global.players) {
+        if (storage?.players != null) {
+            for (let [i, player_data] of storage.players) {
                 player_data?.quick_search?.destroy()
             }
         }
@@ -58,13 +59,13 @@ namespace PlayerData {
     }
 
     export function LoadMetatables() {
-        if (global.playerData != undefined) {
+        if (storage?.playerData != undefined) {
             // @ts-ignore
-            setmetatable(global.playerData, {__index: PlayerData })
+            setmetatable(storage.playerData, {__index: PlayerData })
         }
 
-        if (global?.players != null) {
-            for (let [i, player_data] of global.players) {
+        if (storage?.players != null) {
+            for (let [i, player_data] of storage.players) {
                 if (player_data == null) {
                     $log_warn!(`Player with index ${i} has no data that could be loaded!`)
                     continue
@@ -87,8 +88,8 @@ namespace PlayerData {
             $log_warn!(`Invalid request of player data initialization! Player with index ${index} does not exist!`)
             return undefined
         }
-        if (global?.players == undefined) {
-            global.players = new LuaTable();
+        if (storage?.players == undefined) {
+            storage.players = new LuaTable();
         }
 
         $log_info!(`Initializing data for player \"${player.name}\" (index: ${index})...`)
@@ -96,7 +97,7 @@ namespace PlayerData {
         const data: player_data = {
             quick_search: new QuickSearch(index),
         }
-        global.players.set(index, data)
+        storage.players.set(index, data)
 
         return data;
     }
@@ -108,8 +109,12 @@ namespace PlayerData {
             return undefined
         }
 
+        if (storage == undefined || storage.players == null) {
+            $log_info!("Empty storage table, did someone delete our data?")
+        }
+
         $log_trace!(`Retrieving data for player with index ${index}`)
-        const data = global.players?.get(index)
+        const data = storage.players?.get(index)
 
         return data ?? PlayerData.InitPlayer(index)
     }
@@ -142,15 +147,15 @@ namespace PlayerData {
     }
 
     export function validate() {
-        $log_info!("Validating global table...")
+        $log_info!("Validating storage table...")
 
-        if (global.playerData == undefined) {
-            $log_info!("Adding global access to playerdata")
+        if (storage.playerData == undefined) {
+            $log_info!("Adding storage access to playerdata")
             // @ts-ignore
-            global.playerData = {}
+            storage.playerData = {}
         }
         // @ts-ignore
-        setmetatable(global.playerData, {__index: PlayerData })
+        setmetatable(storage.playerData, {__index: PlayerData })
 
         const print_info: validate_print_info = {
             width: 40,
@@ -158,14 +163,14 @@ namespace PlayerData {
             current_indent: "", // start - no ident
         }
 
-        let status = global.cache == undefined ? validate_status.ERROR : validate_status.OK
+        let status = storage.cache == undefined ? validate_status.ERROR : validate_status.OK
         $log_info!(Util.format_validate_msg(print_info, "cache", status))
 
 
-        status = global.players == undefined ? validate_status.FIXED : validate_status.OK
+        status = storage.players == undefined ? validate_status.FIXED : validate_status.OK
         $log_info!(Util.format_validate_msg(print_info, "players", status))
         if (status == validate_status.FIXED) {
-            global.players = new LuaTable()
+            storage.players = new LuaTable()
         } else {
             let array_pi = print_info
             let player_data_pi = print_info
@@ -176,7 +181,7 @@ namespace PlayerData {
             player_obj_pi.current_indent  = player_data_pi.current_indent + player_obj_pi.indent_step
 
             // @ts-ignore
-            let tbl: player_table = global.players
+            let tbl: player_table = storage.players
             for (let [i, player_data] of tbl) {
                 if (i == null) {
                     continue
@@ -186,7 +191,7 @@ namespace PlayerData {
                 $log_info!(Util.format_validate_msg(array_pi, `[${i}]`, status))
                 if (status == validate_status.FIXABLE) {
                     // @ts-ignore
-                    global.players.delete(i)
+                    storage.players.delete(i)
                     continue
                 }
 

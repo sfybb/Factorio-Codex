@@ -1,4 +1,5 @@
-import Quantity, {SI} from "./Quantity";
+import Quantity from "./Quantity";
+import SI from "./SI_units"
 
 const functions: { [key: string]: (...args: Quantity[]) => Quantity } = {
     sin: (x: Quantity) => Quantity.fromNumber(Math.sin(x.getValue())),
@@ -297,11 +298,11 @@ function evaluateAST(node: AST): Quantity {
 }
 
 function cleanExpression(expression: string): string {
-    // remove spaces or underscores
+    // remove underscores; FIXME: keep spaces (important for clarity "km sin(PI)" != "kmsin(PI)")
     [expression, ] = string.gsub(expression, "[%s_]+", "");
 
-    // remove trailing operators or parenthesis
-    [expression, ] = string.gsub(expression, "[%+%-%*%/%%%^%(%)]*$", "");
+    // remove trailing operators, parenthesis or spaces
+    [expression, ] = string.gsub(expression, "[%+%-%*%/%%%^%(%)%s]*$", "");
 
     const [, open_parens] = string.gsub(expression, "%(", "")
     const [, close_parens] = string.gsub(expression, "%)", "")

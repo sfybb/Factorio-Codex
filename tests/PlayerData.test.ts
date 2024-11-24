@@ -38,11 +38,11 @@ describe("PlayerData module", () => {
     beforeEach(() => {
         jest.resetAllMocks()
         // @ts-ignore
-        global.players = undefined
+        storage.players = undefined
     })
     test("Can initialize global table", () => {
         playerData.Init()
-        expect(global.players).toEqual({})
+        expect(storage.players).toEqual({})
     })
     test("Can initialize data for a player", () => {
         const test = new LuaTable()
@@ -55,7 +55,7 @@ describe("PlayerData module", () => {
         global.game.get_player.mockImplementation((i: PlayerIndex) => i == 69 ? {...p} : undefined)
 
         playerData.InitPlayer(69 as PlayerIndex)
-        expect(global.players).toEqual({69: {
+        expect(storage.players).toEqual({69: {
                 quick_search: {
                     player_index: 69,
                     visible: false,

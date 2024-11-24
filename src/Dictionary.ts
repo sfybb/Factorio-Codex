@@ -75,6 +75,7 @@ namespace Dictionary {
                     continue
                 }
 
+                $log_info!(`Creating dictionary ${dict_name}`)
                 FLIB_dictionary_lite.add(dict_name, name, proto.localised_name)
                 //desc.add( name, proto.localised_description)
             }

@@ -21,6 +21,7 @@ import * as FLIB_on_tick_n from "__flib__.on-tick-n"
 /** @noResolution */
 import * as FLIB_dictionary_lite from "__flib__.dictionary";
 import {getDictionaryCache} from "./cache/DictionaryCache";
+import {LuaLibrary} from "__core__.lualib.event_handler";
 
 
 const errorHandler = (err: any): void => {
@@ -104,8 +105,13 @@ namespace Events {
 
     // custom events
     export function on_toggle_quick_search(e: CustomInputEvent) {
-        $log_info!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
+        $log_debug!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
         PlayerData.getQuickSearch(e)?.toggle()
+    }
+
+    export function on_close_quick_search(e: CustomInputEvent) {
+        $log_debug!(`Shortcut key pressed! Closing Quick Search for ${game.get_player(e.player_index)?.name}`)
+        PlayerData.getQuickSearch(e)?.destroy()
     }
 }
 
@@ -127,6 +133,7 @@ const FactorioCodexEvents: EventHandler.LuaLibrary = {
 
         // custom events
         "fcodex_toggle_quick_search": Events.on_toggle_quick_search,
+        "fcodex_close_quick_search": Events.on_close_quick_search,
     }
 }
 
