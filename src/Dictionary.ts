@@ -64,8 +64,9 @@ namespace Dictionary {
 
         for (let [type, list] of protoTable) {
             const dict_name = type + "_names"
-            FLIB_dictionary_lite.new(dict_name)
+            FLIB_dictionary_lite.new(dict_name) // TODO Crash here
 
+            $log_info!(`Creating dictionary ${dict_name}`)
             let invalidProtos = []
 
             // @ts-ignore
@@ -75,7 +76,6 @@ namespace Dictionary {
                     continue
                 }
 
-                $log_info!(`Creating dictionary ${dict_name}`)
                 FLIB_dictionary_lite.add(dict_name, name, proto.localised_name)
                 //desc.add( name, proto.localised_description)
             }
@@ -101,6 +101,15 @@ namespace Dictionary {
     export function Rebuild(): void {
         $log_info!("Rebuilding dictionaries...")
         build_done = false
+
+        // Nuke flib data
+        // @ts-ignore
+        if (storage.__flib != undefined) {
+            // @ts-ignore
+            storage.__flib.dictionary = null
+        }
+        FLIB_dictionary_lite.on_init()
+
         Dictionary.Init()
         $log_info!("Kicking off translation...")
     }

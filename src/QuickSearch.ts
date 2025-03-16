@@ -1,5 +1,7 @@
-import {BaseGuiElement,
-    DropDownGuiElement, FlowGuiElement, LabelGuiElement, ListBoxGuiElement, PlayerIndex, TextFieldGuiElement, uint} from "factorio:runtime";
+import {
+    BaseGuiElement, Color,
+    DropDownGuiElement, FlowGuiElement, LabelGuiElement, ListBoxGuiElement, PlayerIndex, TextFieldGuiElement, uint
+} from "factorio:runtime";
 import {default as Util, validate_print_info, validate_status} from "Util";
 import {getDictionaryCache} from "cache/DictionaryCache";
 import {default as Search, SortOrderQS} from "search/Search";
@@ -76,7 +78,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     }
 
     build_gui() {
-        $log_debug!(`Build ${serpent.line(this.refs)}`)
+        $log_debug!(`Build ${serpent.line(this.refs)} Rebuild? ${this.rebuild_gui}`)
         if (this.rebuild_gui) {
             this.destroy()
         }
@@ -144,6 +146,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         this.build_gui()
         if( this.refs.frame != undefined && this.refs.results != undefined && this.refs.search_field != undefined) {
             this.refs.frame.visible = true
+            this.visible = true
             player.opened = this.refs.frame
 
             this.refs.frame.bring_to_front()
@@ -170,7 +173,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     }
 
     toggle() {
-        $log_info!("Toggle")
+        $log_debug!("Toggle")
         this.visible ? this.close() : this.open();
     }
 
@@ -186,6 +189,28 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         this.remove_search_results()
         this.search_results = []
 
+        let player = game.get_player(this.player_index)
+        let typeColors: LuaMap<string, string> = new LuaMap<string,string>();
+        if (player != undefined) {
+            let tmp: Color
+            let toHexColor = (c: Color) => string.format("#%02X%02X%02X", (c.r ?? 0) * 255, (c.g?? 0) * 255, (c.b?? 0) * 255)
+
+            if ((tmp = player.mod_settings["fcodex_search_items_color"].value as Color) != undefined) {
+                typeColors.set("item", toHexColor(tmp))
+                $log_debug!(`[${$get_player_string!(this.player_index)}] Set item color to ${typeColors.get("item")} (${serpent.line(tmp)})`)
+            }
+
+            if ((tmp = player.mod_settings["fcodex_search_fluids_color"].value as Color) != undefined) {
+                typeColors.set("fluid", toHexColor(tmp))
+                $log_debug!(`[${$get_player_string!(this.player_index)}] Set fluid color to ${typeColors.get("fluid")} (${serpent.line(tmp)})`)
+            }
+
+            if ((tmp = player.mod_settings["fcodex_search_technologies_color"].value as Color) != undefined) {
+                typeColors.set("technology", toHexColor(tmp))
+                $log_debug!(`[${$get_player_string!(this.player_index)}] Set technology color to ${typeColors.get("technology")} (${serpent.line(tmp)})`)
+            }
+        }
+
         if (unfiltered_list.length == 0) {
             return
         }
@@ -196,9 +221,12 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
             }
 
             let text = data.name
-            switch (data.type) {
+            /*switch (data.type) {
                 case "technology":
                     text = `[color=#add8e6]${text}[/color]`
+            }*/
+            if (typeColors.has(data.type)) {
+                text = `[color=${typeColors.get(data.type)}]${text}[/color]`
             }
 
             /*if ( debug.is_enabled() ) {
@@ -254,7 +282,10 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
     }
 
     update_input(prompt?: string) {
-        if ( !this.is_open() ) return
+        if ( !this.is_open() ) {
+            $log_debug!("Search not open how are you searching?")
+            return
+        }
 
         this?.refs?.frame?.bring_to_front()
 
@@ -277,8 +308,9 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         let [has_result, res] = QSMath.calculateString(prompt)
         let math_result = undefined, math_err = undefined
         if (has_result) {
-            let si_prefix_no_unit = (game.get_player(this.player_index)?.mod_settings["fcodex_always_si_prefix"]?.value == true) ?? true
-            math_result = (res as Quantity).prettyPrint(si_prefix_no_unit) // TODO: Player setting
+            let user_settting_value: boolean | undefined = game.get_player(this.player_index)?.mod_settings["fcodex_always_si_prefix"]?.value as boolean
+            let si_prefix_no_unit = user_settting_value ?? true
+            math_result = (res as Quantity).prettyPrint(si_prefix_no_unit)
         } else {
             math_err = res as string
         }
@@ -296,6 +328,7 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
         task.args?.set("name", "update_search")
         task.args?.set("prompt", prompt)
 
+        $log_debug!("Deferred search task to next tick")
         this.last_search_task = FLIB_on_tick_n.add(game.tick + 1, task)
     }
 
@@ -312,12 +345,25 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
                 return;
             }
 
-            let matching_names = Search.search(task.args?.get("prompt"), this.player_index, [
-                SortOrderQS.hidden_last,
-                SortOrderQS.tech_last,
-                SortOrderQS.match_count,
-                SortOrderQS.factorio],
-                100)
+            let player = game.get_player(this.player_index)
+            let searchTargets: LuaSet<string> = new LuaSet<string>();
+            if (player != undefined) {
+                if (player.mod_settings["fcodex_search_items"].value == true) searchTargets.add("item")
+                if (player.mod_settings["fcodex_search_fluids"].value == true) searchTargets.add("fluid")
+                if (player.mod_settings["fcodex_search_technologies"].value == true) searchTargets.add("technology")
+            }
+
+            let order = [SortOrderQS.hidden_last]
+            if (player == undefined || player.mod_settings["fcodex_search_technologies_always_last"].value == true) {
+                order.push(SortOrderQS.tech_last)
+            }
+
+            order.push(SortOrderQS.match_count)
+            order.push(SortOrderQS.factorio)
+
+            let matching_names = Search.search(
+                task.args?.get("prompt"), this.player_index, order,
+                100,  searchTargets)
             //$log_info!(serpent.block(matching_names,  {}))
 
             this.display_result_list(matching_names)
@@ -369,7 +415,12 @@ class QuickSearch implements TaskExecutor, IGuiRoot {
 
             if (event.element?.selected_index != undefined) (<DropDownGuiElement>event.element).selected_index = 0
 
-            $log_info!(`TODO: Request opening of factoriopedia for "${selectedResult.id}" of type "${selectedResult.type}"`)
+            let cur_player = game.get_player(this.player_index)
+            if (selectedResult.type == "technology") {
+                if (cur_player != undefined) cur_player.open_technology_gui(selectedResult.id)
+            } else {
+                $log_info!(`TODO: Request opening of factoriopedia for "${selectedResult.id}" of type "${selectedResult.type}"`)
+            }
         } else if ( action == "debugToggle") {
             if (this.refs.debug == undefined) return;
 

@@ -25,7 +25,7 @@ export default class Quantity {
     // constructor(val: number)
     constructor(val: number, si_units?: SI.Units) {
         this.significand = val ?? 0
-        this.si_units = si_units ?? {exp: 0, units: new LuaMap}
+        this.si_units = si_units ?? {exp: 0, units: new LuaMap()}
 
         this.reduce();
     }
@@ -65,7 +65,7 @@ export default class Quantity {
     static fromUnit(unit: string): Quantity {
         $log_trace!(`From unit: "${unit}"`)
         let exp
-        if (unit.length >= 1) {
+        if (unit.length > 1) {
             exp = SI.PrefixToExp(unit.charAt(0))
             if (exp != undefined) unit = unit.substring(1)
         }
@@ -81,9 +81,9 @@ export default class Quantity {
             if (exp === 0) units.delete(key)
         }
 
-        let decimals = Math.floor(Math.log10(Math.abs(this.significand)));
+        /*let decimals = Math.floor(Math.log10(Math.abs(this.significand)));
         this.significand /= Math.pow(10, decimals)
-        this.si_units.exp += decimals
+        this.si_units.exp += decimals*/
     }
 
     prettyPrint(si_prefix_no_unit?: boolean): string {

@@ -139,10 +139,8 @@ namespace PlayerData {
                     }
                     break
                 default:
-                    $log_warn!(`Unknown gui identifier "${gui}" cannot assign event!`)
+                    break
             }
-        } else {
-            $log_warn!(`Unknown gui "${gui}" cannot assign event ${serpent.line(e)} to gui!`)
         }
     }
 

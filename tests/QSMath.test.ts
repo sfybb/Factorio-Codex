@@ -150,4 +150,11 @@ describe("QSMath evaluate string math formula", () => {
         // @ts-ignore
         expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8388608));
     })
+
+    test("Unit conversion", () => {
+        let res = QSMath.calculateString("4 GJ / 40 MW")
+        expect(res[0]).toStrictEqual(true)
+        // @ts-ignore
+        expect(res[1].toString()).toStrictEqual("1 min + 40 s");
+    })
 })

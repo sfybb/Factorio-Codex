@@ -83,7 +83,8 @@ function $log_crit_raw(msg: string) {
     log(`[CRITICAL] ${msg}`)
 }
 
-function $get_player_string(pID: FactorioRuntime.PlayerIndex): string {
+function $get_player_string(pID: FactorioRuntime.PlayerIndex|null): string {
+    if (pID == null) return 'unknown player'
     let ____temp_player = game?.get_player(pID)
     return ____temp_player == undefined ? `player ID: ${pID}` : `player ${pID} ('${____temp_player.name}')`
 }

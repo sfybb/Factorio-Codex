@@ -21,6 +21,10 @@ describe("Generalized Suffix Tree", () => {
         let stree = new GeneralizedSuffixTree<any>()
         stree.add("abc", "val")
         //console.log(stree.toGraphviz())
+
+        let set = new LuaSet<string>()
+        stree.getResults("abc", set)
+        expect(set.has("val")).toBe(true)
     })
     test("complex insertion", () => {
         let stree = new GeneralizedSuffixTree<number>()

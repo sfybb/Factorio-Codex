@@ -57,7 +57,7 @@ const NUM_SUFFIXTREE_INSERTIONS = 10
 
 type TranslationData = {
     dictionary_suffix_tree: LuaTable<string, GeneralizedSuffixTree<DictionaryEntry>>;
-    searchables: ISearchable<DictionaryEntry>[]
+    searchables: LuaMap<string, ISearchable<DictionaryEntry>>
 };
 
 class DictionaryCache implements GlobalCache {
@@ -209,7 +209,7 @@ class DictionaryCache implements GlobalCache {
         if (tl_data == undefined) {
             tl_data = {
                 dictionary_suffix_tree: new LuaTable<string, GeneralizedSuffixTree<DictionaryEntry>>(),
-                searchables: []
+                searchables: new LuaMap()
             }
             this.translation_data.set(language_id, tl_data)
         }
@@ -254,14 +254,20 @@ class DictionaryCache implements GlobalCache {
             return i;
         }
         $log_debug!(`Completed build of suffix tree for "${name}"`)
-        tl_data.searchables.push(stree)
+        tl_data.searchables.set(name, stree)
         return undefined;
     }
 
-    getSearchables(player_index: PlayerIndex): ISearchable<DictionaryEntry>[] {
+    getSearchables(player_index: PlayerIndex, toSearch?: LuaSet<string>): ISearchable<DictionaryEntry>[] {
         // @ts-ignore
         const language_id = game.get_player(player_index)?.locale
-        return this.translation_data.get(language_id).searchables ?? []
+
+        let searchables: ISearchable<DictionaryEntry>[] = []
+        for(const [name, s] of this.translation_data.get(language_id).searchables) {
+            if (toSearch == undefined || toSearch.has(name)) searchables.push(s)
+        }
+
+        return searchables
     }
 
     // inspired by flib's dictionary-lite::update_gui

@@ -223,7 +223,10 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
 
             // Rest of the search string doesn't match the label of the edge
             // therefore the search string is not contained in the tree
-            if (e == undefined || !(e.label.length > rem.length ? e.label.startsWith(rem) : rem.startsWith(e.label) )) return undefined
+            if (e == undefined) return undefined
+            if (e.label.length > rem.length) {
+                if (!e.label.startsWith(rem)) return undefined
+            } else if (!rem.startsWith(e.label)) return undefined
 
             // the search string fully contained in the edge label
             if (rem.length <= e.label.length) {

@@ -43,7 +43,6 @@ function $safe_call<This, Args extends any[], R>(
 namespace Events {
     export function on_init() {
         FLIB_on_tick_n.init()
-        FLIB_dictionary_lite.on_init()
         $safe_call!(PlayerData.Init, undefined)
     }
 
@@ -105,12 +104,12 @@ namespace Events {
 
     // custom events
     export function on_toggle_quick_search(e: CustomInputEvent) {
-        $log_debug!(`Shortcut key pressed! Opening Quick Search for ${game.get_player(e.player_index)?.name}`)
+        $log_debug!(`Shortcut key pressed! Opening Quick Search for ${$get_player_string!(e.player_index)}`)
         PlayerData.getQuickSearch(e)?.toggle()
     }
 
     export function on_close_quick_search(e: CustomInputEvent) {
-        $log_debug!(`Shortcut key pressed! Closing Quick Search for ${game.get_player(e.player_index)?.name}`)
+        $log_debug!(`Shortcut key pressed! Closing Quick Search for ${$get_player_string!(e.player_index)}`)
         PlayerData.getQuickSearch(e)?.destroy()
     }
 }
@@ -137,10 +136,8 @@ const FactorioCodexEvents: EventHandler.LuaLibrary = {
     }
 }
 
-script.on_event("fcodex_toggle_quick_search", Events.on_toggle_quick_search)
-
-EventHandler.add_lib(FactorioCodexEvents)
 EventHandler.add_lib({events: FLIB_dictionary_lite.events})
+EventHandler.add_lib(FactorioCodexEvents)
 
 commands.add_command("fc-rebuild-all", [ "command-help.fc-rebuild-all" ], (e) => {
     if (e.player_index == undefined) {

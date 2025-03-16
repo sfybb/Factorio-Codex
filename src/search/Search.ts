@@ -14,8 +14,8 @@ type Dict = {
 }
 
 namespace Search {
-    export function search(this: any, prompt: string, player: PlayerIndex, order: multiOrderFunc<SearchResult>, maxRes?: number) {
-        //$log_info!(`Args: prompt: "${prompt} player: ${player} ... maxRes: ${maxRes}"`)
+    export function search(this: any, prompt: string, player: PlayerIndex, order: multiOrderFunc<SearchResult>, maxRes?: number, toSearch?: LuaSet<string>) {
+        $log_debug!(`Args: prompt: "${prompt} player: ${player} ... maxRes: ${maxRes}" search targets: ${serpent.line(toSearch)}`)
         //if (prompt == undefined || prompt.length == 0) return []
 
         maxRes = maxRes ?? 100
@@ -25,7 +25,7 @@ namespace Search {
 
         return searchRes
     }
-    export function getSearchResults(prompt: string, player: PlayerIndex): SearchResult[] {
+    export function getSearchResults(prompt: string, player: PlayerIndex, toSearch?: LuaSet<string>): SearchResult[] {
         prompt = prompt.toLowerCase()
         let tokens = prompt.split(" ")
 
@@ -37,28 +37,28 @@ namespace Search {
 
         let searchables: ISearchable<DictionaryEntry>[] = dictCache.getSearchables(player)
 
-        let profSearch = game.create_profiler(true)
+        /*let profSearch = game.create_profiler(true)
         let profMerge = game.create_profiler(true)
-        let prof = game.create_profiler(false)
+        let prof = game.create_profiler(false)*/
 
         let resSet = undefined
         for (let token of tokens) {
             if (token.length == 0 || searchedTokens.has(token)) continue
             searchedTokens.add(token)
 
-            profSearch.restart()
+            //profSearch.restart()
             let tokenRes = new LuaSet<DictionaryEntry>()
             for (let searchable of searchables) {
                 searchable.getResults(token, tokenRes)
             }
 
-            profSearch.stop()
-            profMerge.restart()
+            /*profSearch.stop()
+            profMerge.restart()*/
 
             if (resSet != undefined) resSet = SetIntersection(resSet, tokenRes);
             else resSet = tokenRes
 
-            profMerge.stop()
+            //profMerge.stop()
         }
         if (resSet == undefined) return []
 
@@ -74,7 +74,7 @@ namespace Search {
             }
         }
 
-        prof.stop()
+        //prof.stop()
         //game.print(["", "Tree Search: ", prof, " (Search: ", profSearch, "; Merge: ", profMerge, `; #${res.length})`])
 
         return res

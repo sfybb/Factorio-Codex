@@ -4,9 +4,8 @@ import "./mocks/LuaMocks"
 import "./mocks/BaseMocks"
 
 import Quantity from '../src/quick_search/Quantity';
-import {printConsoleMessages} from "./mocks/BaseMocks";
 
-describe("SI Unit module", () => {
+describe("Quantity Unit module", () => {
     test("Pretty print converts to derived unit", () => {
         let W_base_uints = new LuaMap<string, number>()
         W_base_uints.set('s', -2)
@@ -25,7 +24,7 @@ describe("SI Unit module", () => {
         expect(u.prettyPrint()).toStrictEqual("10")
     })
 
-    test("Pretty print ", () => {
+    test("Pretty print adds SI prefixes", () => {
         let u = new Quantity(Math.pow(10, 14))
         expect(u.prettyPrint(true)).toStrictEqual("100T")
     })
@@ -71,5 +70,21 @@ describe("SI Unit module", () => {
         })
         let j_inv = Quantity.fromNumber(1).div(j)
         expect(j_inv.toString()).toStrictEqual("1 J^-2")
+    })
+
+    test("Unit time pretty print", () => {
+        let Time_base_units = new LuaMap<string, number>()
+        Time_base_units.set('s', 1)
+
+        let j = new Quantity(440992, {
+            exp: 0,
+            units: Time_base_units
+        })
+        expect(j.toString()).toStrictEqual("5 days + 1 hours + 29 min + 52 s")
+    })
+
+    test("Unit conversion with back to start", () => {
+        let w = Quantity.fromUnit("W")
+        expect((w.pow(Quantity.fromNumber(100))).toString()).toStrictEqual("1 W^100")
     })
 })

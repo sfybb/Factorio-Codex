@@ -155,7 +155,7 @@ class Parser {
     }
 
     CALL(): AST {
-        const maybeCallee = this.MULTIPLICATION();
+        /*const maybeCallee = this.MULTIPLICATION();
 
         if (this.is('NUMBER', 'IDENT') && maybeCallee.type == "number" || maybeCallee.type == "ident") {
             return {
@@ -179,7 +179,31 @@ class Parser {
             return { type: 'call', fn: maybeCallee.value, args };
         }
 
-        return maybeCallee;
+        return maybeCallee;*/
+        // Start with the primary expression parsed by MULTIPLICATION.
+        let callee = this.MULTIPLICATION();
+
+        // Only interpret as a function call if an explicit '(' follows.
+        while (this.is('(')) {
+            this.eat('(');
+            const args: AST[] = [];
+            // If there's something inside the parentheses, parse it.
+            if (!this.is(')')) {
+                args.push(this.EXPRESSION());
+                while (this.is(',')) {
+                    this.eat(',');
+                    args.push(this.EXPRESSION());
+                }
+            }
+            this.eat(')');
+            // Ensure that the callee is a valid identifier for a function call.
+            if (callee.type !== 'ident') {
+                throw new Error(`Cannot call non-function value.`);
+            }
+            callee = { type: 'call', fn: callee.value, args };
+        }
+
+        return callee;
     }
 
     MULTIPLICATION(): AST {
@@ -201,6 +225,8 @@ class Parser {
         let left = this.EXPONENTIATION();
 
         while (this.is('(', 'NUMBER', 'IDENT')) {
+            // If the current token is a '-' and the following token is a NUMBER,
+            // assume it's a unary minus (handled in BASIC) rather than implicit multiplication.
             if (this.is('NUMBER') && (this.lookahead[0]?.token ?? "").startsWith("-")) break;
 
             left = {
@@ -315,7 +341,7 @@ function cleanExpression(expression: string): string {
 
     let superscript_map: {[key: string]: number} = SI.superscript_num.reduce((prev, cur, idx) => ({...prev, [cur]: idx}), {})
 
-    for (let [[match]] of string.gmatch(expression, `[${SI.superscript_num.join("|")}]+`)) {
+    for (let [[match]] of string.gmatch(expression, `[${SI.superscript_num.join("")}]+`)) {
         let new_val = "^"
         for (let c of match) {
             new_val += superscript_map[c]

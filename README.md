@@ -11,6 +11,7 @@ When you find what you searched for you can click on the search result, the code
 information about what you clicked on.
 
 ### Functionality
+* NEW Support for units! 
 * Search for any item, fluid or technology
 * Results are sorted such that technologies appear last and the item or fluid with the best match of your
   search term appears first (hidden items, fluids or technologies get excluded from the search)
@@ -28,31 +29,13 @@ information about what you clicked on.
   and need to be changed by you! To get a usable number you have to replace `e` with `10^` and the following `+`
   sing but keep a `-` sign)
 
-
-# Codex
-The codex can only be opened by using the [Quick Search](#Quick-Search) (default key `n`) and clicking on a non math result
-(clicking on `Waiting for translation...` also doesn't take you to the codex)
-The codex shows information about items, fluids and technologies. At the moment the main focus of the codex is showing
-ways to produce or consume items/fluids. Viewing technologies gives information about modifiers / recipes this technology unlocks.
-
-### Functionality
-* Items
-
 --------------------
-## Codex
 
-Currently only the in game description and possible recipes are shown.
-However rocket launch products and maybe other things aren't visible yet
 
 # TODO List
 - [X] Improve search functionality and sorting
-- [X] Add locale support for hardcoded english stuff and hotkey name
-- [X] Better recipe support (e.g. show output chance, min and max ...)
-- [ ] Recipes with **only** burner machines need some sort of indication that they are not free 
-- [ ] Open inventory/technology tree from codex IF possible
-- [ ] Add search to codex (low priority since quick search exists)
-- [ ] Better description for items/entities ...
-- [ ] Think about more TODO's
+- [X] Unit conversion
+- [ ] TODOs
 
 # Changelog
 See [Changelog](Changelog.md)

@@ -1,4 +1,9 @@
+import FibonacciHeap from "./FibonacciHeap";
+
 namespace SI {
+    type Vector = number[];
+    type Matrix = Vector[];
+
     export type UnitList = LuaMap<string, number>
 
     export type Units = {
@@ -28,7 +33,7 @@ namespace SI {
     // List of derived SI-units and their representation in SI base units
     // Some multi-letter unit SI base units may also appear in that list
     export const si_derived: { [dunit: string]: Units } = {
-        Hz: makeUnit( 0, {s: -1}),                       // Hertz	 s^−1
+        //Hz: makeUnit( 0, {s: -1}),                       // Hertz	 s^−1
         N:  makeUnit( 3, {g:  1, m:  1, s: -2}),         // Newton  kg⋅m⋅s^−2
         Pa: makeUnit( 3, {g:  1, m: -1, s: -2}),         // Pascal  kg⋅m^−1⋅s^−2
         J:  makeUnit( 3, {g:  1, m:  2, s: -2}),         // Joule   kg⋅m^2⋅s^−2
@@ -110,207 +115,103 @@ namespace SI {
 
     function DotProdUnits(a: UnitList, b: UnitList) {
         let res: number = 0
-        for (const [key, _] of a) {
-            const a_val = a.get(key)
+        for (const [key, a_val] of a) {
             const b_val = b.get(key)
             if (b_val != undefined && a_val != undefined) res += a_val * b_val
         }
         return res
     }
 
-    function BaseUnitsToDerived(si_units: Units, blacklisted_units?: LuaSet<string>): Units {
-        blacklisted_units = blacklisted_units ?? new LuaSet<string>()
-        let best_match = undefined
-        let best_dot = 0
-        let best_dot_abs = 0
-        const len_si_sq = DotProdUnits(si_units.units, si_units.units)
-        const len_si = Math.sqrt(len_si_sq)
-
-        let unit_copy = {exp: si_units.exp, units: new LuaMap<string, number>()}
-        for (let [key, val] of si_units.units) {
-            unit_copy.units.set(key, val)
+    function SubtractVectors(a: UnitList, b: UnitList, scale: number = 1): UnitList {
+        let result: UnitList = new LuaMap<string, number>();
+        let tmp: number = 0
+        for (const [unit, exp] of b) {
+            tmp = (a.get(unit) || 0) - exp * scale
+            if (tmp != 0) result.set(unit, tmp);
         }
-
-        if (len_si_sq == 0) return unit_copy
-
-        for (let [key, derived_unit] of Object.entries(si_derived)) {
-            if (blacklisted_units.has(key)) continue
-            const len_derived = Math.sqrt(DotProdUnits(derived_unit.units, derived_unit.units))
-
-            const dot = DotProdUnits(derived_unit.units, si_units.units) / (len_derived * len_si)
-
-            if (Math.abs(dot) > best_dot_abs) {
-                best_match = key
-                best_dot = dot
-                best_dot_abs = Math.abs(dot)
-
-                if (dot == 1) break;
-            }
-        }
-
-        let res_units: Units = unit_copy
-        let num_units = table_size(si_units.units)
-
-        if (best_match == undefined || (best_dot == -1.0 && num_units == 1)) return res_units
-        const derived_unit = si_derived[best_match]
-
-
-
-        let sign: 1 | -1 = best_dot > 0 ? -1 : 1
-        let tmp = mergeUnits(si_units, derived_unit, sign)
-        let cur_len_sq = DotProdUnits(tmp.units, tmp.units)
-        let last_len_sq = len_si_sq
-        let num_iter = 0
-        while(cur_len_sq < last_len_sq) {
-            num_iter -= sign
-            res_units = tmp
-            last_len_sq = cur_len_sq
-
-            tmp = mergeUnits(tmp, derived_unit, sign)
-            cur_len_sq = DotProdUnits(tmp.units, tmp.units)
-        }
-
-        res_units.units.set(best_match, num_iter)
-        blacklisted_units.add(best_match)
-
-        // Only allow one base unit to be present in the result
-        // because "1m^100*s^100" produces an abomination of derived units
-        return res_units
-        /*
-        let num_base_units = 0
-        for (let [key, derived_unit] of Object.entries(res_units.units)) {
-            if (derived_unit != 0 && (key == "cd" || si_derived[key] == undefined)) num_base_units++;
-        }
-
-        return num_base_units > 0 ? BaseUnitsToDerived(res_units, blacklisted_units) : res_units*/
+        return result;
     }
 
-    function OptimalBaseUnitsToDerived(si_units: Units): Units {
-        const maxOptions = 200 // If more than 200 optons can be explored stop at 200
-        let numExploredOptions = 0
-        const len_si_sq = DotProdUnits(si_units.units, si_units.units);
-        const len_si = Math.sqrt(len_si_sq);
-
-        let unit_copy = {exp: si_units.exp, units: new LuaMap<string, number>()}
-        for (let [key, val] of si_units.units) {
-            unit_copy.units.set(key, val)
+    function VectorLengthSq(v: UnitList, exp: number = 2): number {
+        let res: number = 0
+        for (const [_, val] of v) {
+            res += Math.pow(Math.abs(val), exp)
         }
+        return res
+    }
 
-        if (len_si_sq === 0) return unit_copy;
+    export function BaseUnitsToDerived(target: Units, beam_width: number = 5): Units {
+        type State = { units: UnitList, exp: number, steps: LuaMap<string, number>, lengthSq: number}
+        const distance_exp: number = 0.5
 
-        // Helper to calculate min_length based on unit exponents
-        const calculateMinLength = (units: Units) => {
-            let length = 0;
+        let target_units: UnitList = new LuaMap<string, number>()
+        for (const [k,v] of target.units) target_units.set(k, v)
 
-            let negative_exp_penalty = 0
-            let has_positive_unit = false
-            for (let [, exp] of units.units) {
-                if (!(Math.abs(exp) > 0)) continue
+        $log_debug!(`Running beam search. width: ${beam_width} target: ${serpent.line(target)}`)
+        let pq = new FibonacciHeap<State>();
+        let initialState: State = { units: target_units, exp: target.exp, steps: new LuaMap<string, number>(), lengthSq: VectorLengthSq(target.units, distance_exp) };
+        pq.insert(initialState.lengthSq, initialState);
 
-                let exp_len = Math.ceil(Math.log10(Math.abs(exp)))
+        let best_solution: State = initialState;
+        let visited = new LuaSet<string>();
 
-                if (exp < 0) negative_exp_penalty++
-                else has_positive_unit = true
+        // Loop variables
+        let queue: State[] = [], stateKey: string = "", dot: number = 0, scale: number = 0;
+        let new_units: UnitList = new LuaMap<string, number>(), new_steps: LuaMap<string, number> = new LuaMap();
+        let new_lengthSq: number = Infinity, new_state: State = initialState;
 
-                length += 1 + exp_len;
+        while (!pq.isEmpty()) {
+            $log_debug!(`Keeping ${Math.min(beam_width, pq.size())}/${pq.size()} states`)
+            queue = [];
+            for (let i = 0; i < beam_width && !pq.isEmpty(); i++) {
+                let top = pq.deleteMin()
+                if (top != undefined) queue.push(top.value);
             }
-            return length + table_size(units.units) - 1 + (has_positive_unit ? 0 : negative_exp_penalty);
-        };
+            pq.clear()
 
-        let best_match: Units = unit_copy;
-        let min_length = calculateMinLength(best_match);
+            for (const state of queue) {
+                stateKey = serpent.line(state.units);
+                if (visited.has(stateKey)) continue;
+                visited.add(stateKey);
 
-        // Queue for BFS
-        let queue: Array<{ units: Units, derived: LuaSet<string>, length: number }> = [
-            { units: best_match, derived: new LuaSet<string>(), length: min_length }
-        ];
+                for (const [name, derived] of Object.entries(si_derived)) {
+                    dot = DotProdUnits(state.units, derived.units);
+                    if (dot === 0) continue;
 
-        const addStateToQueue = (derivedKey: string, newLength: number, mergedUnits: Units, derived: LuaSet<string>, sign: any, dot: any) => {
-            $log_trace!(`Candidate ${derivedKey}^${mergedUnits.units.get(derivedKey)} has sign ${sign} (${dot}) length ${newLength} ${serpent.line(mergedUnits)}`)
-            numExploredOptions++
+                    scale = Math.round(dot / DotProdUnits(derived.units, derived.units));
+					if (scale === 0) continue;
+					
+                    new_units = SubtractVectors(state.units, derived.units, scale);
 
-            // Skip this state if its length is already too large
-            if (newLength > min_length) return
+                    new_steps = new LuaMap();
+                    for (const [k, v] of state.steps) new_steps.set(k, v);
+                    new_steps.set(name, (new_steps.get(name) || 0) + scale);
 
-            // Something went wrong dot is nan
-            if (dot != dot) return;
+                    new_lengthSq = VectorLengthSq(new_units, distance_exp) + VectorLengthSq(new_steps, distance_exp);
+                    new_state = { units: new_units, exp: state.exp - derived.exp * scale, steps: new_steps, lengthSq: new_lengthSq };
 
-            // Update best match if this state has a smaller length or best_match is still in the initial state
-            if (newLength < min_length || best_match == unit_copy) {
-                best_match = mergedUnits;
-                min_length = newLength;
-                // Remove states with bigger min length
-                queue = queue.filter(s => s.length <= min_length);
-
-                $log_trace!(`Found new result candidate "${derivedKey}" with min_len ${newLength} and units ${serpent.line(mergedUnits)} (num open candidates: ${queue.length})`)
-            }
-
-            // Add the new state to the queue for further exploration
-            const newDerived = new LuaSet<string>();
-            for (const key of derived) {
-                newDerived.add(key)
-            }
-
-            newDerived.add(derivedKey);
-            queue.push({ units: mergedUnits, derived: newDerived, length: newLength });
-        }
-
-        const visited = new LuaSet<UnitList>(); // Track visited states to avoid loops
-
-        $log_trace!(`Starting BFS search with min_len ${min_length} and units ${serpent.line(best_match)}`)
-        while (queue.length > 0) {
-            if (numExploredOptions > maxOptions) {
-                $log_info!(`Aborting search for optimal derived unit composition; state at exit: Open ${queue.length}; best match: ${serpent.line(best_match)}; min length: ${min_length}`)
-                break
-            }
-
-            const { units, derived, } = queue.shift()!;
-
-            // Convert the units map to a string representation for unique state tracking
-            const stateKey = units.units;
-            if (visited.has(stateKey)) continue;
-            visited.add(stateKey);
-
-            for (let [derivedKey, derivedUnit] of Object.entries(si_derived)) {
-                // Calculate state where derived unit is used once
-                const len_derived = Math.sqrt(DotProdUnits(derivedUnit.units, derivedUnit.units));
-                const dot = DotProdUnits(derivedUnit.units, units.units) / (len_derived * len_si);
-                const sign: 1 | -1 = dot > 0 ? -1 : 1
-
-                // this derived unit is completely unrelated (no units in common with si_units)
-                if (dot == 0) continue
-
-                if (units.units.get(derivedKey) == undefined || Math.sign(units.units.get(derivedKey) ?? 0) == sign) {
-                    let mergedUnits = mergeUnits(units, derivedUnit, sign);
-                    mergedUnits.units.set(derivedKey, -sign + (mergedUnits.units.get(derivedKey) ?? 0))
-
-                    addStateToQueue(derivedKey, calculateMinLength(mergedUnits), mergedUnits, derived, sign, dot)
-                }
-
-                // Calculate state where derived unit is used as much as possible
-                if (units.units.get(derivedKey) == undefined) {
-                    let tmp: Units = mergeUnits(units, derivedUnit, sign)
-                    let cur_len_sq: number = DotProdUnits(tmp.units, tmp.units)
-                    let last_len_sq: number = len_si_sq
-                    let max_unit_usage: Units = tmp
-                    let num_iter: number = 0
-                    while (cur_len_sq < last_len_sq) {
-                        num_iter -= sign
-                        max_unit_usage = tmp
-                        last_len_sq = cur_len_sq
-
-                        tmp = mergeUnits(tmp, derivedUnit, sign)
-                        cur_len_sq = DotProdUnits(tmp.units, tmp.units)
+                    if (new_lengthSq < best_solution.lengthSq) {
+                        $log_debug!(`New global optimum found ${serpent.line(new_state)}`)
+                        best_solution = new_state;
                     }
-                    if (Math.abs(num_iter) > 1) {
-                        max_unit_usage.units.set(derivedKey, num_iter)
-                        addStateToQueue(derivedKey, calculateMinLength(max_unit_usage), max_unit_usage, derived, sign, dot)
-                    }
+
+                    pq.insert(new_state.lengthSq, new_state);
                 }
             }
         }
 
-        return best_match;
+        let best_unit_solution: Units = {
+            exp: best_solution.exp,
+            units: best_solution.units
+        }
+
+        let sum: number
+        for (const [k,v] of best_solution.steps) {
+            sum = (best_unit_solution.units.get(k) ?? 0) + v
+            if (sum == 0) best_unit_solution.units.delete(k)
+            else  best_unit_solution.units.set(k, sum);
+        }
+        return best_unit_solution;
     }
 
     export function mergeUnits(a: Units, b: Units, sig?: 1 | -1): Units {
@@ -342,65 +243,104 @@ namespace SI {
         return true
     }
 
-    export function Format(value: number, si_units: Units, si_prefix_no_unit?: boolean) {
-        si_prefix_no_unit = si_prefix_no_unit ?? true
-        let derived_units = /*BaseUnitsToDerived(si_units)*/OptimalBaseUnitsToDerived(si_units)
+    // format the unit in "W days + X hours + Y min + Z s"
+    function FormatTime(value: number, si_units: Units) {
+        // Only 's' unit is present
+        let seconds = value * Math.pow(10, si_units.exp)
+        let days = Math.floor(seconds / 86400)
+        let hours = Math.floor((seconds & 86400) / 3600)
+        let minutes = Math.floor((seconds % 3600) / 60)
+        seconds = seconds % 60
 
-        let unit = ""
-        let exp = derived_units.exp
+        let res: string[] = []
+        if (days != 0) res.push(`${days} days`)
+        if (hours != 0) res.push(`${hours} hours`)
+        if (minutes != 0) res.push(`${minutes} min`)
+        if (seconds != 0) res.push(`${seconds} s`)
 
-        // may negate the exp variable
-        let num_derived_units = table_size(derived_units.units)
-        if (num_derived_units != 0) {
-            let nom = []
-            let denom = []
+        return res.join(" + ")
+    }
 
-            const d_units = derived_units.units
-            for (let [key, exp] of d_units) {
-                if (exp < 0) continue
+    function FormatUnits(valueUnits: Units): LuaMultiReturn<[string, boolean]> {
+        let nom = []
+        let denom = []
 
-                let u_format
-                if (exp > 9) u_format = `${key}^${exp}`
-                else if (exp > 1) u_format = key + superscript_num[exp]
-                else if (exp == 1) u_format = key
+        const v_units = valueUnits.units
+        for (let [key, exp] of v_units) {
+            if (exp < 0) continue
 
-                if (u_format != undefined) {
-                    if (si_derived[key] != undefined) nom.unshift(u_format)
-                    else nom.push(u_format)
-                }
+            let u_format
+            if (exp > 9) u_format = `${key}^${exp}`
+            else if (exp > 1) u_format = key + superscript_num[exp]
+            else if (exp == 1) u_format = key
 
-                d_units.delete(key)
+            if (u_format != undefined) {
+                if (si_derived[key] != undefined) nom.unshift(u_format)
+                else nom.push(u_format)
             }
 
-            for (let [key, exp] of d_units) {
-                let u_format
-                if (nom.length != 0) {
-                    if (exp < -1) u_format = `${key}^${-exp}`
-                    else if (exp == -1) u_format = key
-                } else {
-                    u_format = `${key}^${exp}`
-                }
+            v_units.delete(key)
+        }
 
-                if (u_format != undefined) {
-                    if (si_derived[key] != undefined) denom.unshift(u_format)
-                    else denom.push(u_format)
-                }
+        for (let [key, exp] of v_units) {
+            let u_format
+            if (nom.length != 0) {
+                if (exp < -1) u_format = `${key}^${-exp}`
+                else if (exp == -1) u_format = key
+            } else {
+                u_format = `${key}^${exp}`
             }
 
-            unit = nom.join("*")
-            if (denom.length != 0) {
-                if (unit.length != 0) unit += "/"
-                else exp = -exp
-
-                if (denom.length > 1) unit += "(" + denom.join("*") + ")"
-                else unit += denom.join("*")
+            if (u_format != undefined) {
+                if (si_derived[key] != undefined) denom.unshift(u_format)
+                else denom.push(u_format)
             }
         }
+
+        let negateExp = false
+        let unit = nom.join("*")
+        if (denom.length != 0) {
+            if (unit.length != 0) unit += "/"
+            else negateExp = true
+
+            if (denom.length > 1) unit += "(" + denom.join("*") + ")"
+            else unit += denom.join("*")
+        }
+        return $multi(unit, negateExp)
+    }
+
+    export function Format(value: number, si_units: Units, si_prefix_no_unit?: boolean) {
+        si_prefix_no_unit = si_prefix_no_unit ?? true
+
+        // If this is a pure time based unit (only seconds) and its exponent is 1 format it in "X hours + Y min + Z s"
+        if (si_units.units.get('s') == 1 && table_size(si_units.units)) {
+            $log_debug!(`Using time formatting for "${serpent.line(value)}"`)
+            return FormatTime(value, si_units)
+        }
+        let valueUnits = BaseUnitsToDerived(si_units)
+        $log_debug!(`Using default formatting for improved representation "${serpent.line(valueUnits)}" (original ${serpent.line(si_units)})`)
+
+        let unit = ""
+        let exp = valueUnits.exp
+        // may negate the exp variable
+        let num_derived_units = table_size(valueUnits.units)
+
+
+        if (num_derived_units != 0) {
+            let [u, negateExp] = FormatUnits(valueUnits)
+            if (negateExp) exp = -exp
+            unit = u
+        }
+
+        // Normalize value
+        let decimals = Math.floor(Math.log10(Math.abs(value)))
+        value = value / Math.pow(10, decimals)
+        exp += decimals
 
         let rem = exp
         let si_prefix = ""
         // if there are no units respect `si_prefix_no_unit` otherwise don't add si prefix for time (seconds)
-        if ((si_prefix_no_unit || unit.length != 0) && (num_derived_units > 1 || derived_units.units.get('s') == undefined)) {
+        if (si_prefix_no_unit || unit.length != 0) {
             const sorted_prefixes = Object.entries(si_prefixes).sort((a, b) => b[1] - a[1])
             for (let [si_str, si_exp] of sorted_prefixes) {
                 if (exp >= si_exp) {

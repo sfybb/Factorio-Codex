@@ -4,7 +4,14 @@
       - Changed Factorio api to 2.0
     - Quick Search Features:
       - Math expressions now support implicit multiplications
-      - Added support for calculating with units e.g. "4 GJ / 40 MW => 100 s"
+      - Added support for calculating with units e.g. "4 GJ / 40 MW" => "1 min + 40 s"
+      - Added support for opening the technology tree when clicking on a technology
+      - Added support for custom font colors per player
+      - Added support for selecting which types should be searched (items, fluids ...)
+      - Added setting to always show SI unit prefix for example "100000" => "100k"
+      - Added setting for text color for items, fluids and technologies
+      - Added setting to disable searching trough items, fluids and technologies
+      - Added setting to not order technologies last in the search results
     - Codex Features:
       - Gone. use Factoriopedia instead. Support for opening an entity in Factoriopedia will be added once possible
 # Changelog
