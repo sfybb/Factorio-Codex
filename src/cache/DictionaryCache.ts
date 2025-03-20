@@ -222,10 +222,15 @@ class DictionaryCache implements GlobalCache {
             tl_data.dictionary_suffix_tree.set(name, stree)
         }
 
+        let cur_suffixtree_insetions = settings.global["fcodex_indexing_speed"].value
+        if (typeof cur_suffixtree_insetions !== "number" || isNaN(cur_suffixtree_insetions) || cur_suffixtree_insetions <= 0) {
+            cur_suffixtree_insetions = NUM_SUFFIXTREE_INSERTIONS
+        }
+
         // @ts-ignore
         let relevantProtos: LuaTable<string, MigratablePrototype<LuaItemPrototype>> = prototypes[name]
 
-        $log_debug!(`Building suffix tree for "${name}" ${start_index}/${table_size(data)} entries`)
+        $log_debug!(`Building suffix tree for "${name}" ${start_index}/${table_size(data)}; + ${cur_suffixtree_insetions} entries`)
 
         let i = 0
         for (let [id, translated] of data) {
@@ -234,7 +239,7 @@ class DictionaryCache implements GlobalCache {
                 continue;
             }
 
-            if (i > start_index + NUM_SUFFIXTREE_INSERTIONS) break;
+            if (i > start_index + cur_suffixtree_insetions) break;
 
             let proto = relevantProtos.get(id)
             if (proto == undefined || !proto.valid) continue // skip invalid prototypes

@@ -15,6 +15,14 @@ end
 
 
 data:extend({
+    {
+        type = "int-setting",
+        name = "fcodex_indexing_speed",
+        setting_type = "runtime-global",
+        default_value = 10,
+        minimum_value=1,
+    },
+
     createUserSetting("bool", "always_si_prefix", true),
 
     createUserSetting("bool",  "search_items", true),

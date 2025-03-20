@@ -12,6 +12,7 @@
       - Added setting for text color for items, fluids and technologies
       - Added setting to disable searching trough items, fluids and technologies
       - Added setting to not order technologies last in the search results
+      - Added setting for indexing speed
     - Codex Features:
       - Gone. use Factoriopedia instead. Support for opening an entity in Factoriopedia will be added once possible
 # Changelog

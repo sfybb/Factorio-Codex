@@ -21,11 +21,16 @@ export default class Quantity {
 
     si_units: SI.Units
 
+    string_representation: string
+    string_key: string
+
     // constructor(val: number, units: string)
     // constructor(val: number)
     constructor(val: number, si_units?: SI.Units) {
         this.significand = val ?? 0
         this.si_units = si_units ?? {exp: 0, units: new LuaMap()}
+        this.string_representation = ""
+        this.string_key = ""
 
         this.reduce();
     }
@@ -87,7 +92,12 @@ export default class Quantity {
     }
 
     prettyPrint(si_prefix_no_unit?: boolean): string {
-        return SI.Format(this.significand, this.si_units, si_prefix_no_unit)
+        let cur_key = `${this.significand};${serpent.line(this.si_units)}`
+        if (this.string_key != cur_key) {
+            this.string_representation = SI.Format(this.significand, this.si_units, si_prefix_no_unit)
+        }
+
+        return this.string_representation
     }
 
     getValue(): number {
