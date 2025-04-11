@@ -3,7 +3,7 @@
   "name": "factorio-codex",
   "version": "0.1.0",
   "scripts": {
-    "build": "tstl --sourceMap false",
+    "build": "tstl --sourceMap false && node ./copy-assets.js",
     "dev": "tstl --watch",
     "test": "jest",
     "release": "node release.js",
@@ -18,7 +18,7 @@
     "ts-jest": "^29.1.1",
     "ts-macros": "^2.6.0",
     "ts-node": "^10.9.2",
-    "typed-factorio": "^2.10.1",
-    "typescript-to-lua": "^1.22.0"
+    "typed-factorio": "^2.14.0",
+    "typescript-to-lua": "^1.10.0"
   }
 }

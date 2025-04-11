@@ -1,17 +1,17 @@
-import SubString from 'search/suffixtree/SubString'
+import SubString from 'core/SubString'
 
 
 
-class Node<T extends AnyNotNil> {
+class STreeNode<T extends AnyNotNil> {
     static id: number = 0
-    static getId<T extends AnyNotNil>(n: Node<T>): string {
+    static getId<T extends AnyNotNil>(n: STreeNode<T>): string {
         let res = "node"
         // @ts-ignore
         if (n.__uniqueid == undefined) {
             // @ts-ignore
-            n.__uniqueid = Node.id
-            res += Node.id
-            Node.id++
+            n.__uniqueid = STreeNode.id
+            res += STreeNode.id
+            STreeNode.id++
         } else {
             // @ts-ignore
             res += n.__uniqueid
@@ -22,9 +22,9 @@ class Node<T extends AnyNotNil> {
 
     data: LuaSet<T>
 
-    edges: LuaTable<number, Edge<T>>
+    edges: LuaTable<string, Edge<T>>
 
-    suffix?: Node<T>
+    suffix?: STreeNode<T>
 
     constructor() {
         this.data = new LuaSet()
@@ -32,15 +32,15 @@ class Node<T extends AnyNotNil> {
         this.suffix = undefined
     }
 
-    static Load<T extends AnyNotNil>(this: void, node?: Node<T>) {
+    static Load<T extends AnyNotNil>(this: void, node?: STreeNode<T>) {
         if (node == undefined) return
 
         // @ts-ignore
-        setmetatable(node, Node.prototype)
+        setmetatable(node, STreeNode.prototype)
 
         if (node.suffix != undefined) {
             // @ts-ignore
-            setmetatable(node.suffix, Node.prototype)
+            setmetatable(node.suffix, STreeNode.prototype)
             // Don't call load for suffix since it can cause loops
         }
 
@@ -73,18 +73,18 @@ class Node<T extends AnyNotNil> {
         }
     }
 
-    getEdge(str: SubString | number): Edge<T> | undefined {
-        let charCode = typeof str == "number" ? str : str.charCodeAt(0)
-        if (Number.isNaN(charCode)) return undefined
-        return this.edges.get(charCode)
+    getEdge(str: SubString | string): Edge<T> | undefined {
+        let char = typeof str == "string" ? str.charAt(0) : str.charAt(0)
+        if (char == "") return undefined
+        return this.edges.get(char)
     }
 
-    addEdge(str: SubString, otherNode?: Node<T>): Edge<T> {
+    addEdge(str: SubString, otherNode?: STreeNode<T>): Edge<T> {
         let tmp = this.getEdge(str)
         if (tmp != undefined && tmp.dest == otherNode) return tmp
 
-        otherNode = otherNode ?? new Node<T>()
-        let char = str.charCodeAt(0)
+        otherNode = otherNode ?? new STreeNode<T>()
+        let char = str.charAt(0)
         if (Number.isNaN(char)) {
             $log_err!(`Adding Nan?!?!?! "${str.originalString}" -- part: "${str.toString()}" (S: ${str.start} L: ${str.length})`)
         }
@@ -115,7 +115,7 @@ class Node<T extends AnyNotNil> {
         //if (hasData) additionalAttribs += `color="aquamarine2",`
 
         // @ts-ignore
-        out.push(`\t${Node.getId(this)} [label="[${this.getDataStr()}]",${additionalAttribs}style=filled,shape=circle,width=0.1,height=0.1]`)
+        out.push(`\t${STreeNode.getId(this)} [label="[${this.getDataStr()}]",${additionalAttribs}style=filled,shape=circle,width=0.1,height=0.1]`)
         for (let [_,e] of Object.entries(this.edges)) {
             e.dest.printNodes(out)
         }
@@ -123,14 +123,14 @@ class Node<T extends AnyNotNil> {
 
     printEdges(out: string[]) {
         for (let [_,e] of Object.entries(this.edges)) {
-            out.push(`\t${Node.getId(this)} -> ${Node.getId(e.dest)} [label="${e.label.toString()}",weight=100]`)
+            out.push(`\t${STreeNode.getId(this)} -> ${STreeNode.getId(e.dest)} [label="${e.label.toString()}",weight=100]`)
             e.dest.printEdges(out)
         }
     }
 
     printSuffixlink(out: string[]) {
         if (this.suffix != undefined) {
-            out.push(`\t${Node.getId(this)} -> ${Node.getId(this.suffix)} [label="",style=dotted,weight=0]`)
+            out.push(`\t${STreeNode.getId(this)} -> ${STreeNode.getId(this.suffix)} [label="",style=dotted,weight=0]`)
         }
 
         for (let [_,e] of Object.entries(this.edges)) {
@@ -154,17 +154,17 @@ class Node<T extends AnyNotNil> {
 
         if (dataprint.length == 0) return false
 
-        out.push(`\tdata${Node.getId(this)} [shape=box,label="${dataprint.join('\\n')}"]`)
-        out.push(`\t${Node.getId(this)} -> data${Node.getId(this)}`)
+        out.push(`\tdata${STreeNode.getId(this)} [shape=box,label="${dataprint.join('\\n')}"]`)
+        out.push(`\t${STreeNode.getId(this)} -> data${STreeNode.getId(this)}`)
         return true
     }
 }
 
 export class Edge<T extends AnyNotNil> {
-    dest: Node<T>
+    dest: STreeNode<T>
     label: SubString
 
-    constructor(dest: Node<T>, label: SubString) {
+    constructor(dest: STreeNode<T>, label: SubString) {
         this.dest = dest
         this.label = label
     }
@@ -175,9 +175,9 @@ export class Edge<T extends AnyNotNil> {
         // @ts-ignore
         setmetatable(edge, Edge.prototype)
 
-        Node.Load(edge.dest)
+        STreeNode.Load(edge.dest)
         SubString.Load(edge.label)
     }
 }
 
-export default Node
+export default STreeNode

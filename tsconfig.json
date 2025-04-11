@@ -44,7 +44,7 @@
     "luaLibImport": "require",
     "sourceMapTraceback": true,
     "luaPlugins": [
-      { "name":  "./ts-plugin/require-path.ts" }
+      //{ "name":  "./ts-plugin/require-path.ts" }
     ]
   },
   "entryPoints": [

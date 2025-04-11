@@ -35,5 +35,23 @@ namespace Util {
     }
 }
 
+export function errorHandler(this: void, err: any): void {
+    $log_crit!("An unknown critical error occurred", `Thrown exception: ${serpent.line(err, {comment: false})}`)
+}
+
+export function $safe_call<This, Args extends any[], R>(
+    f: ((this: This, ...args: Args) => R) | ((...args: Args) => R) | undefined,
+    context: This,
+    ...args: Args
+): LuaMultiReturn<[true, R] | [false, void]> {
+    if (f != undefined) {
+        return xpcall(f, (err: any) => {
+            $log_crit!("An unknown critical error occurred", `Thrown exception: ${serpent.line(err, {comment: false})}`)
+        }, context, ...args)
+    } else {
+        return $multi<[false, void]>(false)
+    }
+}
+
 export default Util;
 export {validate_status, validate_print_info};

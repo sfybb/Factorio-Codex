@@ -1,6 +1,6 @@
-import {default as Node, Edge} from 'search/suffixtree/Node'
-import SubString from 'search/suffixtree/SubString'
-import ISearchable from "search/Searchable";
+import {default as Node, Edge} from 'core/STreeNode'
+import SubString from 'core/SubString'
+import {ISearchable} from "core/Dictionary";
 
 /* Based primarily on Ukkonen's algorithm which works great for single strings
  * https://www.cs.helsinki.fi/u/ukkonen/SuffixT1withFigs.pdf
@@ -41,7 +41,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
             rest = new SubString(key, i);
             text.lengthen(1);
 
-            [s, text] = this.update(s, text, rest, key.charCodeAt(i), val);
+            [s, text] = this.update(s, text, rest, key.charAt(i), val);
         }
 
         // add leaf suffix link, if necessary (JEI)
@@ -58,7 +58,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
         }
     }
 
-    update(s: Node<T>, part: SubString, rest: SubString, curCharCode: number, val: T): LuaMultiReturn<[Node<T>, SubString]> {
+    update(s: Node<T>, part: SubString, rest: SubString, curChar: string, val: T): LuaMultiReturn<[Node<T>, SubString]> {
         /* oldr ← root; (end–point, r) ← test–and–split(s,(k, i−1), ti);
          * while not(end–point) do
          *     create new transition g'(r,(i, ∞)) = r' where r' is a new state;
@@ -70,17 +70,17 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
          * return (s, k)
          */
         //assert(rest.length > 0, "Rest is empty!")
-        //assert(rest.charCodeAt(0) == curCharCode, "Expected current char at start 0 of rest")
+        //assert(rest.charAt(0) == curCharCode, "Expected current char at start 0 of rest")
 
 
         let partNoCurChar = part.copy()
         partNoCurChar.shorten(1)
         let oldr = this.root
-        let [endPoint, r] = this.testAndSplit(s, partNoCurChar, rest, curCharCode, val)
+        let [endPoint, r] = this.testAndSplit(s, partNoCurChar, rest, curChar, val)
 
         let leaf: Node<T>
         while( !endPoint ) {
-            let tmpE = r.getEdge(curCharCode)
+            let tmpE = r.getEdge(curChar)
             if (tmpE != undefined) {
                 leaf = tmpE.dest
             } else {
@@ -110,7 +110,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
                 part.lengthen(1)
             }
 
-            [endPoint, r] = this.testAndSplit(s, partNoCurChar, rest, curCharCode, val)
+            [endPoint, r] = this.testAndSplit(s, partNoCurChar, rest, curChar, val)
         }
 
         if (oldr != this.root) {
@@ -119,7 +119,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
         return this.canonize(s, part);
     }
 
-    testAndSplit(s: Node<T>, prefix: SubString, rest: SubString, expChar: number, val: T): LuaMultiReturn<[boolean, Node<T>]> {
+    testAndSplit(s: Node<T>, prefix: SubString, rest: SubString, expChar: string, val: T): LuaMultiReturn<[boolean, Node<T>]> {
         /* Ukkonen's algorithm works for a single string
          * but it's missing a check that the rest of the string we want to insert also exists
          * whenever we find a node which has a matching prefix
@@ -136,7 +136,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
          * else return(true, s)
          */
         //assert(rest.length > 0, "Expected non empty rest")
-        //assert(rest.charCodeAt(0) == expChar, "Expected expChar at start 0 of rest");
+        //assert(rest.charAt(0) == expChar, "Expected expChar at start 0 of rest");
 
         [s, prefix] = this.canonize(s, prefix);
 
@@ -146,7 +146,7 @@ class GeneralizedSuffixTree<T extends AnyNotNil> implements ISearchable<T> {
 
             if (e == undefined) return $multi(false, s)
 
-            if (e.label.startsWith(prefix) && e.label.charCodeAt(prefix.length) == expChar) {
+            if (e.label.startsWith(prefix) && e.label.charAt(prefix.length) == expChar) {
                 return $multi(true, s)
             } else {
                 let newNode = this.splitNode(s, e, prefix)

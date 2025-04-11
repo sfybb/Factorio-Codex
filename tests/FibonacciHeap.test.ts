@@ -3,7 +3,7 @@ import {beforeEach, describe, expect, test} from "@jest/globals";
 import "./mocks/BaseMocks"
 import "./mocks/LuaMocks"
 
-import FibonacciHeap from "../src/quick_search/FibonacciHeap";
+import FibonacciHeap from "../src/core/FibonacciHeap";
 
 describe("Fibonacci Heap", () => {
     let heap: FibonacciHeap<string>;
@@ -94,6 +94,19 @@ describe("Fibonacci Heap", () => {
             let n = heap.deleteMin()
             expect(v.k).toStrictEqual(n?.key)
             expect(v.v).toStrictEqual(n?.value)
+        }
+    })
+
+    test("Nothing is lost", () => {
+        for (let i = 0; i < 100; i++) { heap.insert(i, 'A') }
+
+        for (let i = 0; i < 100; i++) {
+            let node = heap.deleteMin()
+            expect(node).not.toBeUndefined()
+            if (node == undefined) continue
+
+            expect(node.key).toBe(i);
+            expect(node.value).toBe('A');
         }
     })
 })

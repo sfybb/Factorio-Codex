@@ -3,7 +3,7 @@ import {describe, expect, test} from "@jest/globals";
 import "./mocks/LuaMocks"
 import "./mocks/BaseMocks"
 
-import Quantity from '../src/quick_search/Quantity';
+import Quantity from '../src/core/Quantity';
 
 describe("Quantity Unit module", () => {
     test("Pretty print converts to derived unit", () => {

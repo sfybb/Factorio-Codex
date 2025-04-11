@@ -3,7 +3,7 @@ import {describe, expect, test} from "@jest/globals";
 import "./mocks/LuaMocks"
 import "./mocks/BaseMocks"
 
-import SI from "../src/quick_search/SI_units";
+import SI from "../src/core/SI_units";
 
 describe("SI Unit module", () => {
     test("Pretty print handles unit less case", () => {

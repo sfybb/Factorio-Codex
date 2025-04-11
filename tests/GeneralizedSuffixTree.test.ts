@@ -2,7 +2,7 @@ import {describe, expect, afterEach, test, jest} from '@jest/globals';
 
 import "./mocks/LuaMocks"
 
-import GeneralizedSuffixTree from "../src/search/suffixtree/GeneralizedSuffixTree";
+import GeneralizedSuffixTree from "../src/core/GeneralizedSuffixTree";
 
 global.$log_err = console.log
 global.$log_info = console.log

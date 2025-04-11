@@ -1,5 +1,5 @@
 import {jest} from "@jest/globals";
-import {table} from "factorio:runtime";
+import {EventId, table} from "factorio:runtime";
 
 // Mock logging
 let savedConsoleMsgs: string[] = []
@@ -10,6 +10,7 @@ global.$log_warn = jest.fn((m) => savedConsoleMsgs.push("[WARN] "+m))
 global.$log_err = jest.fn((m) => savedConsoleMsgs.push("[ERR] "+m))
 global.$log_crit = jest.fn((m) => savedConsoleMsgs.push("[CRIT] "+m))
 global.$log_crit_raw = jest.fn((m) => savedConsoleMsgs.push("[CRIT (raw)] "+m))
+global.$get_player_string = jest.fn((m) => `[test player ${m}]`)
 
 export function printConsoleMessages() {
     console.log("[LOG] " + savedConsoleMsgs.join("\n[LOG] "))
@@ -24,7 +25,7 @@ export function clearConsoleMessages() {
 // TODO
 // @ts-ignore
 global.script = {
-    active_mods: {}
+    active_mods: {},
 }
 
 // @ts-ignore
@@ -32,6 +33,11 @@ global.game = {
     get_player: jest.fn(),
 
     players: []
+}
+
+// @ts-ignore
+global.settings = {
+    global: {}
 }
 
 // @ts-ignore
@@ -48,6 +54,14 @@ global.prototypes = {
 // @ts-ignore
 global.storage = {
 
+}
+
+//@ts-ignore
+global.defines = {
+    //@ts-ignore
+    events: {
+        [0 as EventId<any>]: "on_gui_closed"
+    }
 }
 
 
@@ -81,6 +95,20 @@ jest.mock('__core__.lualib.mod-gui', () => ({
     __esModule: true,
     get_frame_flow: jest.fn(),
     get_button_flow: jest.fn()
+}), {
+    virtual: true
+});
+
+jest.mock('__core__.lualib.util', () => ({
+    __esModule: true,
+    color: jest.fn(x => { return {r: 1, g: 1, b: 1} }),
+}), {
+    virtual: true
+});
+
+jest.mock('__core__.lualib.event_handler', () => ({
+    __esModule: true,
+    add_lib: jest.fn(),
 }), {
     virtual: true
 });

@@ -2,6 +2,9 @@
 import "./StringMock"
 import {jest} from "@jest/globals";
 import {table} from "factorio:runtime";
+import {vsprintf} from "sprintf-js";
+
+
 class LuaTableMock {
     constructor() {
     }
@@ -50,6 +53,20 @@ function tonumber(e: any, base?: number): number | undefined {
     return res === res ? res : undefined // Dont return NaN
 }
 
+function xpcall<Args extends any[], R, E>(
+    f: (this: void, ...args: Args) => R,
+    msgh: (err: any) => E,
+    ...args: Args
+): LuaMultiReturn<[true, R] | [false, E]> {
+    try {
+        return $multi(true, f.call(...args))
+    } catch (e) {
+        return $multi(false, msgh(e))
+    }
+}
+
+string.format = (fmt: string, ...args: any[]) => vsprintf(fmt, args)
+
 global.$range = rangeMock
 global.LuaSet = Set
 global.LuaMap = Map
@@ -79,3 +96,4 @@ global.table = {
         list.sort((a: T, b: T) => comp(a,b) ? -1 : 1)
     }
 }
+global.xpcall = xpcall

@@ -1,4 +1,4 @@
-import Util from "Util";
+import Util from "util/Util";
 interface feature {
     supported: boolean,
     check: {

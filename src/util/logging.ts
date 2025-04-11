@@ -45,7 +45,7 @@ function $compileTimeLogLvl(): LogLevel | undefined {
 
 function $log(log_lvl: LogLevel, msg: string) {
     //const compileTimeLogLvl: LogLevel = /*$compileTimeLogLvl!() ??*/ LogLevel.INFO
-    if (LogLevel.DEBUG <= log_lvl) {
+    if (LogLevel.TRACE <= log_lvl) {
         log(msg)
     }
 }
@@ -86,5 +86,5 @@ function $log_crit_raw(msg: string) {
 function $get_player_string(pID: FactorioRuntime.PlayerIndex|null): string {
     if (pID == null) return 'unknown player'
     let ____temp_player = game?.get_player(pID)
-    return ____temp_player == undefined ? `player ID: ${pID}` : `player ${pID} ('${____temp_player.name}')`
+    return ____temp_player == undefined ? `player ID: ${pID}` : `'${____temp_player.name}' [${pID}]`
 }

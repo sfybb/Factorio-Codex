@@ -1,4 +1,4 @@
-import {describe, expect, afterEach, test, jest} from '@jest/globals';
+import {describe, expect, afterEach, test, jest, beforeEach} from '@jest/globals';
 
 import "./mocks/StringMock"
 import "./mocks/LuaMocks"
@@ -6,10 +6,11 @@ import "./mocks/BaseMocks"
 
 global.log = console.log
 
-import QSMath from "../src/quick_search/QS_math";
-import Quantity from "../src/quick_search/Quantity";
+import QSMath, {QSMathResult, QSMathResultSuccess} from "../src/core/QS_math";
+import Quantity from "../src/core/Quantity";
 import {ExpectationResult, MatcherContext} from "expect";
 import {printConsoleMessages} from "./mocks/BaseMocks";
+import {PlayerIndex} from "factorio:runtime";
 
 function quantityToBeCloseTo<Context extends MatcherContext = MatcherContext>(this: Context, actual: undefined | Quantity, expected:  undefined | Quantity): ExpectationResult {
     let isCloseTo: boolean = true
@@ -63,98 +64,104 @@ expect.extend({
 })
 
 describe("QSMath evaluate string math formula", () => {
-    test("addition", () => {
-        let res = QSMath.calculateString("1234 +69 +	123.567+0.4+10+	") // result = 1,436.967
+    let qs_math: QSMath;
 
-        expect(res[0]).toStrictEqual(true)
+    beforeEach(() => {
+        qs_math = new QSMath();
+    });
+
+    test("addition", () => {
+        let res = qs_math.apply_prompt("1234 +69 +	123.567+0.4+10+	", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 1,436.967
+
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(1436.967));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(1436.967));
     })
 
     test("subtraction", () => {
-        let res = QSMath.calculateString("69420 -420 -	33.33-0.7-45-	") // result = 68,920.97
+        let res = qs_math.apply_prompt("69420 -420 -	33.33-0.7-45-	", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 68,920.97
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(68920.97));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(68920.97));
     })
 
     test("multiplication", () => {
-        let res = QSMath.calculateString("1*3*5*10*3.21 *	") // result = 481.5
+        let res = qs_math.apply_prompt("1*3*5*10*3.21 *	", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 481.5
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(481.5));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(481.5));
     })
 
     test("division", () => {
-        let res = QSMath.calculateString("481.5/3.21/5/	10  	/ ") // result = 3
+        let res = qs_math.apply_prompt("481.5/3.21/5/	10  	/ ", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 3
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(3));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(3));
     })
 
     test("exponents", () => {
-        let res = QSMath.calculateString("2^3^1^2^") // result = 8
+        let res = qs_math.apply_prompt("2^3^1^2^", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 8
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(8));
     })
 
     test("brackets simple", () => {
-        let res = QSMath.calculateString("(1+4)/5)") // result = 1
+        let res = qs_math.apply_prompt("(1+4)/5)", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 1
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(1));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(1));
     })
 
     test("brackets", () => {
-        let res = QSMath.calculateString("(4*(3+2))^(2") // result = 400
+        let res = qs_math.apply_prompt("(4*(3+2))^(2", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 400
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(400));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(400));
     })
 
     test("implicit multiplication", () => {
-        let res = QSMath.calculateString("2 (3-1)^2") // result = 8
+        let res = qs_math.apply_prompt("2 (3-1)^2", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 8
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(8));
     })
 
     test("negate number", () => {
-        let res = QSMath.calculateString("2 * -1") // result = 8
+        let res = qs_math.apply_prompt("2 * -1", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 8
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(-2));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(-2));
     })
 
     test("superscript numbers", () => {
-        let res = QSMath.calculateString("2³ ^ 2") // result = 512
+        let res = qs_math.apply_prompt("2³ ^ 2", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 512
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(512));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(512));
     })
 
     test("superscript numbers long", () => {
-        let res = QSMath.calculateString("2²³") // result = 8388608
+        let res = qs_math.apply_prompt("2²³", 0 as PlayerIndex) as QSMathResultSuccess[] // result = 8388608
 
-        expect(res[0]).toStrictEqual(true)
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1]).quantityToBeCloseTo(Quantity.fromNumber(8388608));
+        expect(res[0].result).quantityToBeCloseTo(Quantity.fromNumber(8388608));
     })
 
     test("Unit conversion", () => {
-        let res = QSMath.calculateString("4 GJ / 40 MW")
-        expect(res[0]).toStrictEqual(true)
+        let res = qs_math.apply_prompt("4 GJ / 40 MW", 0 as PlayerIndex) as QSMathResultSuccess[]
+        expect(res[0].error).toStrictEqual(false)
         // @ts-ignore
-        expect(res[1].toString()).toStrictEqual("1 min + 40 s");
+        expect(res[0].result.toString()).toStrictEqual("1 min + 40 s");
     })
 })

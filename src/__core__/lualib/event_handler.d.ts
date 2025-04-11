@@ -1,16 +1,20 @@
 // @noSelfInFile
 
-type EventHandler<E extends FactorioRuntime.EventData> = (e: E) => void
-type NthTickEventHandler = (e: NthTickEventHandler) => void
+import CustomEventId = FactorioRuntime.CustomEventId;
+import table = FactorioRuntime.table;
+
+type EventHandler<E extends FactorioRuntime.EventData> = (e: E) => void | unknown
+type NthTickEventHandler = (e: NthTickEventHandler) => void | unknown
+type AnyEventId<T extends table> = CustomEventId<T> | FactorioRuntime.EventId<any, T> | string
 
 /** @noResolution */
 declare module "__core__.lualib.event_handler" {
     export type LuaLibrary = {
-        on_init?: () => void | undefined,
-        on_load?: () => void | undefined,
-        on_configuration_changed?: (e: FactorioRuntime.ConfigurationChangedData) => void | undefined,
+        on_init?: () => void | unknown,
+        on_load?: () => void | unknown,
+        on_configuration_changed?: (this: void, e: FactorioRuntime.ConfigurationChangedData) => void | unknown,
 
-        events?: { [key: FactorioRuntime.EventId<any, FactorioRuntime.table> | string]: EventHandler<any> },
+        events?: { [key: AnyEventId<any>]: EventHandler<any> },
         on_nth_tick?: { [key: number]: NthTickEventHandler }
     };
 

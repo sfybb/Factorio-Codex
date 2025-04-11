@@ -91,7 +91,7 @@ class Tokenizer {
     }
 }
 
-class Parser {
+class MathParser {
     tokenizer: Tokenizer;
     lookahead: (ParsedToken | undefined)[];
 
@@ -364,7 +364,7 @@ function getASTExpr(ast: AST): string {
 }
 
 export function evaluateExpression(expression: string): Quantity {
-    let p = new Parser()
+    let p = new MathParser()
 
     expression = cleanExpression(expression)
 
