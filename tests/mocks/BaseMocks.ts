@@ -21,11 +21,14 @@ export function clearConsoleMessages() {
     savedConsoleMsgs = []
 }
 
+
+let event_id_counter = 0
 // Mock game
 // TODO
 // @ts-ignore
 global.script = {
     active_mods: {},
+    generate_event_name: jest.fn(() => event_id_counter++),
 }
 
 // @ts-ignore
