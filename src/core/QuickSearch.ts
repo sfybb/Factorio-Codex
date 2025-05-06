@@ -181,11 +181,12 @@ class QuickSearch {
 
             this.refs.frame.bring_to_front()
             this.refs.search_field.focus()
-            this.refs.search_field.select_all()
 
             if (this.cur_prompt) {
                 this.refs.search_field.text = this.cur_prompt
             }
+
+            this.refs.search_field.select_all()
         }
     }
 
