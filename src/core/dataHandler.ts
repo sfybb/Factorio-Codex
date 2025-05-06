@@ -1,12 +1,12 @@
 import {OnRuntimeModSettingChangedEvent, PlayerIndex} from "factorio:runtime";
 import {GameEventRegistry} from "../events/eventRegistry";
-
 import {
     getSettingValueFromName,
     GlobalSettings,
     loadGlobalSettings,
     loadPlayerSettings,
-    PlayerSettings, removeModPrefix
+    PlayerSettings,
+    removeModPrefix
 } from "../settings";
 import {$safe_call} from "../util/Util";
 import {DictionaryData} from "./Dictionary";
@@ -45,8 +45,13 @@ interface GlobalData {
 }
 
 declare let storage: {
-    playerData: LuaMap<PlayerIndex, any>,
-    globalData: GlobalData
+    playerData?: LuaMap<PlayerIndex, any>,
+    globalData?: GlobalData
+}
+
+export function DeleteData(): void {
+    storage.playerData = undefined;
+    storage.globalData = undefined;
 }
 
 function initializeGlobalData(): GlobalData {
@@ -83,7 +88,7 @@ function initializePlayerData(pIndx: PlayerIndex): PlayerData {
 }
 
 export function hasPlayerData(pIndx: PlayerIndex): boolean {
-    return storage.playerData.has(pIndx);
+    return storage.playerData != undefined && storage.playerData.has(pIndx);
 }
 
 export function getPlayerData(pIndx: PlayerIndex): PlayerData {

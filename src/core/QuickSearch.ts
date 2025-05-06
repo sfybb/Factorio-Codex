@@ -11,7 +11,7 @@ import {default as QSMath, QSMathResult} from "core/QS_math";
 import {UiEventHandler} from "../ui/uiEvents";
 import {GameEventRegistry} from "../events/eventRegistry";
 import {registerPlayerDataInitializer, getEventForwardingForPlayer} from "./dataHandler";
-import {QSSolarResult, SolarRatio} from "./SolarRatio";
+import {QSSolarResult} from "./SolarRatio";
 import LocalisedString = FactorioRuntime.LocalisedString;
 import {TaskBaseData, TaskID, TaskScheduler} from "../events/taskScheduler";
 
@@ -47,7 +47,6 @@ class QuickSearch {
     static readonly gui_name = "quick_search"
 
     static registerModule(module: QSModule) {
-        const m = new QSMath()
         QuickSearch.modules = QuickSearch.modules ?? []
         for (const m of QuickSearch.modules) {
             if (m.id == module.id) {
@@ -305,7 +304,7 @@ class QuickSearch {
         if (event.element == undefined) return;
 
         let selectedIndex = (event.element.selected_index as number) - 1 // make index start at 0 dammit
-        if (selectedIndex == undefined || selectedIndex == 0) return
+        if (selectedIndex == undefined || selectedIndex < 0) return
 
         if (this.search_results.length < selectedIndex) {
             $log_info!("Aborted opening Codex: Index out of range!"+

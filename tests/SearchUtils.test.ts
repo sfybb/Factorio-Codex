@@ -1,7 +1,7 @@
-import {describe, expect, afterEach, test, jest} from '@jest/globals';
+import {describe, expect, test, jest} from '@jest/globals';
 import "./mocks/LuaMocks"
 
-import SearchUtils, {SortOrderDefault, SortOrderQS} from "../src/SearchUtils";
+import SearchUtils, {SortOrderDefault, SortOrderQS} from "../src/util/SearchUtils";
 import {ExpectationResult, MatcherContext} from "expect";
 
 // @ts-ignore

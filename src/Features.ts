@@ -29,6 +29,7 @@ const Feature_ids = {
    /* dictionary: "! flib >= 0.12.0",
     dictionary_lite: "flib >= 0.12.0",
     localised_fallback: "base >= 1.1.76",*/
+    factoriopedia: "base >= 2.0.45",
     gvv: "gvv"
 }
 

@@ -1,6 +1,7 @@
 import "ui/uiEvents"
 import "events/startupEvents"
 import "core/QuickSearch"
+import "core/commands"
 import "./Migration"
 import {GameEventRegistry} from "./events/eventRegistry";
 
@@ -8,8 +9,6 @@ import {GameEventRegistry} from "./events/eventRegistry";
 import Features from "Features"
 /** @noResolution */
 import * as EventHandler from "__core__.lualib.event_handler";
-/** @noResolution */
-import * as FLIB_dictionary_lite from "__flib__.dictionary";
 
 declare let storage: any
 

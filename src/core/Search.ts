@@ -1,17 +1,17 @@
 import {default as Dictionary, DictionaryEntry, ISearchable} from "core/Dictionary";
-import {default as SearchUtils, SearchResult, multiOrderFunc} from "SearchUtils";
+import {default as SearchUtils, multiOrderFunc, SearchResult, SortOrderQS} from "util/SearchUtils";
 import MigratablePrototype from "PrototypeHelper";
 import {
     LuaFluidPrototype,
     LuaItemPrototype,
-    LuaTilePrototype,
     LuaTechnologyPrototype,
-    PlayerIndex, Color,
+    LuaTilePrototype,
+    PlayerIndex
 } from "factorio:runtime";
-import {SortOrderQS, SortOrderDefault} from "SearchUtils"
 import {QSModule, QSResult, QSResultBase} from "./QuickSearch";
 import {getPlayerData} from "./dataHandler";
 import {SettingsColor} from "../settings";
+import Features from "../Features";
 
 declare let prototypes: {
     technology: LuaTable<string, MigratablePrototype<LuaTechnologyPrototype>>
@@ -95,6 +95,12 @@ export class QSSearch implements QSModule {
                 continue
             }
 
+            if (search_res.id.startsWith("parameter-")) {
+                // Showing an item parameter in factoriopedia would result in text like "Stack size: 1\nRocket capacity..."
+                // So the type has to be changed to entity
+                search_res.type = "entity"
+            }
+
             let text = search_res.name
             if (typeColors.has(search_res.type)) {
                 text = `[color=${typeColors.get(search_res.type)}]${text}[/color]`
@@ -128,21 +134,25 @@ export class QSSearch implements QSModule {
         let search_res = item as QSSearchResult;
 
         let cur_player = game.get_player(player)
+        if (cur_player == undefined) return undefined;
+
         if (search_res.prototype_type == "technology") {
-            if (cur_player != undefined) cur_player.open_technology_gui(search_res.id)
+            cur_player.open_technology_gui(search_res.id)
         } else {
-            let prototype = prototypes[search_res.prototype_type].get(search_res.id)
-            if (prototype == undefined) {
-                if (cur_player == undefined) $log_crit!(`Player "${player}" not found. Something is seriously wrong.`, `Unable to find prototype for ${serpent.line(item)}`)
-                else {
+            if (!Features.supports("factoriopedia")) {
+                cur_player.print(`To open Factoriopedia please update Factorio to Version 2.0.45 or higher!`)
+            } else {
+                let prototype = prototypes[search_res.prototype_type].get(search_res.id)
+                if (prototype == undefined) {
                     cur_player.print(`[FACTORIO CODEX] The ${search_res.prototype_type} with id "${search_res.id}" is not a factorio prototype. This is a bug.`)
                     cur_player.print("Maybe the command [/color][color=cyan]/fc-rebuild-all[/color] can fix this. If you find the result you clicked on again please report this error.")
                     $log_err!(`What the heck how did we even get here. Player ${$get_player_string(player)}; Search result: ${serpent.line(item)}`)
                 }
-            }
 
-            // @ts-ignore TODO remove ignore when feature implemented
-            if (cur_player != undefined) cur_player.open_factoriopedia_gui(prototype)
+                $log_debug!(`Opening Factoriopedia for ${search_res.prototype_type} ${search_res.id} ${prototype}`)
+                // @ts-ignore
+                cur_player.open_factoriopedia_gui(prototype)
+            }
         }
 
         return undefined;

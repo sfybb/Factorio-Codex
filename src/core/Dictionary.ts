@@ -7,7 +7,7 @@ import {
     PlayerIndex, ProgressBarGuiElement
 } from "factorio:runtime";
 import MigratablePrototype from "../PrototypeHelper";
-import {getGlobalData, getPlayerData, registerDataInitializer} from "./dataHandler";
+import {getGlobalData, registerDataInitializer} from "./dataHandler";
 import GeneralizedSuffixTree from "./GeneralizedSuffixTree";
 import {TaskBaseData, TaskID, TaskScheduler} from "../events/taskScheduler";
 import {GameEventRegistry} from "../events/eventRegistry";
@@ -33,6 +33,10 @@ declare const prototypes: {
     item: LuaMap<string, MigratablePrototype<LuaItemPrototype>>,
     technology: LuaMap<string, MigratablePrototype<LuaTechnologyPrototype>>,
     tile: LuaMap<string, MigratablePrototype<LuaTilePrototype>>
+}
+
+declare const storage: {
+    __flib: any
 }
 
 interface TranslationData {
@@ -67,8 +71,6 @@ export interface ISearchable<T extends AnyNotNil> {
 
 namespace Dictionary {
     export const id = "dictionary";
-
-    let tmp = 0
 
     let build_done: boolean = false;
     export function Init(this: any): DictionaryData {
@@ -107,6 +109,14 @@ namespace Dictionary {
             technology: prototypes.technology
         }
 
+        let ignoreList: { [key: string]: { [key: string]: boolean } | undefined } = {
+            fluid: {"parameter-0": true, "parameter-1": true, "parameter-2": true, "parameter-3": true,
+                "parameter-4": true, "parameter-5": true, "parameter-6": true, "parameter-7": true, "parameter-8": true,
+                "parameter-9": true},
+            item: {},
+            technology: {}
+        }
+
         if (luaPrototypes == undefined) {
             $log_warn!("No prototype definitions in cache! Cannot start translation!")
             return;
@@ -143,6 +153,11 @@ namespace Dictionary {
                     continue
                 }
 
+                // @ts-ignore
+                if (proto.hidden_in_factoriopedia == true) continue;
+                // @ts-ignore
+                if (ignoreList[type] != undefined && ignoreList[type][name]) continue;
+
                 FLIB_dictionary_lite.add(dict_name, name, proto.localised_name)
                 //desc.add( name, proto.localised_description)
             }
@@ -170,14 +185,14 @@ namespace Dictionary {
         build_done = false
 
         // Nuke flib data
-        // @ts-ignore
         if (storage.__flib != undefined) {
-            // @ts-ignore
             storage.__flib.dictionary = null
         }
         FLIB_dictionary_lite.on_init()
+        $log_info!(`${serpent.line(storage.__flib)}`)
 
-        Dictionary.Init()
+        // Will initialize the data again, since dictionary is part of the global data
+        getGlobalData()
         $log_info!("Kicking off translation...")
     }
 
@@ -446,6 +461,6 @@ TaskScheduler.register(Dictionary.id, Dictionary.handleTask)
 GameEventRegistry.register(FLIB_dictionary_lite.on_player_dictionaries_ready, Dictionary.on_player_dictionaries_ready)
 
 
-EventHandler.add_lib({events: FLIB_dictionary_lite.events})
+EventHandler.add_lib(FLIB_dictionary_lite)
 
 export default Dictionary;
