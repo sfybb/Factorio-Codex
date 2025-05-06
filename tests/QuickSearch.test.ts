@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {describe, expect, afterEach, test, jest} from '@jest/globals';
+import {describe, afterEach, test, jest} from '@jest/globals';
 
 import "./mocks/BaseMocks"
 import "./mocks/LuaMocks"

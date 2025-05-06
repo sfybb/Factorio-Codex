@@ -1,6 +1,5 @@
 import {QSModule, QSResult, QSResultBase} from "./QuickSearch";
 import {LuaSurface, PlayerIndex} from "factorio:runtime";
-import Quantity from "./Quantity";
 
 export interface QSSolarResult extends QSResultBase {
     readonly type: "solar-ratio";

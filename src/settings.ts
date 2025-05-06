@@ -1,4 +1,4 @@
-import {SettingsPrototypeMap, BaseSettingDefinition} from "factorio:settings"
+import {SettingsPrototypeMap} from "factorio:settings"
 import {SettingsData} from "factorio:common";
 
 /** @noResolution */

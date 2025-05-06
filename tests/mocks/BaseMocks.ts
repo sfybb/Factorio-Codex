@@ -1,5 +1,5 @@
 import {jest} from "@jest/globals";
-import {EventId, table} from "factorio:runtime";
+import {EventId} from "factorio:runtime";
 
 // Mock logging
 let savedConsoleMsgs: string[] = []

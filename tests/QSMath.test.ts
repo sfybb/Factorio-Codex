@@ -1,4 +1,4 @@
-import {describe, expect, afterEach, test, jest, beforeEach} from '@jest/globals';
+import {describe, expect, test, beforeEach} from '@jest/globals';
 
 import "./mocks/StringMock"
 import "./mocks/LuaMocks"
@@ -6,10 +6,9 @@ import "./mocks/BaseMocks"
 
 global.log = console.log
 
-import QSMath, {QSMathResult, QSMathResultSuccess} from "../src/core/QS_math";
+import QSMath, {QSMathResultSuccess} from "../src/core/QS_math";
 import Quantity from "../src/core/Quantity";
 import {ExpectationResult, MatcherContext} from "expect";
-import {printConsoleMessages} from "./mocks/BaseMocks";
 import {PlayerIndex} from "factorio:runtime";
 
 function quantityToBeCloseTo<Context extends MatcherContext = MatcherContext>(this: Context, actual: undefined | Quantity, expected:  undefined | Quantity): ExpectationResult {

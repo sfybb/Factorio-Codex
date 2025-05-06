@@ -1,8 +1,8 @@
-import {describe, expect, test, jest} from '@jest/globals';
+import {describe, expect, test} from '@jest/globals';
 
 import "./mocks/StringMock"
 
-import util, {validate_status, validate_print_info} from "../src/util/Util";
+import util, {validate_status} from "../src/util/Util";
 
 
 describe("Util module", () => {

@@ -32,7 +32,6 @@ global.game = {
     players: [],
 }
 
-import playerData from "../src/PlayerData"
 import {
     getGlobalData,
     getPlayerData,
