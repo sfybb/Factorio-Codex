@@ -2,6 +2,7 @@ import "ui/uiEvents"
 import "events/startupEvents"
 import "core/QuickSearch"
 import "core/commands"
+import "core/Dictionary"
 import "./Migration"
 import {GameEventRegistry} from "./events/eventRegistry";
 

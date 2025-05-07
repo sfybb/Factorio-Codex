@@ -74,7 +74,10 @@ namespace Dictionary {
 
     let build_done: boolean = false;
     export function Init(this: any): DictionaryData {
+        FLIB_dictionary_lite.on_init()
         Dictionary.Build()
+
+        FLIB_dictionary_lite.on_tick()
 
         return {
             translations: new LuaMap(),
@@ -169,7 +172,12 @@ namespace Dictionary {
         build_done = true
 
         // Request translation for all connected players
+        let printed = false;
         for (let [player_index, player] of game.players) {
+            if (!printed) {
+                printed = true;
+                $log_info!("Kicking off translation...")
+            }
             if (player.connected){
                 FLIB_dictionary_lite.on_player_joined_game({
                     name: defines.events.on_player_joined_game,
@@ -188,12 +196,10 @@ namespace Dictionary {
         if (storage.__flib != undefined) {
             storage.__flib.dictionary = null
         }
-        FLIB_dictionary_lite.on_init()
         $log_info!(`${serpent.line(storage.__flib)}`)
 
         // Will initialize the data again, since dictionary is part of the global data
         getGlobalData()
-        $log_info!("Kicking off translation...")
     }
 
     export function on_player_dictionaries_ready(this: any, e: FLIB_dictionary_lite.OnDictionaryReadyEvent, lang_data?: FLIBTranslationFinishedOutput) {
@@ -460,7 +466,11 @@ registerDataInitializer(Dictionary.id, Dictionary.Init, Dictionary.Load);
 TaskScheduler.register(Dictionary.id, Dictionary.handleTask)
 GameEventRegistry.register(FLIB_dictionary_lite.on_player_dictionaries_ready, Dictionary.on_player_dictionaries_ready)
 
-
-EventHandler.add_lib(FLIB_dictionary_lite)
+EventHandler.add_lib({events: FLIB_dictionary_lite.events})
+TaskScheduler.register("flib-dictionary", () => FLIB_dictionary_lite.on_tick());
+TaskScheduler.scheduleAlways({
+    handler_id: "flib-dictionary",
+    player_index: 0 as PlayerIndex
+})
 
 export default Dictionary;

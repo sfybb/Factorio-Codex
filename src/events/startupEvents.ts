@@ -1,9 +1,9 @@
 import {GameEventRegistry} from "./eventRegistry";
-import Dictionary from "../core/Dictionary";
+import {getGlobalData} from "../core/dataHandler";
 
 
 function InitializeMod() {
-    Dictionary.Init()
+    getGlobalData();
 }
 
 GameEventRegistry.register("on_init", InitializeMod)

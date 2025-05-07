@@ -4,7 +4,7 @@ import { ConfigurationChangedData } from "factorio:runtime";
 import * as FLIB_migration from "__flib__.migration"
 import Features from "Features";
 import {GameEventRegistry} from "./events/eventRegistry";
-import Dictionary from "./core/Dictionary";
+import {fcRebuildAll} from "./core/commands";
 
 const migrations = {
     ["0.0.99"]: require("migrations/migrate_0_0_99")
@@ -18,7 +18,7 @@ class Migration {
             $log_info!("Migration scripts done")
 
             $log_info!("Invalidating and rebuilding caches")
-            Dictionary.Rebuild()
+            fcRebuildAll();
 
             Migration.modCompatCheck()
 

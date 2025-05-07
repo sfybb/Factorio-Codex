@@ -18,17 +18,20 @@ commands.add_command("fc-rebuild-all", [ "command-help.fc-rebuild-all" ], (e) =>
 
     $log_info!(`Player ${e.player_index} "${player.name}" triggered a complete rebuild`)
     game.print("[color=red]Rebuilding Factorio Codex[/color]")
+    fcRebuildAll();
+})
 
+export function fcRebuildAll() {
     let task: TaskBaseData = {
         handler_id: "fc-rebuild-all",
         player_index: 0 as PlayerIndex
     }
 
     TaskScheduler.scheduleTask(task);
-})
+}
 
 
-function fcRebuildAll(this: any) {
+function executeFcRebuildAll(this: any) {
     $log_info!("Executing rebuild...")
     DeleteData();
     Dictionary.Rebuild()
@@ -36,4 +39,4 @@ function fcRebuildAll(this: any) {
     //game.print("[color=green]Rebuild complete. Waiting for translation to finish...[/color]")
 }
 
-TaskScheduler.register("fc-rebuild-all", fcRebuildAll);
+TaskScheduler.register("fc-rebuild-all", executeFcRebuildAll);
