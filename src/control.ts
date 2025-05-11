@@ -22,4 +22,3 @@ if (Features.supports("gvv")) {
 EventHandler.add_lib(GameEventRegistry.getEvents())
 
 $log_debug!("Registered events")
-$log_trace!(`Data stored: ${serpent.block(storage, {nocode: true})}`)

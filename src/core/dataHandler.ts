@@ -104,6 +104,7 @@ export function getPlayerData(pIndx: PlayerIndex): PlayerData {
 
 // We are not allowed to modify any data here
 export function LoadMetatables() {
+    //$log_trace!(`Data stored: ${serpent.block(storage, {nocode: true, maxlevel: 5})}`)
     // Nothing stored? strange but nothing we can do
     if (storage == undefined) return
 
@@ -112,17 +113,19 @@ export function LoadMetatables() {
 
         let data: any = storage.globalData
         for (let [name, cb] of dataLoadCallbacks) {
-            $safe_call!(cb, undefined, data[name]);
+            let res = $safe_call!(cb, undefined, data[name]);
         }
     }
 
     if (storage.playerData != undefined) {
-        $log_trace!(`Loading global data with ${serpent.line(Object.keys(playerDataLoadCallbacks))}}`)
+        $log_trace!(`Loading player data with ${serpent.line(Object.keys(playerDataLoadCallbacks))}}`)
         for (let [_, data] of storage.playerData) {
             for (let [name, cb] of playerDataLoadCallbacks) {
-                $safe_call!(cb, undefined, data[name]);
+                let res =$safe_call!(cb, undefined, data[name]);
             }
         }
+    } else {
+        $log_trace!(`Player data empty ${serpent.line(storage.playerData)}}`)
     }
 }
 

@@ -42,17 +42,17 @@ class QSMath implements QSModule {
             } catch (exception: any) {
                 let stack = exception?.stack ?? debug.traceback()
                 if (exception.message != undefined) {
-                    $log_info!(`${exception.message}\n${stack}`)
+                    $log_debug!(`${exception.message}\n${stack}`)
                 } else {
-                    $log_info!(`Parsing exception: ${serpent.line(exception)}`)
+                    $log_debug!(`Parsing exception: ${serpent.line(exception)}`)
                 }
                 res = undefined
                 err = stack != undefined ? `Error: ${exception.message ?? "Parsing exception"}\n${stack}` : exception.message ?? "Parsing exception"
             }
 
-            $log_info!(`${err}`)
+            $log_debug!(`${err}`)
             if (res != undefined) {
-                $log_info!(`${res.prettyPrint()} ${serpent.line(res)}`)
+                $log_debug!(`${res.prettyPrint()} ${serpent.line(res)}`)
 
                 return [{
                     type: "math",
